@@ -9,11 +9,19 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r include=FALSE}
+library(dplyr)
+
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data_analysis/data")
+arrowhead_data <- read.table("arrowhead_data.txt", header=T)
+dim(arrowhead_data)
+```
+
+# There are 9274 TAD boundary intervals in the data
+
 # Plotting TAD boundaries for Chromosome 22
 
 ```{r echo=FALSE}
-setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data_analysis")
-arrowhead_data <- read.table("arrowhead_data.txt", header=T)
 
 arrowhead_data <- arrowhead_data[,1:3]
 plot(arrowhead_data$Start[which(arrowhead_data$Chromosome=="chr22")],arrowhead_data$End[which(arrowhead_data$Chromosome=="chr22")],pch='.', col="blue", xlab="Start", ylab="End")
@@ -74,7 +82,7 @@ Example:
 
 ## Here I will sort by chromosome and start site the count the duplicates across chromosome and start site
 
-```{r}
+```{r echo=FALSE}
 # The data is already sorted by chromosome and start site
 dupstart <- arrowhead_data[duplicated(arrowhead_data[,1:2]),]
 head(dupstart)
@@ -85,7 +93,7 @@ table(dupstart$Chromosome)
 
 ### There are some situations where there are multiple nested TADs
 
-```{r}
+```{r echo=FALSE}
 dupstart[duplicated(dupstart$Start),]
 #example
 #     Chromosome     Start       End
@@ -94,7 +102,7 @@ dupstart[duplicated(dupstart$Start),]
 ```
 
 ### For example chromosome 3 has two TADs nested inside an interval from 51425000 to 51880000
-```{r}
+```{r echo=FALSE}
 arrowhead_data[which(arrowhead_data$Start==51425000 & arrowhead_data$Chromosome=="chr3"),]
 
 table(dupstart[duplicated(dupstart$Start),][,1])
@@ -104,7 +112,7 @@ table(dupstart[duplicated(dupstart$Start),][,1])
 
 ## Here I will sort by chromosome and end site the count the duplicates across chromosome and end site
 
-```{r}
+```{r echo=FALSE}
 dupend <- arrowhead_data[order(arrowhead_data$Chromosome,arrowhead_data$End),]
 head(dupend)
 
@@ -124,7 +132,7 @@ dupend[duplicated(dupend$end),]
 
 ## Here I will lag the end site so as to line up starting and ending sites then search for where start=end
 
-```{r}
+```{r echo=FALSE}
 # creating a function to lag a column of a data frame
 #lagpad <- function(x, k) {
 #    if (!is.vector(x)) 
@@ -138,7 +146,6 @@ dupend[duplicated(dupend$end),]
 #    c(rep(NA, k), x)[1 : length(x)] 
 #}
 
-library(dplyr)
 lagtad <- arrowhead_data %>% mutate(End=lag(End))
 
 #setting positions where chromosomes change equal to NA
@@ -162,7 +169,7 @@ arrowhead_data[which((arrowhead_data$Start==3540000 | arrowhead_data$End==354000
 
 ## Here I will simply search for duplicates across all columns
 
-```{r}
+```{r echo=FALSE}
 arrowhead_data[duplicated(arrowhead_data),]
 #there are no duplicate intervals
 ```

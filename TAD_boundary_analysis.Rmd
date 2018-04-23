@@ -28,18 +28,17 @@ library(dplyr)
 
 ```{r}
 
-setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data_analysis")
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data_analysis/data")
 
 domains <- read.table("arrowhead_data.txt", header=T)
-domains$chr1 <- as.character(domains$chr1)
-domains$chr2 <- as.character(domains$chr2)
+domains <- domains[,1:3]
 head(domains)
 dim(domains)
-domains_order <- domains[order(domains$chr1,domains$x2),] 
+#9274   3
 
-#Focusing just on chromosome 1
-chr1_domains <- domains_order[which(domains_order$chr1=="1"),]
-dim(chr1_domains)
+#Focusing just on chromosome 22
+chr22_domains <- domains[which(domains$Chromosome=="chr22"),]
+dim(chr22_domains)
 
 ```
 
@@ -48,48 +47,50 @@ dim(chr1_domains)
 ```{r}
 
 #Creating bins of 1kb for the genome
-#the last coordinate of chromosome 1 from the 1kb contact matrix was 249238000
+#the first coordinate of chromosome 22 from the 1kb contact matrix was: 16,049,000
+#the last coordinate of chromosome 22 from the 1kb contact matrix was: 51,244,000
 
 #Find the min and max coordinates of the TAD domains to find where to start and end the bins
 
-#Focusing on chromosome 1 first
-min(chr1_domains$x1)
-max(chr1_domains$x2)
+#Focusing on chromosome 22 first
+min(chr22_domains$Start)
+max(chr22_domains$End)
 
 #min(domains$x1)
 #max(domains$x2)
 
-#midpt <- ((min(chr1_domains$x1)-500) + (max(chr1_domains$x2)+500))/2
-#ints <- GRanges(seqnames="chr1", ranges=IRanges(start=midpt,width=1))
-#ints2 <- tile(ints + (midpt - (min(chr1_domains$x1)-500)), width=1001)
+#midpt <- ((min(chr22_domains$Start)-500) + (max(chr22_domains$End)+500))/2
+#ints <- GRanges(seqnames="chr22", ranges=IRanges(start=midpt,width=1))
+#ints2 <- tile(ints + (midpt - (min(chr22_domains$Start)-500)), width=1001)
 #startints <- start(ints2)[[1]]
 #endints <- end(ints2)[[1]]
-#bins <- GRanges(seqnames="chr1", ranges=IRanges(start=startints, end = endints))
-ints2 <- tile(ints + (midpt - (min(chr1_domains$x1)-500)), width=1001)
+#bins <- GRanges(seqnames="chr22", ranges=IRanges(start=startints, end = endints))
+#ints2 <- tile(ints + (midpt - (min(chr22_domains$Start)-500)), width=1001)
 
-#Creating bins for chr 1
-start <- seq(0, 249237000, by=50)
-chr1_bins <- GRanges(seqnames="chr1", ranges=IRanges(start=start,width=50))
+#Creating genomic bins of size 50 bases for chr 22
+start <- seq(16049000, 51243950, by=50)
+chr22_bins <- GRanges(seqnames="chr22", ranges=IRanges(start=start,width=50))
+end(ranges(chr22_bins)[703900]) <- 51244000
+chr22_bins
 
 
-#Creating bins for all chromosomes
-bins <- rep( list(GRangesList()), 23 )
+#Creating genomic bins for all chromosomes
+#bins <- rep( list(GRangesList()), 23 )
 
-for(i in 1:length(unique(domains$chr1))){
-  #seqn <- character(length(domains$chr1[which(domains$chr1==unique(domains$chr1)[i])]))
-  seqn <- rep(paste("chr",unique(domains$chr1)[i], sep=""),length(domains$chr1[which(domains$chr1==unique(domains$chr1)[i])]))
+#for(i in 1:length(unique(domains$Chromosome))){
+  #seqn <- rep(unique(domains$Chromosome)[i],length(domains$Chromosome[which(domains$Chromosome==unique(domains$Chromosome)[i])]))
   
-  midpt <- ((min(domains$x1[which(domains$chr1==unique(domains$chr1)[i])])-500) + (max(domains$x2[which(domains$chr1==unique(domains$chr1)[i])])+500))/2
+  #midpt <- ((min(domains$Start[which(domains$Chromosome==unique(domains$Chromosome)[i])])-500) + (max(domains$End[which(domains$Chromosome==unique(domains$Chromosome)[i])])+500))/2
   
-  ints <- GRanges(seqnames=seqn[1], ranges=IRanges(start=midpt,width=1))
-  ints2 <- tile(ints + (midpt - (min(domains$x1[which(domains$chr1==unique(domains$chr1)[i])])-500)), width=1001)
-  startints <- start(ints2)[[1]]
-  endints <- end(ints2)[[1]]
+  #ints <- GRanges(seqnames=seqn[1], ranges=IRanges(start=midpt,width=1))
+  #ints2 <- tile(ints + (midpt - (min(domains$Start[which(domains$Chromosome==unique(domains$Chromosome)[i])])-500)), width=1001)
+  #startints <- start(ints2)[[1]]
+  #endints <- end(ints2)[[1]]
   
-  bins[[i]] <- GRanges(seqnames=seqn[1], ranges=IRanges(start=startints, end = endints))
-}
-binslist <- GRangesList(bins)
-binslist <- unlist(binslist)
+  #bins[[i]] <- GRanges(seqnames=seqn[1], ranges=IRanges(start=startints, end = endints))
+#}
+#binslist <- GRangesList(bins)
+#binslist <- unlist(binslist)
 
 ```
 
@@ -98,56 +99,51 @@ binslist <- unlist(binslist)
 
 ```{r}
 
-#Creating a GRanges object out of the tads
+# Creating a GRanges object out of the tads
 
-# For chromosome 1
-coords <- c(chr1_domains[,2],chr1_domains[,3])
-chr1_coords <- data.frame(chr="chr1", coordinates=coords)
-chr1_coords <- chr1_coords[order(chr1_coords$coordinates),]
-dim(chr1_coords)
+# For chromosome 22
+coords <- c(chr22_domains[,2],chr22_domains[,3])
+chr22_coords <- data.frame(chr="chr22", coordinates=coords)
+chr22_coords <- chr22_coords[order(chr22_coords$coordinates),]
+dim(chr22_coords)
+#354   2
 #remove duplicates for coordinates that are conjoined
-chr1_coords <- chr1_coords[!duplicated(chr1_coords), ]
-dim(chr1_coords)
-chr1_bounds <- GRanges(seqnames=chr1_coords$chr, ranges=IRanges(start=chr1_coords$coordinates, width=1))
-chr1_bounds <- resize(chr1_bounds, 1001, fix = "center")
+chr22_coords <- chr22_coords[!duplicated(chr22_coords), ]
+dim(chr22_coords)
+#314  2
 
-#coordinates <- c(domains[,2],domains[,3])
-#chr <- c(domains[,1],domains[,4])
-#boundaries <- data.frame(chr,coordinates)
-#boundaries <- boundaries[order(boundaries$chr,boundaries$coordinates),]
-#head(boundaries)
-#tad_bounds <- GRanges(seqnames=paste("chr",boundaries$chr,sep = ""), ranges=IRanges(start=boundaries$coordinates, width=1))
+# flanking either side of the TAD boundary by 500 bases for a 1kb centerd boundary region
+chr22_bounds <- GRanges(seqnames=chr22_coords$chr, ranges=IRanges(start=chr22_coords$coordinates, width=1))
+chr22_bounds <- resize(chr22_bounds, 1001, fix = "center")
+chr22_bounds
 
-#Creating an indicator variable Y that denotes whether the tad boundary is inside the 1 kb bin
+#Creating an indicator variable Y that denotes whether the tad boundary overlaps the genomic bin for chr 22
 
-#for chr 1
-y <- countOverlaps(chr1_bins, chr1_bounds)
+y <- countOverlaps(chr22_bins, chr22_bounds, type = "within")
 length(y)
 table(y)
 prop.table(table(y))
 
-y <- countOverlaps(binslist, tad_bounds)
-length(y)
+#y <- countOverlaps(binslist, tad_bounds)
+#length(y)
 ```
 
-# Reading in genomic feature data
+# Reading in genomic feature data (subcompartments)
 
 ```{r}
 subcompart <- read.table("GSE63525_GM12878_subcompartments.BED",header = F)
 subcompart <- subcompart[,1:4]
 names(subcompart) <- c("chr", "x1", "x2", "compartment")
 dim(subcompart)
-subcompart$compartment <- as.character(subcompart$compartment)
-subcompart$compartment[which(is.na(subcompart$compartment))] <- "N"
+subcompart <- subcompart[-which(is.na(subcompart$compartment)),]
+head(subcompart)
 table(subcompart$compartment)
+subcompart$compartment <- as.character(subcompart$compartment)
 
 #combining compartments
 subcompart$compartment[grep("A",subcompart$compartment)] <- "A"
 subcompart$compartment[grep("B",subcompart$compartment)] <- "B"
 table(subcompart$compartment)
-
-subcompart$compartment <- factor(subcompart$compartment)
-subcompart$compartment <- relevel(subcompart$compartment, "N")
 
 #Crearing indicator variables from levels of subcompartments
 dummy <- dummyVars(~compartment,
@@ -158,31 +154,72 @@ subcompart2 <- data.frame(predict(dummy,newdata=subcompart))
 subcompart3 <- cbind.data.frame(subcompart[,1:3],subcompart2)
 head(subcompart3)
 
-#for chromosome 1
-chr1_subcomp <- subcompart3[which(subcompart3$chr=="chr1"),]
-Acomp <- chr1_subcomp[which(chr1_subcomp$compartment.A==1),]
-Bcomp <- chr1_subcomp[which(chr1_subcomp$compartment.B==1),]
+#for chromosome 22
+chr22_subcomp <- subcompart3[which(subcompart3$chr=="chr22"),]
+dim(chr22_subcomp)
 
-Acompint <- GRanges(seqnames = "chr1", ranges = IRanges(start=Acomp$x1,end=Acomp$x2))
-Bcompint <- GRanges(seqnames = "chr1", ranges = IRanges(start=Bcomp$x1,end=Bcomp$x2))
+Asubcomp <- chr22_subcomp[which(chr22_subcomp$compartmentB==0),]
+Bsubcomp <- chr22_subcomp[which(chr22_subcomp$compartmentB==1),]
 
-X_A <- countOverlaps(chr1_bins, Acompint, type = "any")
+Asubcompint <- GRanges(seqnames = "chr22", ranges = IRanges(start=Asubcomp$x1,end=Asubcomp$x2))
+Bsubcompint <- GRanges(seqnames = "chr22", ranges = IRanges(start=Bsubcomp$x1,end=Bsubcomp$x2))
+
+#There are only 36 subcompartments associated with chromosome 22. With a mean width of 1366668 for subcompartment A and 614287 for subcompartment B. Therefore the intervals are much larger than the genomic bins of 50 bases
+
+```
+
+# Creating predictor vectors corresponding to if there is an overlap for compartment A
+
+```{r}
+
+X_A <- countOverlaps(chr22_bins, Asubcompint, type = "any")
 table(X_A)
-X_A2 <- countOverlaps(chr1_bins, Acompint, type = "within")
+X_A2 <- countOverlaps(chr22_bins, Asubcompint, type = "within")
 table(X_A2)
+#there are 410015-410000=15 intervals for subcompartment A that
+#have partial overlapping with genomic bins
 
-#finding percentage of partial overlaps
-partialoverlaps <- setdiff(findOverlaps(chr1_bins, Acompint, type = "any"),findOverlaps(chr1_bins, Acompint, type = "within"))
-
-hits <- pintersect(chr1_bins[queryHits(partialoverlaps)], Acompint[subjectHits(partialoverlaps)])
-
-percentOverlap <- width(hits) / width(chr1_bins[queryHits(partialoverlaps)])
-
+#finding percentage of partial overlaps for compartment A
+partialoverlaps <- setdiff(findOverlaps(chr22_bins, Asubcompint, type = "any"),findOverlaps(chr22_bins, Asubcompint, type = "within"))
+hits <- pintersect(chr22_bins[queryHits(partialoverlaps)], Asubcompint[subjectHits(partialoverlaps)])
+hits
+#it appears all partial overlaps land on the very end coordinate of the
+#genomic bins
+#thus the percentage overlap would be 1/50=.02
+percentOverlap <- width(hits) / width(chr22_bins[queryHits(partialoverlaps)])
 percentOverlap
 
+#changing the partial overlaps to percentages
+X_A[queryHits(partialoverlaps)] <- .02
+table(X_A)
+```
 
+#Creating predictor vectors corresponding to if there is an overlap for compartment B
+```{r}
 
-hitsA <- findOverlaps(chr1_bins, Acompint, type = "any")
+X_B <- countOverlaps(chr22_bins, Bsubcompint, type = "any")
+table(X_B)
+#some intervals for subcompartment B have multiple overlaps in one genomic bin
 
+X_B2 <- countOverlaps(chr22_bins, Bsubcompint, type = "within")
+table(X_B2)
+#there are 258007+7*2-258000=21 intervals for subcompartment B 
+#that have partial overlapping with genomic bins
+
+#Finding the percentage of partial overlap for compartment B
+partialoverlaps <- setdiff(findOverlaps(chr22_bins, Bsubcompint, type = "any"),
+                           findOverlaps(chr22_bins, Bsubcompint, type = "within"))
+hits <- pintersect(chr22_bins[queryHits(partialoverlaps)], 
+                   Bsubcompint[subjectHits(partialoverlaps)])
+hits
+#it appears all partial overlaps land on the very end coordinate of the
+#genomic bins
+#thus the percentage overlap would be 1/50=.02
+percentOverlap <- width(hits) / width(chr22_bins[queryHits(partialoverlaps)])
+percentOverlap
+
+#changing the partial overlaps to percentages
+X_B[queryHits(partialoverlaps)] <- .02
+table(X_B)
 ```
 

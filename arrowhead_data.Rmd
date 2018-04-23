@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-#Reading in the TAD boundary data
+# Reading in the TAD boundary data
 
 ```{r}
 #The data comes from the paper by Rao, Huntley, et. al titled,
@@ -27,7 +27,7 @@ knitr::opts_chunk$set(echo = TRUE)
 #color = the color that the feature will be rendered as if loaded in Juicebox 
 
 
-setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data_analysis")
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data_analysis/data")
 
 #"chr" was appended to the chr1 column of the
 #GSE63525_GM12878_primary+replicate_Arrowhead_domainlist txt file
@@ -37,7 +37,7 @@ dim(arrowhead)
 
 ```
 
-#Changing the characteristics of the data
+# Changing the characteristics of the data
 
 ```{r}
 colnames(arrowhead)[1] <- "Chromosome"
@@ -56,7 +56,7 @@ arrowhead_data <- rbind.data.frame(arrowheadnum2,arrowheadx2)
 
 ```
 
-#Writing the data to a file named "arrowhead.txt"
+# Writing the data to a file named "arrowhead.txt"
 
 ```{r}
 write.table(arrowhead_data, file = "arrowhead_data.txt",sep="\t",row.names=FALSE)
