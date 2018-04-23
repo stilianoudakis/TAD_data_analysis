@@ -1,6 +1,12 @@
 # TAD_data_analysis
 Analysis of Topologically Associated Domain data and their respective boundaries
 
+## data
+
+* arrowhead_data(2).txt: The TAD boundary data used for analyses cleaned from the GSE63525_GM12878_primary+replicate_Arrowhead_domainlist.txt file. (2) refers to the same data with quotations removed around the Chromosome column
+
+* subcompartments.bed: subcompartment data classifying genomic coordinates as being in specific subcompartments A and B.
+
 ## arrowhead_data.Rmd
 
 The TAD boundary data was retrieved from from the paper by Rao, Huntley, et. al titled,
@@ -20,12 +26,6 @@ Explanations of the fields are as follows:
 * x1,x2/y1,y2 = the interval spanned by the domain (contact domains manifest as squares on the diagonal of a Hi-C matrix and as such: x1=y1, x2=y2)
 
 * color = the color that the feature will be rendered as if loaded in Juicebox 
-
-## data
-
-* arrowhead_data(2).txt: The TAD boundary data used for analyses. The data has been sorted by chromosome and start site. (2) refers to the same data with quotations removed around the Chromosome column
-
-* subcompartments.bed: subcompartment data classifying genomic coordinates as being in specific subcompartments A and B.
 
 ## investigating_tad_boundaries.Rmd
 
