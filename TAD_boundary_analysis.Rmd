@@ -46,10 +46,6 @@ dim(chr1_domains)
 # Creating genomic bins
 
 ```{r}
-setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data_analysis")
-
-genom_bin <- read.table()
-
 
 #Creating bins of 1kb for the genome
 #the last coordinate of chromosome 1 from the 1kb contact matrix was 249238000
