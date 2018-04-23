@@ -1,13 +1,6 @@
 # TAD_data_analysis
 Analysis of Topologically Associated Domain data and their respective boundaries
 
-## TAD_boundary_analysis.rmd
-
-Analysis of TAD boundary data retrieved from from the paper by Rao, Huntley, et. al titled,
-"A three-dimensional map of the human genome at kilobase resolution reveals prinicples of chromatin looping"
-
-GEO accession: GSE63525
-
 ## arrowhead_data.Rmd
 
 Cleaning and changing the characteristics of the TAD boundary data.
@@ -27,10 +20,19 @@ Explanations of the fields are as follows:
 
 * color = the color that the feature will be rendered as if loaded in Juicebox 
 
+## investigating_tad_boundaries.Rmd
+
+Investigating the different type of boundaries that occur in the domain data.
+
+## TAD_boundary_analysis.rmd
+
+Analysis of TAD boundary data retrieved from from the paper by Rao, Huntley, et. al titled,
+"A three-dimensional map of the human genome at kilobase resolution reveals prinicples of chromatin looping"
+
+GEO accession: GSE63525
+
 ## chr1_logistic_regression.R
 
 R code for running a logistic regression model using subcompartment coordinates as predictors
 
-## investigating_tad_boundaries.Rmd
 
-Investigating the different type of boundaries that occur in the domain data
