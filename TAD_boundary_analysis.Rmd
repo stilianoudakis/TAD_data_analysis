@@ -1,0 +1,192 @@
+---
+title: "TAD Boundary Analysis"
+author: "Spiro Stilianoudakis"
+date: "April 15, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Loading Libraries
+
+```{r}
+library(MultiAssayExperiment)
+library(GenomicRanges)
+library(IRanges)
+library(caret)
+library(data.table)
+library(gbm)
+library(pROC)
+library(plyr)
+library(dplyr)
+```
+
+
+# Reading in TAD data
+
+```{r}
+
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data_analysis")
+
+domains <- read.table("arrowhead_data.txt", header=T)
+domains$chr1 <- as.character(domains$chr1)
+domains$chr2 <- as.character(domains$chr2)
+head(domains)
+dim(domains)
+domains_order <- domains[order(domains$chr1,domains$x2),] 
+
+#Focusing just on chromosome 1
+chr1_domains <- domains_order[which(domains_order$chr1=="1"),]
+dim(chr1_domains)
+
+```
+
+# Creating genomic bins
+
+```{r}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data_analysis")
+
+genom_bin <- read.table()
+
+
+#Creating bins of 1kb for the genome
+#the last coordinate of chromosome 1 from the 1kb contact matrix was 249238000
+
+#Find the min and max coordinates of the TAD domains to find where to start and end the bins
+
+#Focusing on chromosome 1 first
+min(chr1_domains$x1)
+max(chr1_domains$x2)
+
+#min(domains$x1)
+#max(domains$x2)
+
+#midpt <- ((min(chr1_domains$x1)-500) + (max(chr1_domains$x2)+500))/2
+#ints <- GRanges(seqnames="chr1", ranges=IRanges(start=midpt,width=1))
+#ints2 <- tile(ints + (midpt - (min(chr1_domains$x1)-500)), width=1001)
+#startints <- start(ints2)[[1]]
+#endints <- end(ints2)[[1]]
+#bins <- GRanges(seqnames="chr1", ranges=IRanges(start=startints, end = endints))
+ints2 <- tile(ints + (midpt - (min(chr1_domains$x1)-500)), width=1001)
+
+#Creating bins for chr 1
+start <- seq(0, 249237000, by=50)
+chr1_bins <- GRanges(seqnames="chr1", ranges=IRanges(start=start,width=50))
+
+
+#Creating bins for all chromosomes
+bins <- rep( list(GRangesList()), 23 )
+
+for(i in 1:length(unique(domains$chr1))){
+  #seqn <- character(length(domains$chr1[which(domains$chr1==unique(domains$chr1)[i])]))
+  seqn <- rep(paste("chr",unique(domains$chr1)[i], sep=""),length(domains$chr1[which(domains$chr1==unique(domains$chr1)[i])]))
+  
+  midpt <- ((min(domains$x1[which(domains$chr1==unique(domains$chr1)[i])])-500) + (max(domains$x2[which(domains$chr1==unique(domains$chr1)[i])])+500))/2
+  
+  ints <- GRanges(seqnames=seqn[1], ranges=IRanges(start=midpt,width=1))
+  ints2 <- tile(ints + (midpt - (min(domains$x1[which(domains$chr1==unique(domains$chr1)[i])])-500)), width=1001)
+  startints <- start(ints2)[[1]]
+  endints <- end(ints2)[[1]]
+  
+  bins[[i]] <- GRanges(seqnames=seqn[1], ranges=IRanges(start=startints, end = endints))
+}
+binslist <- GRangesList(bins)
+binslist <- unlist(binslist)
+
+```
+
+
+# Creating TAD boundaries
+
+```{r}
+
+#Creating a GRanges object out of the tads
+
+# For chromosome 1
+coords <- c(chr1_domains[,2],chr1_domains[,3])
+chr1_coords <- data.frame(chr="chr1", coordinates=coords)
+chr1_coords <- chr1_coords[order(chr1_coords$coordinates),]
+dim(chr1_coords)
+#remove duplicates for coordinates that are conjoined
+chr1_coords <- chr1_coords[!duplicated(chr1_coords), ]
+dim(chr1_coords)
+chr1_bounds <- GRanges(seqnames=chr1_coords$chr, ranges=IRanges(start=chr1_coords$coordinates, width=1))
+chr1_bounds <- resize(chr1_bounds, 1001, fix = "center")
+
+#coordinates <- c(domains[,2],domains[,3])
+#chr <- c(domains[,1],domains[,4])
+#boundaries <- data.frame(chr,coordinates)
+#boundaries <- boundaries[order(boundaries$chr,boundaries$coordinates),]
+#head(boundaries)
+#tad_bounds <- GRanges(seqnames=paste("chr",boundaries$chr,sep = ""), ranges=IRanges(start=boundaries$coordinates, width=1))
+
+#Creating an indicator variable Y that denotes whether the tad boundary is inside the 1 kb bin
+
+#for chr 1
+y <- countOverlaps(chr1_bins, chr1_bounds)
+length(y)
+table(y)
+prop.table(table(y))
+
+y <- countOverlaps(binslist, tad_bounds)
+length(y)
+```
+
+# Reading in genomic feature data
+
+```{r}
+subcompart <- read.table("GSE63525_GM12878_subcompartments.BED",header = F)
+subcompart <- subcompart[,1:4]
+names(subcompart) <- c("chr", "x1", "x2", "compartment")
+dim(subcompart)
+subcompart$compartment <- as.character(subcompart$compartment)
+subcompart$compartment[which(is.na(subcompart$compartment))] <- "N"
+table(subcompart$compartment)
+
+#combining compartments
+subcompart$compartment[grep("A",subcompart$compartment)] <- "A"
+subcompart$compartment[grep("B",subcompart$compartment)] <- "B"
+table(subcompart$compartment)
+
+subcompart$compartment <- factor(subcompart$compartment)
+subcompart$compartment <- relevel(subcompart$compartment, "N")
+
+#Crearing indicator variables from levels of subcompartments
+dummy <- dummyVars(~compartment,
+                   data=subcompart,
+                   fullRank=T)
+subcompart2 <- data.frame(predict(dummy,newdata=subcompart))
+
+subcompart3 <- cbind.data.frame(subcompart[,1:3],subcompart2)
+head(subcompart3)
+
+#for chromosome 1
+chr1_subcomp <- subcompart3[which(subcompart3$chr=="chr1"),]
+Acomp <- chr1_subcomp[which(chr1_subcomp$compartment.A==1),]
+Bcomp <- chr1_subcomp[which(chr1_subcomp$compartment.B==1),]
+
+Acompint <- GRanges(seqnames = "chr1", ranges = IRanges(start=Acomp$x1,end=Acomp$x2))
+Bcompint <- GRanges(seqnames = "chr1", ranges = IRanges(start=Bcomp$x1,end=Bcomp$x2))
+
+X_A <- countOverlaps(chr1_bins, Acompint, type = "any")
+table(X_A)
+X_A2 <- countOverlaps(chr1_bins, Acompint, type = "within")
+table(X_A2)
+
+#finding percentage of partial overlaps
+partialoverlaps <- setdiff(findOverlaps(chr1_bins, Acompint, type = "any"),findOverlaps(chr1_bins, Acompint, type = "within"))
+
+hits <- pintersect(chr1_bins[queryHits(partialoverlaps)], Acompint[subjectHits(partialoverlaps)])
+
+percentOverlap <- width(hits) / width(chr1_bins[queryHits(partialoverlaps)])
+
+percentOverlap
+
+
+
+hitsA <- findOverlaps(chr1_bins, Acompint, type = "any")
+
+```
+
