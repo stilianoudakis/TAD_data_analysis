@@ -42,16 +42,16 @@ Investigating the different type of boundaries that occur in the domain data.
 
 ## TAD_boundary_analysis.rmd
 
-* Purpose: To create genomic bins and flank the TAD boundaries
+* Purpose: To create flanked TAD boundary regions of size 1kb (500 bases on each side of TAD boundary) and identify where on the 1 kb binned genome they appear. Likewise, identifying what compartment each of these bins correspond to.
 * The Data: arrowhead_data.txt, GSE63525_GM12878_subcompartments.BED
-* Methods: Initial focus was paid to chromosome 22
-   1. The starting and ending genomic coordinates were determined from the 1kb contact matrix. They were 16,049,000 and 51,244,000
-   2. Genomic bins of size 50 bases were created for chromosome 22
-   3. For the TAD boundary data, looking at chromosome 22, the start and end sites were concatenated together, duplicates were removed. This results in a vector of TAD boundary sites.
-   4. Each boundary site was flanked on either side by 500 bases for a 1kb centered boundary region
-   5. A vector Y indicating whether the bins overlaped the boundary intervals was created
-   6. Genomic feature data was imported in the form of subcompartment classifications (A or B). Predictor vectors corresponding to if there was an overlap for each compartment were created
-* Notes: There are only 36 subcompartments associated with chromosome 22. With a mean width of 1366668 for subcompartment A and 614287 for subcompartment B. Therefore the intervals are much larger than the genomic bins of 50 bases. It appears all partial overlaps land on the very end coordinate of the genomic bins thus the percentage overlap would be 1/50=.02. 
+* Methods: 
+   1. A vector of TAD boundaries was created by concatenating the start and end coordinates of the arrowhead data.
+   2. The vector was sorted and duplicates corresponding to shared coordinates were removed.
+   3. The genome was binned at 1kb starting from the (minimum coordinate - 500) to the (maximum coordinate + 500) for each chromosome. Therefore, a TAD boundary will either appear in the middle of a bin or it will not.
+   4. A vector Y was created that identified whether or not a TAD boundary was located in the bin or not
+   5. Genomic annotation data was used in the form of subcompartments (A or B). A vector X was created which labled which subcompartment each 1kb bin fell into (A, B, or N for none). 
+   6. A data frame containing the class Y and predictor X was created for the logistic regression model.
+* Notes: Only overlaps fully contained in the subcompartment intervals were used. Therefore, some bins that partially overlapped a subcompartment will be labled N. Going further, these need to be labeled with the percentage of there overlap. Also, chromosome X was associated with no subcompartment (all bins were labeled N).
 
 
 ## chr1_logistic_regression.R
