@@ -37,32 +37,69 @@ dim(domains)
 #9274   3
 
 #Focusing just on chromosome 22
-chr22_domains <- domains[which(domains$Chromosome=="chr22"),]
-dim(chr22_domains)
+#chr22_domains <- domains[which(domains$Chromosome=="chr22"),]
+#dim(chr22_domains)
 
 ```
 
 # Creating TAD boundaries
 
+## The TAD boundary start and end coordinates were row binded into one long vector. The vector was sorted and each coordinate was flanked on each side by 500 bases for a 1kb TAD boundary bin.
+
 ```{r}
 
 # Creating a GRanges object out of the tads
 
-# For chromosome 22
-coords <- c(chr22_domains[,2],chr22_domains[,3])
-chr22_coords <- data.frame(chr="chr22", coordinates=coords)
-chr22_coords <- chr22_coords[order(chr22_coords$coordinates),]
-dim(chr22_coords)
-#354   2
+colnames(domains)[2:3] <- c("coordinate", "coordinate")
+coords <- rbind.data.frame(domains[,c(1,2)],domains[,c(1,3)])
+
+#Separating the X chromosome from the rest of the numeric chromosomes
+coordsX <- coords[which(coords$Chromosome=="chrX"),]
+coordsnoX <- coords[-which(coords$Chromosome=="chrX"),]
+
+#Sorting the numeric chromosome coordinates
+coordsnoX <- coordsnoX[order(as.numeric(substr(coordsnoX$Chromosome,4,5)), coordsnoX$coordinate),]
+
+#Sorting the X chromosome coordinates
+coordsX <- coordsX[order(coordsX$coordinate),]
+
+#Combining the two datasets into one which is sorted by chromosome and coordinate
+allcoords <- rbind.data.frame(coordsnoX, coordsX)
+dim(allcoords)
+head(allcoords)
+
+
 #remove duplicates for coordinates that are conjoined
-chr22_coords <- chr22_coords[!duplicated(chr22_coords), ]
-dim(chr22_coords)
-#314  2
+allcoords <- allcoords[!duplicated(allcoords),]
+dim(allcoords)
+#17201     2
 
 # flanking either side of the TAD boundary by 500 bases for a 1kb centerd boundary region
-chr22_bounds <- GRanges(seqnames=chr22_coords$chr, ranges=IRanges(start=chr22_coords$coordinates, width=1))
-chr22_bounds <- resize(chr22_bounds, 1001, fix = "center")
-chr22_bounds
+allcoords$Chromosome <- as.character(allcoords$Chromosome)
+bounds <- GRanges(seqnames=allcoords$Chromosome, ranges=IRanges(start=allcoords$coordinate, width=1))
+bounds <- resize(bounds, 1000, fix = "center")
+bounds
+
+#Creating 1kb bin from min-500 to max+500 for each chromosome
+#A flanked TAD boundary will be represented in these bins
+bins <- rep( list(GRangesList()), 23 )
+
+for(i in 1:length(unique(allcoords$Chromosome))){
+seqn <- unique(allcoords$Chromosome)[i]
+
+midpt <- ((min(allcoords$coordinate[which(allcoords$Chromosome==unique(allcoords$Chromosome)[i])])-500) + 
+            (max(allcoords$coordinate[which(allcoords$Chromosome==unique(allcoords$Chromosome)[i])])+500))/2
+
+bins[[i]] <- GRanges(seqnames=seqn, 
+                ranges=IRanges(start=seq(min(allcoords$coordinate[which(allcoords$Chromosome==unique(allcoords$Chromosome)[1])])-500, 
+                                         max(allcoords$coordinate[which(allcoords$Chromosome==unique(allcoords$Chromosome)[1])])+500,
+                                         1000),
+                               width=1000))
+
+}
+
+binslist <- GRangesList(bins)
+binslist <- unlist(binslist)
 
 #Creating an indicator variable Y that denotes whether the tad boundary overlaps the genomic bin for chr 22
 
