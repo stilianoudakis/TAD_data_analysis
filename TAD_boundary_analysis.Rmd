@@ -42,59 +42,6 @@ dim(chr22_domains)
 
 ```
 
-# Creating genomic bins
-
-```{r}
-
-#Creating bins of 1kb for the genome
-#the first coordinate of chromosome 22 from the 1kb contact matrix was: 16,049,000
-#the last coordinate of chromosome 22 from the 1kb contact matrix was: 51,244,000
-
-#Find the min and max coordinates of the TAD domains to find where to start and end the bins
-
-#Focusing on chromosome 22 first
-min(chr22_domains$Start)
-max(chr22_domains$End)
-
-#min(domains$x1)
-#max(domains$x2)
-
-#midpt <- ((min(chr22_domains$Start)-500) + (max(chr22_domains$End)+500))/2
-#ints <- GRanges(seqnames="chr22", ranges=IRanges(start=midpt,width=1))
-#ints2 <- tile(ints + (midpt - (min(chr22_domains$Start)-500)), width=1001)
-#startints <- start(ints2)[[1]]
-#endints <- end(ints2)[[1]]
-#bins <- GRanges(seqnames="chr22", ranges=IRanges(start=startints, end = endints))
-#ints2 <- tile(ints + (midpt - (min(chr22_domains$Start)-500)), width=1001)
-
-#Creating genomic bins of size 50 bases for chr 22
-start <- seq(16049000, 51243950, by=50)
-chr22_bins <- GRanges(seqnames="chr22", ranges=IRanges(start=start,width=50))
-end(ranges(chr22_bins)[703900]) <- 51244000
-chr22_bins
-
-
-#Creating genomic bins for all chromosomes
-#bins <- rep( list(GRangesList()), 23 )
-
-#for(i in 1:length(unique(domains$Chromosome))){
-  #seqn <- rep(unique(domains$Chromosome)[i],length(domains$Chromosome[which(domains$Chromosome==unique(domains$Chromosome)[i])]))
-  
-  #midpt <- ((min(domains$Start[which(domains$Chromosome==unique(domains$Chromosome)[i])])-500) + (max(domains$End[which(domains$Chromosome==unique(domains$Chromosome)[i])])+500))/2
-  
-  #ints <- GRanges(seqnames=seqn[1], ranges=IRanges(start=midpt,width=1))
-  #ints2 <- tile(ints + (midpt - (min(domains$Start[which(domains$Chromosome==unique(domains$Chromosome)[i])])-500)), width=1001)
-  #startints <- start(ints2)[[1]]
-  #endints <- end(ints2)[[1]]
-  
-  #bins[[i]] <- GRanges(seqnames=seqn[1], ranges=IRanges(start=startints, end = endints))
-#}
-#binslist <- GRangesList(bins)
-#binslist <- unlist(binslist)
-
-```
-
-
 # Creating TAD boundaries
 
 ```{r}
