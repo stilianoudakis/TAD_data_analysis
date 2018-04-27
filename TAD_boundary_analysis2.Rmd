@@ -155,6 +155,9 @@ subcompdatagr <- resize(subcompdatagr, 10000, fix = "center")
 subcompdatagr
 prop.table(table(seqnames(subcompdatagr)))
 
+origsubcomp_gr <- granges(seqnames=subcompart[,1],
+                          ranges=IRanges(start=))
+
 ```
 
 #Finding where the 1kb flanked tad boundaries overlap the subcompartments and labeling the overlap as A or B

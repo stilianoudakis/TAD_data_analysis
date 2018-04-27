@@ -134,7 +134,7 @@ mcols(subcompartgr)$compartment <- subcompart$compartment
 
 ```
 
-#Finding where the 1kb bins overlap the subcompartments and labeling the overlap as A or B
+#Finding where the 1kb flanked tad boundaries overlap the subcompartments and labeling the overlap as A or B
 
 ```{r}
 
@@ -253,15 +253,4 @@ mcols(tad_subcomp)$y <- 1
 
 
 
-# Creating a data frame to use for logistic regression
-
-```{r}
-logitdata <- data.frame(y = mcols(binslist)$y, x = mcols(binslist)$compartment)
-logitdata$x <- as.factor(logitdata$x)
-
-#removing rows where compartment is N
-logitdata <- logitdata[-which(logitdata$x=="N"),]
-dim(logitdata)
-
-```
 
