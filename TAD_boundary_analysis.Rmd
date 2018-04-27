@@ -67,36 +67,38 @@ bounds <- resize(bounds, 1000, fix = "center")
 bounds
 prop.table(table(seqnames(bounds)))
 
+
+
 #Creating 1kb bin from min-500 to max+500 for each chromosome
 #A flanked TAD boundary will be represented as these bins
-bins <- rep( list(GRangesList()), length(unique(coords$Chromosome)) )
+#bins <- rep( list(GRangesList()), length(unique(coords$Chromosome)) )
 
-for(i in 1:length(unique(coords$Chromosome))){
-seqn <- unique(coords$Chromosome)[i]
+#for(i in 1:length(unique(coords$Chromosome))){
+#seqn <- unique(coords$Chromosome)[i]
 
-midpt <- ((min(coords$coordinate[which(coords$Chromosome==unique(coords$Chromosome)[i])])-500) + 
-            (max(coords$coordinate[which(coords$Chromosome==unique(coords$Chromosome)[i])])+500))/2
+#midpt <- ((min(coords$coordinate[which(coords$Chromosome==unique(coords$Chromosome)[i])])-500) + 
+#            (max(coords$coordinate[which(coords$Chromosome==unique(coords$Chromosome)[i])])+500))/2
 
-bins[[i]] <- GRanges(seqnames=seqn, 
-                ranges=IRanges(start=seq(min(coords$coordinate[which(coords$Chromosome==unique(coords$Chromosome)[i])])-500, 
-                                         max(coords$coordinate[which(coords$Chromosome==unique(coords$Chromosome)[i])])+500,
-                                         1000),
-                               width=1000))
+#bins[[i]] <- GRanges(seqnames=seqn, 
+#                ranges=IRanges(start=seq(min(coords$coordinate[which(coords$Chromosome==unique(coords$Chromosome)[i])])-500, 
+#                                         max(coords$coordinate[which(coords$Chromosome==unique(coords$Chromosome)[i])])+500,
+#                                         1000),
+#                               width=1000))
 
-}
+#}
 
-binslist <- GRangesList(bins)
-binslist <- unlist(binslist)
+#binslist <- GRangesList(bins)
+#binslist <- unlist(binslist)
 
 #Creating an indicator variable Y that denotes whether the tad boundary overlaps the genomic bin 
 
-y <- countOverlaps(binslist, bounds)
-length(y)
-table(y)
-prop.table(table(y))
+#y <- countOverlaps(binslist, bounds)
+#length(y)
+#table(y)
+#prop.table(table(y))
 
 # adding the y vector to the bin granges
-mcols(binslist)$y <- y
+#mcols(binslist)$y <- y
 
 ```
 
@@ -143,10 +145,11 @@ mcols(subcompartgr)$compartment <- subcompart$compartment
 #For partial overlaps, they can either be between two (or more) subcompartments, or with only one subcompartment (i.e. there is a break between compartments)
 
 #For Within:
-subcompoverlapwithin <- findOverlaps(bounds, subcompartgr, type="within")
+within <- findOverlaps(bounds, subcompartgr, type="within")
 #there are 16558 intervals from the tad boundaries that overlab strictly within subcompartment intervals
+subcompoverlapwithin <- bounds[queryHits(within)]
 #attaching the subcompartment info to the within overlaps
-mcols(subcompoverlapwithin)$compartment <- mcols(subcompartgr)$compartment[subjectHits(subcompoverlapwithin)]
+mcols(subcompoverlapwithin)$compartment <- mcols(subcompartgr)$compartment[subjectHits(within)]
 #adding percent overlap for each A abd B compartments
 mcols(subcompoverlapwithin)$percentA <- ifelse(mcols(subcompoverlapwithin)$compartment=="A",1,0)
 mcols(subcompoverlapwithin)$percentB <- ifelse(mcols(subcompoverlapwithin)$compartment=="B",1,0)
@@ -171,7 +174,7 @@ subcompoverlapany <- findOverlaps(bounds, subcompartgr, type="any")
 bounds[340] #covers the following two subcompartment intervals 
 subcompartgr[139:140]
 
-subcomppartial <- setdiff(subcompoverlapany,subcompoverlapwithin)
+subcomppartial <- setdiff(subcompoverlapany,within)
 
 ```
 
@@ -204,36 +207,48 @@ subcompartgr[708]
 
 #First consider where the overlap is with only 1 subcompartment interval
 oneinterval <- bounds[as.numeric(rownames(as.matrix(which(table(queryHits(subcomppartial))==1))))]
-poneinterval <- findOverlapPairs(oneoverlap, subcompartgr)
+poneinterval <- findOverlapPairs(oneinterval, subcompartgr)
 poneinterval <- pintersect(poneinterval)
 
-overlaps1 <- findOverlaps(oneoverlap, subcompartgr)
+overlaps1 <- findOverlaps(oneinterval, subcompartgr)
 mcols(oneinterval)$compartment <- mcols(subcompartgr)$compartment[subjectHits(overlaps1)]
 #attching compartment percent
-mcols(oneinterval)$percentA <- ifelse(mcols(oneinterval)$compartment=="A",width(poneinterval)/width(oneinterval),0)
-mcols(oneinterval)$percentB <- ifelse(mcols(oneinterval)$compartment=="B",width(poneinterval)/width(oneinterval),0)
+mcols(oneinterval)$percentA <- ifelse(mcols(oneinterval)$compartment=="A",
+                                      round(width(poneinterval)/width(oneinterval),2),
+                                      0)
+mcols(oneinterval)$percentB <- ifelse(mcols(oneinterval)$compartment=="B",
+                                      round(width(poneinterval)/width(oneinterval),2),
+                                      0)
 
 
 #Now we consider the overlaps between two subcompartment intervals
 twointerval <- bounds[as.numeric(rownames(as.matrix(which(table(queryHits(subcomppartial))==2))))]
-ptwointerval <- findOverlapPairs(oneoverlap, subcompartgr)
+ptwointerval <- findOverlapPairs(twointerval, subcompartgr)
+ptwointerval <- pintersect(ptwointerval)
 
-pbounds <- bounds[unique(queryHits(subcomppartial))]
-pbounds
-psubcomp <- subcompartgr[unique(subjectHits(subcomppartial))]
-psubcomp
-#there are 193 unique intervals on the TAD bounds that partially overlap with 367 unique subcompartment intervals
+overlaps2 <- findOverlaps(twointerval, subcompartgr)
+mcols(twointerval)$compartment <- mcols(subcompartgr)$compartment[subjectHits(overlaps2[!duplicated(queryHits(overlaps2))])]
+#attaching percentage
+mcols(twointerval)$percentA <- ifelse(mcols(twointerval)$compartment=="A",
+                                      round(width(ptwointerval[!duplicated(queryHits(overlaps2))])/width(twointerval),2),
+                                      round(1-(width(ptwointerval[!duplicated(queryHits(overlaps2))])/width(twointerval)),2))
+mcols(twointerval)$percentB <- ifelse(mcols(twointerval)$compartment=="B",
+                                      round(width(ptwointerval[!duplicated(queryHits(overlaps2))])/width(twointerval),2),
+                                      round(1-(width(ptwointerval[!duplicated(queryHits(overlaps2))])/width(twointerval)),2))
 
-#finding the intervals that are partially overlapped
-p <- findOverlapPairs(pbounds,psubcomp)
-p2 <- pintersect(p)
-#attaching the subcompartment info
-mcols(p2)$compartment <- mcols(subcompartgr)$compartment[subjectHits(subcomppartial)]
-mcols(p2)$percentpartial <- width(p2)/width(bounds[queryHits(subcomppartial)])
+
 
 #Note: all percentage of overlaps appear to be 50%
 
-#
+
+#concatinating all types of overlaps into 1 granges object
+tad_subcomp <- GRangesList(subcompoverlapwithin, subcompoverlapnone, oneinterval, twointerval)
+tad_subcomp <- unlist(tad_subcomp)
+tad_subcomp <- tad_subcomp[order(substr(seqnames(tad_subcomp),4,5), start(tad_subcomp))]
+
+#attaching a class variable y to denote that a tad boundary exists in the flanked interval
+mcols(tad_subcomp)$y <- 1
+
 ```
 
 
