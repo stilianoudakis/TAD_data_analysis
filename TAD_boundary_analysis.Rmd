@@ -136,6 +136,12 @@ mcols(subcompartgr)$compartment <- subcompart$compartment
 
 ```{r}
 
+#There are 3 scenarios of overlaps that can occur:
+#i. partial
+#ii. within
+#iii. none
+#For partial overlaps, they can either be between two (or more) subcompartments, or with only one subcompartment (i.e. there is a break between compartments)
+
 #finding where the flanked TAD boundaries overlap with the subcompartment intervals in any form (partial or within)
 subcompoverlapany <- findOverlaps(bounds, subcompartgr, type="any")
 #there are 16939 overlaps from the tad boundaries with subcompartment intervals
@@ -147,7 +153,11 @@ subcompartgr[139:140]
 
 #finding where the tad boundaries overlap strictly within the subcompartment intervals
 subcompoverlapwithin <- findOverlaps(bounds, subcompartgr, type="within")
-#there are 16558 intervals from the genomic bins that overlab strictly within subcompartment intervals
+#there are 16558 intervals from the tad boundaries that overlab strictly within subcompartment intervals
+
+#finding where the tad boundaries have no overlaps with subcompartments
+subcompoverlapnone <- bounds[which(bounds %outside% subcompartgr)]
+#there are 19 intervals that have no overlaps
 
 #finding where the tad boundaries partially overlap with subcompartments
 #there should be 16939-16558=381 partial overlaps
@@ -165,30 +175,21 @@ subcompartgr[708]
 #here we have a partial overlap with only one subcompartment interval
 #since there is a break in the interval infront of subcompartgr[707]
 
-#we need to quantify that partial overlaps
-bounds[unique(queryHits(subcomppartial))]
-#there are 193 unique parial overlaps
+#we need to quantify the partial overlaps interms of a percentage
+pbounds <- bounds[unique(queryHits(subcomppartial))]
+pbounds
+psubcomp <- subcompartgr[unique(subjectHits(subcomppartial))]
+psubcomp
+#there are 193 unique intervals on the TAD bounds that partially overlap with 367 unique subcompartment intervals
 
-compartment1 <- cbind.data.frame(queryhits=queryHits(subcompoverlap),compartment=mcols(subcompartgr[subjectHits(subcompoverlap)])[,1])
-compartment2 <- cbind.data.frame(queryhits=setdiff(seq(1,length(y)),queryHits(subcompoverlap)),compartment="N")
-head(compartment1)
-head(compartment2)
-dim(compartment1)
-dim(compartment2)
-dim(compartment1)[1]+dim(compartment2)[1]
+#finding the intervals that are partially overlapped
+p <- findOverlapPairs(pbounds,psubcomp)
+p2 <- pintersect(p)
+#attaching the subcompartment info
+mcols(p2)$compartment <- mcols(subcompartgr)$compartment[subjectHits(subcomppartial)]
+mcols(p2)$percentpartial <- width(p2)/width(bounds[queryHits(subcomppartial)])
 
-complabels <- rbind.data.frame(compartment1,compartment2)
-complabels <- complabels[order(complabels$queryhits),]
 
-#Adding the vector of responses y and the compartment vector to the binslist granges object as metadata
-mcols(binslist)$y <- y
-mcols(binslist)$compartment <- complabels[,2]
-
-table(mcols(binslist)$compartment)
-prop.table(table(mcols(binslist)$compartment))
-table(mcols(binslist)$compartment[-which(seqnames(binslist)=="chrX")])
-prop.table(table(mcols(binslist)$compartment[-which(seqnames(binslist)=="chrX")]))
-table(mcols(binslist)$compartment[which(seqnames(binslist)=="chrX")])
 
 ```
 
