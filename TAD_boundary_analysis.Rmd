@@ -36,10 +36,6 @@ head(domains)
 dim(domains)
 #9274   3
 
-#Focusing just on chromosome 22
-#chr22_domains <- domains[which(domains$Chromosome=="chr22"),]
-#dim(chr22_domains)
-
 ```
 
 # Creating TAD boundaries
@@ -53,46 +49,37 @@ dim(domains)
 colnames(domains)[2:3] <- c("coordinate", "coordinate")
 coords <- rbind.data.frame(domains[,c(1,2)],domains[,c(1,3)])
 
-#Separating the X chromosome from the rest of the numeric chromosomes
-coordsX <- coords[which(coords$Chromosome=="chrX"),]
-coordsnoX <- coords[-which(coords$Chromosome=="chrX"),]
+#Removing the X chromosome from the analysis
+coords <- coords[-which(coords$Chromosome=="chrX"),]
 
 #Sorting the numeric chromosome coordinates
-coordsnoX <- coordsnoX[order(as.numeric(substr(coordsnoX$Chromosome,4,5)), coordsnoX$coordinate),]
-
-#Sorting the X chromosome coordinates
-coordsX <- coordsX[order(coordsX$coordinate),]
-
-#Combining the two datasets into one which is sorted by chromosome and coordinate
-allcoords <- rbind.data.frame(coordsnoX, coordsX)
-dim(allcoords)
-head(allcoords)
-
+coords <- coords[order(as.numeric(substr(coords$Chromosome,4,5)), coords$coordinate),]
 
 #remove duplicates for coordinates that are conjoined
-allcoords <- allcoords[!duplicated(allcoords),]
-dim(allcoords)
-#17201     2
+coords <- coords[!duplicated(coords),]
+dim(coords)
+#16770     2
 
 # flanking either side of the TAD boundary by 500 bases for a 1kb centerd boundary region
-allcoords$Chromosome <- as.character(allcoords$Chromosome)
-bounds <- GRanges(seqnames=allcoords$Chromosome, ranges=IRanges(start=allcoords$coordinate, width=1))
+coords$Chromosome <- as.character(coords$Chromosome)
+bounds <- GRanges(seqnames=coords$Chromosome, ranges=IRanges(start=coords$coordinate, width=1))
 bounds <- resize(bounds, 1000, fix = "center")
 bounds
+prop.table(table(seqnames(bounds)))
 
 #Creating 1kb bin from min-500 to max+500 for each chromosome
-#A flanked TAD boundary will be represented in these bins
-bins <- rep( list(GRangesList()), 23 )
+#A flanked TAD boundary will be represented as these bins
+bins <- rep( list(GRangesList()), length(unique(coords$Chromosome)) )
 
-for(i in 1:length(unique(allcoords$Chromosome))){
-seqn <- unique(allcoords$Chromosome)[i]
+for(i in 1:length(unique(coords$Chromosome))){
+seqn <- unique(coords$Chromosome)[i]
 
-midpt <- ((min(allcoords$coordinate[which(allcoords$Chromosome==unique(allcoords$Chromosome)[i])])-500) + 
-            (max(allcoords$coordinate[which(allcoords$Chromosome==unique(allcoords$Chromosome)[i])])+500))/2
+midpt <- ((min(coords$coordinate[which(coords$Chromosome==unique(coords$Chromosome)[i])])-500) + 
+            (max(coords$coordinate[which(coords$Chromosome==unique(coords$Chromosome)[i])])+500))/2
 
 bins[[i]] <- GRanges(seqnames=seqn, 
-                ranges=IRanges(start=seq(min(allcoords$coordinate[which(allcoords$Chromosome==unique(allcoords$Chromosome)[i])])-500, 
-                                         max(allcoords$coordinate[which(allcoords$Chromosome==unique(allcoords$Chromosome)[i])])+500,
+                ranges=IRanges(start=seq(min(coords$coordinate[which(coords$Chromosome==unique(coords$Chromosome)[i])])-500, 
+                                         max(coords$coordinate[which(coords$Chromosome==unique(coords$Chromosome)[i])])+500,
                                          1000),
                                width=1000))
 
@@ -108,11 +95,15 @@ length(y)
 table(y)
 prop.table(table(y))
 
+# adding the y vector to the bin granges
+mcols(binslist)$y <- y
+
 ```
 
-# Reading in genomic feature data (subcompartments)
+# Reading in and cleaning genomic feature data (subcompartments)
 
 ```{r}
+
 subcompart <- read.table("GSE63525_GM12878_subcompartments.BED",header = F)
 subcompart <- subcompart[,1:4]
 names(subcompart) <- c("chr", "x1", "x2", "compartment")
@@ -127,15 +118,56 @@ subcompart$compartment[grep("A",subcompart$compartment)] <- "A"
 subcompart$compartment[grep("B",subcompart$compartment)] <- "B"
 table(subcompart$compartment)
 
-#Creating GRanges object out of subcompartment data
+```
+
+# Creating GRanges object out of subcompartment data
+
+```{r}
+
 subcompart$chr <- as.character(subcompart$chr)
 subcompartgr <- GRanges(seqnames = subcompart$chr, 
                         ranges = IRanges(start=subcompart$x1,
                                          end=subcompart$x2))
 mcols(subcompartgr)$compartment <- subcompart$compartment
 
+```
+
 #Finding where the 1kb bins overlap the subcompartments and labeling the overlap as A or B
-subcompoverlap <- findOverlaps(binslist, subcompartgr, type="within")
+
+```{r}
+
+#finding where the flanked TAD boundaries overlap with the subcompartment intervals in any form (partial or within)
+subcompoverlapany <- findOverlaps(bounds, subcompartgr, type="any")
+#there are 16939 overlaps from the tad boundaries with subcompartment intervals
+#note: there are only 16770 tad boundaries though.
+#that means that there are some places where a flanked tad boundary is a part of two (or more) subcompartment intervals
+#For example:
+bounds[340] #covers the following two subcompartment intervals 
+subcompartgr[139:140]
+
+#finding where the tad boundaries overlap strictly within the subcompartment intervals
+subcompoverlapwithin <- findOverlaps(bounds, subcompartgr, type="within")
+#there are 16558 intervals from the genomic bins that overlab strictly within subcompartment intervals
+
+#finding where the tad boundaries partially overlap with subcompartments
+#there should be 16939-16558=381 partial overlaps
+subcomppartial <- setdiff(subcompoverlapany,subcompoverlapwithin)
+
+#determining the frequency of partial overlaps
+table(queryHits(subcomppartial))
+table(table(queryHits(subcomppartial)))
+#we see most partial overlaps are between two subcompartment intervals
+#investigating where it is not between two
+which(table(queryHits(subcomppartial))==1)
+subcomppartial[which(queryHits(subcomppartial)==5034)] #get the location of the bounds and subcompartments that overlap
+bounds[5034]
+subcompartgr[708]
+#here we have a partial overlap with only one subcompartment interval
+#since there is a break in the interval infront of subcompartgr[707]
+
+#we need to quantify that partial overlaps
+bounds[unique(queryHits(subcomppartial))]
+#there are 193 unique parial overlaps
 
 compartment1 <- cbind.data.frame(queryhits=queryHits(subcompoverlap),compartment=mcols(subcompartgr[subjectHits(subcompoverlap)])[,1])
 compartment2 <- cbind.data.frame(queryhits=setdiff(seq(1,length(y)),queryHits(subcompoverlap)),compartment="N")
@@ -157,8 +189,6 @@ prop.table(table(mcols(binslist)$compartment))
 table(mcols(binslist)$compartment[-which(seqnames(binslist)=="chrX")])
 prop.table(table(mcols(binslist)$compartment[-which(seqnames(binslist)=="chrX")]))
 table(mcols(binslist)$compartment[which(seqnames(binslist)=="chrX")])
-
-
 
 ```
 
