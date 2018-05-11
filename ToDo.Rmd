@@ -1,0 +1,30 @@
+---
+title: "To Do List"
+author: "Spiro Stilianoudakis"
+date: "May 11, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# List of topics to review and methods to explore
+
+### 05/11/18
+
+* Explore the relationship between TAD boundaries and subcompartment intervals using logistic regression
+
+* Set up the equation as follows: $Y_{i} = \beta_{0} + \beta_{1}A +\beta_{2}B$, where Y represents whether there was an overlap bwtween a flanked TAD boundary and a subcompartment (A or B).
+
+* We use a logistic regression model set up: $logit[\pi(x)] = \beta_{0} + \beta_{1}A +\beta_{2}B$, where $\pi(x) = P(Y=1)$ at values x=(A,B).
+
+* Attempt to incorporate distance:
+    + Left
+    + Right
+    + Closest
+    
+* Explore the correlation between A and B
+    
+
+
