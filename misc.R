@@ -1,3 +1,38 @@
+#################################################################################
+
+#Creating 1kb bin from min-500 to max+500 for each chromosome
+#A flanked TAD boundary will be represented as these bins
+
+#bins <- rep( list(GRangesList()), length(unique(coords$Chromosome)) )
+
+#for(i in 1:length(unique(coords$Chromosome))){
+#seqn <- unique(coords$Chromosome)[i]
+
+#midpt <- ((min(coords$coordinate[which(coords$Chromosome==unique(coords$Chromosome)[i])])-500) + 
+#            (max(coords$coordinate[which(coords$Chromosome==unique(coords$Chromosome)[i])])+500))/2
+
+#bins[[i]] <- GRanges(seqnames=seqn, 
+#                ranges=IRanges(start=seq(min(coords$coordinate[which(coords$Chromosome==unique(coords$Chromosome)[i])])-500, 
+#                                         max(coords$coordinate[which(coords$Chromosome==unique(coords$Chromosome)[i])])+500,
+#                                         1000),
+#                               width=1000))
+
+#}
+
+#binslist <- GRangesList(bins)
+#binslist <- unlist(binslist)
+
+#Creating an indicator variable Y that denotes whether the tad boundary overlaps the genomic bin 
+
+#y <- countOverlaps(binslist, bounds)
+#length(y)
+#table(y)
+#prop.table(table(y))
+
+# adding the y vector to the bin granges
+#mcols(binslist)$y <- y
+
+#################################################################################
 X_A <- countOverlaps(chr22_bins, Asubcompint, type = "any")
 table(X_A)
 X_A2 <- countOverlaps(chr22_bins, Asubcompint, type = "within")
