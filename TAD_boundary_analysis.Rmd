@@ -227,28 +227,28 @@ ptwointerval <- findOverlapPairs(twointerval, subcompartgr)
 ptwointerval <- pintersect(ptwointerval)
 
 overlaps2 <- findOverlaps(twointerval, subcompartgr)
-mcols(twointerval)$compartment <- mcols(subcompartgr)$compartment[subjectHits(overlaps2[!duplicated(queryHits(overlaps2))])]
-#attaching percentage
-mcols(twointerval)$percentA <- ifelse(mcols(twointerval)$compartment=="A",
-                                      round(width(ptwointerval[!duplicated(queryHits(overlaps2))])/width(twointerval),2),
-                                      round(1-(width(ptwointerval[!duplicated(queryHits(overlaps2))])/width(twointerval)),2))
-mcols(twointerval)$percentB <- ifelse(mcols(twointerval)$compartment=="B",
-                                      round(width(ptwointerval[!duplicated(queryHits(overlaps2))])/width(twointerval),2),
-                                      round(1-(width(ptwointerval[!duplicated(queryHits(overlaps2))])/width(twointerval)),2))
+mcols(twointerval)$compartment <- "C"
+mcols(twointerval)$percentA <- round(width(ptwointerval[!duplicated(queryHits(overlaps2))])/width(twointerval),2)
+mcols(twointerval)$percentB <- round(width(ptwointerval[!duplicated(queryHits(overlaps2))])/width(twointerval),2)
 
 
 
 #Note: all percentage of overlaps appear to be 50%
 
 
-#concatinating all types of overlaps into 1 granges object
+```
+
+# Concatinating all types of overlaps into 1 granges object
+
+```{r}
+
+#within + partial(one) + partial(two) + none = 16593 + 5 + 153 + 19 = 16770
 tad_subcomp <- GRangesList(subcompoverlapwithin, subcompoverlapnone, oneinterval, twointerval)
 tad_subcomp <- unlist(tad_subcomp)
 tad_subcomp <- tad_subcomp[order(substr(seqnames(tad_subcomp),4,5), start(tad_subcomp))]
 
 #attaching a class variable y to denote that a tad boundary exists in the flanked interval
 mcols(tad_subcomp)$y <- 1
-
 ```
 
 
