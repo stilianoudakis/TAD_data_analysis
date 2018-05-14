@@ -22,12 +22,14 @@ library(pROC)
 library(plyr)
 library(dplyr)
 library(DMwR)
+library(pROC)
 ```
 
 # Reading in data
 
 ```{r}
 logitdata <- readRDS("logitdata_2.rds")
+
 ```
 
 # Correlations
@@ -61,7 +63,86 @@ flattenSquareMatrix <- function(m) {
 corMasterList <- flattenSquareMatrix(cor.prob(logitdata))
 ```
 
+# shuffle data first since significance variable is not randomized
+```{r}
+set.seed(123)
+g <- runif(nrow(logitdata))
+logitdata <- logitdata[order(g),]
+dim(logitdata)
+#2766314       6
+prop.table(table(logitdata$y))
+#          0           1 
+#0.993937781 0.006062219 
+```
 
-# Logistic Regression
+# Randomly choose 10000 rows
 
+```{r}
+set.seed(333)
+logitrand <- logitdata[sample.int(dim(logitdata)[1], 10000),]
+dim(logitrand)
+prop.table(table(logitrand$y))
+#     0      1 
+#0.9954 0.0046
+```
+
+# Splitting the data
+
+```{r}
+
+set.seed(222)
+inTrainingSet <- createDataPartition(logitrand$y,p=.7,list=FALSE)
+train <- logitrand[inTrainingSet,]
+test <- logitrand[-inTrainingSet,]
+
+prop.table(table(train$y))   #0.995 0.005 
+dim(train)  #7000    6
+
+
+set.seed(222)
+inTrainingSet <- createDataPartition(logitdata$y,p=.7,list=FALSE)
+train <- logitdata[inTrainingSet,]
+test <- logitdata[-inTrainingSet,]
+
+prop.table(table(train$y))   #0.993906281 0.006093719  
+dim(train)  #1936420       6
+
+
+```
+
+# Using SMOTE function in DMwR package
+
+```{r}
+#supersampling rare event
+#the classificantion variable has to be a factor
+train$y <- as.factor(train$y)
+#test$y <- as.factor(test$y)
+#all categorical variables must be factors
+str(train)
+set.seed(111)
+train_smote <- SMOTE(y ~ , data=train, perc.under = 200)
+table(train_smote$y)
+#    0     1 
+#47200 35400 
+prop.table(table(train_smote$y))
+dim(train_smote)  #82600     6
+```
+
+
+# Classic GLM method
+
+```{r}
+#glm treats second factor level as event of interest
+levels(train_smote$y)
+
+glmModel <- glm(y ~ A + B + left_dist + right_dist + closest_dist, 
+                data = train_smote, 
+                family = binomial)
+
+pred.glmModel <- predict(glmModel, newdata=test, type="response")
+
+roc.glmModel <- roc(test$y, matrix(pred.glmModel)[,1])
+
+auc.glmModel <- pROC::auc(roc.glmModel)
+```
 
