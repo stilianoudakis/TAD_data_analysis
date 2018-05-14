@@ -61,11 +61,27 @@ mcols(within)$left_dist <- left_dist
 mcols(within)$right_dist <- right_dist
 mcols(within)$closest_dist <- closest_dist
 
-#assigning 0 for distances for the none and partial overlaps
-mcols(none)$left_dist <- 0
-mcols(none)$right_dist <- 0
-mcols(none)$closest_dist <- 0
 
+#looking at the bins that had no overlaps and calculating distances
+
+#right distance (using precede function)
+pre <- precede(none,subcompartgr, select="first")
+pre_dist <- distance(none, subcompartgr[pre])
+
+#left distance
+foll <- follow(none,subcompartgr, select="last")
+foll_dist <- distance(none, subcompartgr[foll])
+
+#closest distance
+closest_dist <- pmin(pre_dist, foll_dist)
+
+#assigning the distances to the none granges object
+mcols(none)$left_dist <- foll_dist
+mcols(none)$right_dist <- pre_dist
+mcols(none)$closest_dist <- closest_dist
+
+
+#assigning 0 for distances for partial overlaps
 mcols(partial1)$left_dist <- 0
 mcols(partial1)$right_dist <- 0
 mcols(partial1)$closest_dist <- 0
