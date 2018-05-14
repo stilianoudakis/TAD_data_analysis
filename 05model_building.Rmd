@@ -1,0 +1,67 @@
+---
+title: "Model Building"
+author: "Spiro Stilianoudakis"
+date: "May 13, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Loading Libraries
+
+```{r}
+#library(MultiAssayExperiment)
+library(GenomicRanges)
+#library(IRanges)
+library(caret)
+library(data.table)
+library(gbm)
+library(pROC)
+library(plyr)
+library(dplyr)
+library(DMwR)
+```
+
+# Reading in data
+
+```{r}
+logitdata <- readRDS("logitdata_2.rds")
+```
+
+# Correlations
+
+```{r}
+str(logitdata)
+
+#correlation functions from stephen turner
+# Correlation matrix with p-values
+cor.prob <- function (X, dfr = nrow(X) - 2) {
+  R <- cor(X, use="pairwise.complete.obs")
+  above <- row(R) < col(R)
+  r2 <- R[above]^2
+  Fstat <- r2 * dfr/(1 - r2)
+  R[above] <- 1 - pf(Fstat, 1, dfr)
+  R[row(R) == col(R)] <- NA
+  R
+}
+
+# Use this to dump the cor.prob output to a 4 column matrix
+flattenSquareMatrix <- function(m) {
+  if( (class(m) != "matrix") | (nrow(m) != ncol(m))) stop("Must be a square matrix.") 
+  if(!identical(rownames(m), colnames(m))) stop("Row and column names must be equal.")
+  ut <- upper.tri(m)
+  data.frame(i = rownames(m)[row(m)[ut]],
+             j = rownames(m)[col(m)[ut]],
+             cor=t(m)[ut],
+             p=m[ut])
+}
+
+corMasterList <- flattenSquareMatrix(cor.prob(logitdata))
+```
+
+
+# Logistic Regression
+
+
