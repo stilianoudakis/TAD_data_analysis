@@ -23,19 +23,75 @@ library(plyr)
 library(dplyr)
 ```
 
-# Reading in different data
+# Reading in TAD data that was overlapped within subcompartments
 
 ```{r}
 
-setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data_analysis/data")
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/data")
 
-
-
+within <- readRDS("within.rds")
+none <- readRDS("none.rds")
+partial1 <- readRDS("partial1.rds")
+partial2 <- readRDS("partial2.rds")
+subcompartgr <- readRDS("subcompartgr.rds")
+#tad_subcomp_full <- readRDS("tad_subcomp_full.rds")
 ```
 
 # Calculating various distances: Left, Right, and Closest
 
 ```{r}
 #Note: Distance will be assigned to 0 for partial overlaps
+
+#looking at within overlaps to find interval for distance calculation
+w <- findOverlapPairs(within, subcompartgr)
+
+#left distance
+#left tad flank - left subcompartment interval
+left_dist <- w@first@ranges@start - w@second@ranges@start
+
+#Right distance
+#right subcompartment interval - right tad flank
+right_dist <- (w@second@ranges@start + w@second@ranges@width) - (w@first@ranges@start + w@first@ranges@width)
+
+#closest distance
+closest_dist <- pmin(left_dist, right_dist)
+
+#assigning the distances to the within granges object
+mcols(within)$left_dist <- left_dist
+mcols(within)$right_dist <- right_dist
+mcols(within)$closest_dist <- closest_dist
+
+#assigning 0 for distances for the none and partial overlaps
+mcols(none)$left_dist <- 0
+mcols(none)$right_dist <- 0
+mcols(none)$closest_dist <- 0
+
+mcols(partial1)$left_dist <- 0
+mcols(partial1)$right_dist <- 0
+mcols(partial1)$closest_dist <- 0
+
+mcols(partial2)$left_dist <- 0
+mcols(partial2)$right_dist <- 0
+mcols(partial2)$closest_dist <- 0
+
+
+```
+
+
+# Concatinating overlap data and creating update data for modelling 
+
+```{r}
+
+tad_subcomp_full_2 <- GRangesList(within, partial1, partial2, none)
+tad_subcomp_full_2 <- unlist(tad_subcomp_full_2)
+tad_subcomp_full_2 <- tad_subcomp_full_2[order(substr(seqnames(tad_subcomp_full_2),4,5), start(tad_subcomp_full_2))]
+
+
+saveRDS(tad_subcomp_full_2, "tad_subcomp_full_2.rds")
+saveRDS(within, "within_2.rds")
+saveRDS(none, "none_2.rds")
+saveRDS(partial1, "partial1_2.rds")
+saveRDS(partial2, "partial2_2.rds")
+
 ```
 

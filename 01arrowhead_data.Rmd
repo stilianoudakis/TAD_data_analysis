@@ -27,7 +27,7 @@ knitr::opts_chunk$set(echo = TRUE)
 #color = the color that the feature will be rendered as if loaded in Juicebox 
 
 
-setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data_analysis/data")
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/data")
 
 #"chr" was appended to the chr1 column of the
 #GSE63525_GM12878_primary+replicate_Arrowhead_domainlist txt file

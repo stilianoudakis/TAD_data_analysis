@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r include=FALSE}
 library(dplyr)
 
-setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data_analysis/data")
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/data")
 arrowhead_data <- read.table("arrowhead_data.txt", header=T)
 dim(arrowhead_data)
 ```

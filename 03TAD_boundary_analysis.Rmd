@@ -28,7 +28,7 @@ library(dplyr)
 
 ```{r}
 
-setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data_analysis/data")
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/data")
 
 domains <- read.table("arrowhead_data.txt", header=T)
 domains <- domains[,1:3]
@@ -112,40 +112,13 @@ subcompartgr <- reduce(subcompartgr)
 #adding the type of subcompartment as metadata for granges object
 mcols(subcompartgr)$compartment <- ifelse(strand(subcompartgr)=="+","A","B")
 
+saveRDS(subcompartgr, "subcompartgr.rds")
+
 #subcompartdf <- data.frame(chr = seqnames(subcompartgr),
 #                           start = start(subcompartgr),
 #                           end = end(subcompartgr),
 #                           comparment = mcols(subcompartgr)$compartment)
 #write.table(subcompartdf, "subcompart_reduced.bed")
-
-
-########################################################################
-#concatenating enpoints and creating 5kb flanks
-subcompdata <- data.frame(chr=seqnames(subcompartgr),
-                          x1=start(subcompartgr),
-                          x2=end(subcompartgr),
-                          compartment=mcols(subcompartgr)$compartment)
-
-colnames(subcompdata)[2:3] <- c("coordinate", "coordinate")
-subcompdata2 <- rbind.data.frame(subcompdata[,c(1,2)],subcompdata[,c(1,3)])
-
-#Sorting the numeric chromosome coordinates
-subcompdata2 <- subcompdata2[order(as.numeric(substr(subcompdata2$chr,4,5)), subcompdata2$coordinate),]
-
-#remove duplicates for coordinates that are conjoined
-subcompdata2 <- subcompdata2[!duplicated(subcompdata2),]
-dim(subcompdata2)
-#3114    2
-
-# flanking either side of the Subcompartment boundary by 5kb for a 10kb centerd boundary region
-subcompdata2$chr <- as.character(subcompdata2$chr)
-subcompdatagr <- GRanges(seqnames=subcompdata2$chr, ranges=IRanges(start=subcompdata2$coordinate, width=1))
-subcompdatagr <- resize(subcompdatagr, 10000, fix = "center")
-subcompdatagr
-prop.table(table(seqnames(subcompdatagr)))
-
-#origsubcomp_gr <- granges(seqnames=subcompart[,1],
-#                          ranges=IRanges(start=))
 
 
 ```
@@ -249,7 +222,7 @@ mcols(oneinterval)$percentB <- ifelse(mcols(oneinterval)$compartment=="B",
 
 
 #Now we consider the overlaps between two subcompartment intervals
-twointerval <- bounds[as.numeric(rownames(as.matrix(which(table(queryHits(subcomppartial))==2))))]
+twointerval <- bounds[as.numeric(rownames(as.matrix(which(table(queryHits(partial))==2))))]
 ptwointerval <- findOverlapPairs(twointerval, subcompartgr)
 ptwointerval <- pintersect(ptwointerval)
 
@@ -257,8 +230,6 @@ overlaps2 <- findOverlaps(twointerval, subcompartgr)
 mcols(twointerval)$compartment <- "C"
 mcols(twointerval)$percentA <- round(width(ptwointerval[!duplicated(queryHits(overlaps2))])/width(twointerval),2)
 mcols(twointerval)$percentB <- round(width(ptwointerval[!duplicated(queryHits(overlaps2))])/width(twointerval),2)
-
-
 
 #Note: all percentage of overlaps appear to be 50%
 
@@ -315,7 +286,11 @@ binslist <- unlist(binslist)
 y <- countOverlaps(binslist, bounds)
 length(y)
 table(y)
+#      0       1 
+#2749544   16770 
 prop.table(table(y))
+#          0           1 
+#0.993937781 0.006062219
 
 # adding the y vector to the bin granges
 mcols(binslist)$y <- y
@@ -351,7 +326,7 @@ mcols(subcompoverlapnone_g)$percentB <- 0
 subcompoverlapany_g <- findOverlaps(binslist, subcompartgr, type="any")
 partial_g <- setdiff(subcompoverlapany_g,within_g)
 #there are 5727 tad bounds that partially overlap with subcompartments
-length(unique(queryHits(partial))) #3034
+length(unique(queryHits(partial_g))) #3034
 binslist[986] #ovelaps the following two subcompartment intervals 
 subcompartgr[c(1,136)]
 
@@ -409,6 +384,7 @@ table(mcols(tad_subcomp_full)$compartment)
 
 
 #saving the types of overlaps
+saveRDS(tad_subcomp_full, "tad_subcomp_full.rds")
 saveRDS(subcompoverlapwithin_g, "within.rds")
 saveRDS(subcompoverlapnone_g, "none.rds")
 saveRDS(oneinterval_g, "partial1.rds")
