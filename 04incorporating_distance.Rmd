@@ -93,5 +93,12 @@ saveRDS(none, "none_2.rds")
 saveRDS(partial1, "partial1_2.rds")
 saveRDS(partial2, "partial2_2.rds")
 
+
+logitdata <- readRDS("logitdata.rds")
+logitdata$left_dist <- mcols(tad_subcomp_full_2)$left_dist
+logitdata$right_dist <- mcols(tad_subcomp_full_2)$right_dist
+logitdata$closest_dist <- mcols(tad_subcomp_full_2)$closest_dist
+
+saveRDS(logitdata, "logitdata_2.rds")
 ```
 
