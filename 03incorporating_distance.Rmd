@@ -1,0 +1,41 @@
+---
+title: "Incorporating Distance"
+author: "Spiro Stilianoudakis"
+date: "May 13, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Loading Libraries
+
+```{r}
+#library(MultiAssayExperiment)
+library(GenomicRanges)
+#library(IRanges)
+library(caret)
+library(data.table)
+library(gbm)
+library(pROC)
+library(plyr)
+library(dplyr)
+```
+
+# Reading in different data
+
+```{r}
+
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data_analysis/data")
+
+
+
+```
+
+# Calculating various distances: Left, Right, and Closest
+
+```{r}
+#Note: Distance will be assigned to 0 for partial overlaps
+```
+
