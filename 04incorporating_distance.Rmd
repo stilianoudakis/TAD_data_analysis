@@ -47,11 +47,12 @@ w <- findOverlapPairs(within, subcompartgr)
 
 #left distance
 #left tad flank - left subcompartment interval
-left_dist <- w@first@ranges@start - w@second@ranges@start
+within_mid <- (((w@first@ranges@start+w@first@ranges@width)+w@first@ranges@start)/2)
+left_dist <- tad_mid-w@second@ranges@start
 
 #Right distance
 #right subcompartment interval - right tad flank
-right_dist <- (w@second@ranges@start + w@second@ranges@width) - (w@first@ranges@start + w@first@ranges@width)
+right_dist <- (w@second@ranges@start + w@second@ranges@width) - within_mid
 
 #closest distance
 closest_dist <- pmin(left_dist, right_dist)
@@ -63,14 +64,21 @@ mcols(within)$closest_dist <- closest_dist
 
 
 #looking at the bins that had no overlaps and calculating distances
+none_mid <- (start(none)+end(none))/2
+#left distance (using precede function)
+pre <- precede(none,subcompartgr, select="all")
+pre <- pre[order(queryHits(pre), -subjectHits(pre))]
+pre <- pre[!duplicated(queryHits(pre))]
+pre_sub <- subcompartgr[subjectHits(pre)]
+pre_dist <- as.integer(none_mid) - end(pre_sub) 
 
-#right distance (using precede function)
-pre <- precede(none,subcompartgr, select="first")
-pre_dist <- distance(none, subcompartgr[pre])
+#right distance
+foll <- follow(none,subcompartgr, select="all")
+foll <- foll[order(queryHits(foll), -subjectHits(foll))]
+foll <- foll[!duplicated(queryHits(foll))]
+foll_sub <- subcompartgr[subjectHits(foll)]
+foll_dist <- start(foll_sub) - as.integer(none_mid)
 
-#left distance
-foll <- follow(none,subcompartgr, select="last")
-foll_dist <- distance(none, subcompartgr[foll])
 
 #closest distance
 closest_dist <- pmin(pre_dist, foll_dist)
