@@ -34,6 +34,8 @@ logitdata <- readRDS("logitdata_2.rds")
 
 ```
 
+#Transformind the distance and gerp score variable
+
 # Correlations
 
 ```{r}
@@ -76,6 +78,8 @@ corMasterList <- flattenSquareMatrix(cor.prob(logitdata))
 #          0           1 
 #0.993937781 0.006062219 
 ```
+
+# Filtering data
 
 # Randomly choose 10000 rows
 
