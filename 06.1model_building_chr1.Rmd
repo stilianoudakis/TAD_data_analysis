@@ -23,6 +23,16 @@ library(plyr)
 library(dplyr)
 library(DMwR)
 library(pROC)
+
+packages = c("MultiAssayExperiment", "GenomicRanges", "IRanges", "RaggedExperiment", "SummarizedExperiment", "caret", "data.table", "survival", "gbm", "pROC", "dplyr", "ggplot2", "e1071", "DMwR", "gridExtra", "randomForest", "rpart", "rpart.plot", "glmnet", "gridExtra", "qqman", "rms", "igraph", "ggraph", "RColorBrewer")
+
+
+package.check <- lapply(packages, FUN = function(x) {
+    if (!require(x, character.only = TRUE)) {
+        install.packages(x, dependencies = TRUE)
+        library(x, character.only = TRUE)
+    }
+})
 ```
 
 # Reading in data
@@ -41,12 +51,15 @@ logitdata <- readRDS("logitdata.rds")
 chr1data <- logitdata[which(logitdata$CHR=="chr1"),]
 dim(chr1data)
 
+#removing A and left_dist variables
+chr1data <- chr1data[,-which(colnames(chr1data)=="A" | colnames(chr1data)=="left_dist")]
+
 ```
 
 # Transforming the distance variables and gerp/ucne score variables
 ```{r}
 
-chr1data$left_dist <- log(chr1data$left_dist + 1, base = 2)
+#chr1data$left_dist <- log(chr1data$left_dist + 1, base = 2)
 chr1data$right_dist <- log(chr1data$right_dist + 1, base = 2)
 chr1data$closest_dist <- log(chr1data$closest_dist + 1, base = 2)
 
@@ -57,14 +70,14 @@ prop.table(table(chr1data$y))   #0.99342169 0.00657831
 
 
 #Center and scale gerp score, distance variables
-chr1data$left_dist <- scale(chr1data$left_dist, center = TRUE, scale = TRUE)
+#chr1data$left_dist <- scale(chr1data$left_dist, center = TRUE, scale = TRUE)
 chr1data$right_dist <- scale(chr1data$right_dist, center = TRUE, scale = TRUE)
 chr1data$closest_dist <- scale(chr1data$closest_dist, center = TRUE, scale = TRUE)
 
 chr1data$gerp_score <- scale(chr1data$gerp_score, center = TRUE, scale = TRUE)
 chr1data$UCNE_score <- scale(chr1data$UCNE_score, center = TRUE, scale = TRUE)
 
-chr1data$left_dist <- as.numeric(chr1data$left_dist)
+#chr1data$left_dist <- as.numeric(chr1data$left_dist)
 chr1data$right_dist <- as.numeric(chr1data$right_dist)
 chr1data$closest_dist <- as.numeric(chr1data$closest_dist)
 
@@ -84,6 +97,7 @@ set.seed(2234)
 chr1data_r <- rbind.data.frame(oneclass, 
                                zeroclass[sample.int(dim(zeroclass)[1]
                                                     ,dim(oneclass)[1]),])
+
 ```
 
 # shuffle data first since significance variable is not randomized
@@ -107,7 +121,7 @@ nzvar <- rownames(nzv[nzv$nzv,])
 #Removing zero variance predictors
 chr1data_rf <- chr1data_r[, -which(colnames(chr1data_r) %in% nzvar)]
 dim(chr1data_rf)
-#3258   40
+#3258   39
 
 #check for linear dependencies
 comboinfo <- findLinearCombos(chr1data_rf)
@@ -136,7 +150,228 @@ train <- chr1data_rf[inTrainingSet,]
 test <- chr1data_rf[-inTrainingSet,]
 
 prop.table(table(train$y))   #0.5 0.5 
-dim(train)  #2282   40
+dim(train)  #2282   39
 
 
+```
+
+# Classic GLM method
+
+```{r}
+#glm treats second factor level as event of interest
+train$y <- as.factor(train$y)
+test$y <- as.factor(test$y)
+levels(train$y)
+
+glmModel <- glm(y ~ ., 
+                data = train, 
+                family = binomial)
+
+pred.glmModel <- predict(glmModel, newdata=test, type="response")
+
+roc.glmModel <- roc(test$y, pred.glmModel)
+
+auc.glmModel <- pROC::auc(roc.glmModel)
+#0.7167
+
+```
+
+# Decision Tree
+
+```{r include=FALSE}
+form <- as.formula(y ~ .)
+tree.1 <- rpart(form,
+                data=train) #, control=rpart.control(minsplit=20,cp=0))
+
+prp(tree.1)					# Will plot the tree
+prp(tree.1,varlen=3)
+
+new.tree.1 <- prp(tree.1,snip=TRUE)$obj # interactively trim the tree
+prp(new.tree.1) # display the new tree
+fancyRpartPlot(new.tree.1)
+
+tree.2 <- rpart(form,data=cpg_smote_train,control=rpart.control(minsplit=20,cp=0.007))			# A more reasonable tree
+prp(tree.2)                                     # A fast plot													
+fancyRpartPlot(tree.2)
+
+```
+
+# CART model
+
+```{r}
+
+set.seed(2014)
+
+#train_smote$y <- as.numeric(as.character(train_smote$y))
+#train_smote$y <- factor(train_smote$y)
+levels(train$y) <- c("No", "Yes")
+
+cartModel <- train(y ~ ., data=train, method = "rpart", metric="ROC", trControl = fitControl, tuneLength=5)
+
+pred.cartModel <- as.vector(predict(cartModel, newdata=test, type="prob")[,"Yes"])
+
+
+roc.cartModel <- pROC::roc(test$y, pred.cartModel)
+
+auc.cartModel <- pROC::auc(roc.cartModel)
+#0.6818
+```
+
+
+# Random Forest
+
+```{r include=FALSE}
+
+
+set.seed(2014)
+
+rfModel <- train(y ~ ., data=train, method = "rf", metric="ROC", trControl = fitControl, verbose=FALSE, tuneLength=5)
+
+pred.rfModel <- as.vector(predict(rfModel, newdata=test, type="prob")[,"Yes"])
+
+roc.rfModel <- pROC::roc(test$y, pred.rfModel)
+
+auc.rfModel <- pROC::auc(roc.rfModel)
+#0.7188
+
+###############################################################################################
+
+#We begin by creating a baseline model using the recommended tuning parameters
+
+control <- trainControl(method="cv", number=10)
+metric <- "Accuracy"
+mtry <- floor(sqrt(ncol(cpg_smote_train)-1))
+tunegrid <- expand.grid(.mtry=mtry)
+
+set.seed(54352)
+rf_default <- train(significance~., data=cpg_smote_train, method="rf", metric=metric, tuneGrid=tunegrid, trControl=control)
+print(rf_default)
+#Accuracy   Kappa    
+#0.7442424  0.4884848
+
+predictions<-predict.train(rf_default,cpg_smote_test[,-1])
+table(predictions)
+confusionMatrix(predictions,cpg_smote_test$significance)
+#Accuracy : 0.7293 
+#Kappa : 0.0705
+
+auc <- roc(cpg_smote_test$significance,as.numeric(predictions))
+print(auc)
+#Area under the curve: 0.5993
+
+#determining the best number of variables randomly sampled as candidates at each split
+set.seed(5430)
+bestmtry <- tuneRF(cpg_smote_train[,-1],cpg_smote_train$significance,
+                   improve=.01,trace=T,plot=T) #suggests mtry=4
+
+#determining best number of trees
+control <- trainControl(method="cv", number=10)
+tunegrid <- expand.grid(.mtry=4)
+modellist <- list()
+for (ntree in c(200,500,1000)) {
+  set.seed(333)
+  fit <- train(significance~., data=cpg_smote_train, method="rf", metric=metric, tuneGrid=tunegrid, trControl=control, ntree=ntree)
+  key <- toString(ntree)
+  modellist[[key]] <- fit
+}
+# compare results
+results <- resamples(modellist)
+summary(results)
+dotplot(results)
+
+set.seed(1006)
+cpg.rf <- train(significance~., data=cpg_smote_train, 
+                    method="rf", 
+                    metric="Accuracy", 
+                    tuneGrid=tunegrid, 
+                    trControl=control, 
+                    ntree=1000)
+cpg.rf
+
+set.seed(23454)
+predictions <- predict(cpg.rf,newdata=cpg_smote_test)
+table(predictions)
+confusionMatrix(predictions,factor(cpg_smote_test$significance))
+#Accuracy : 0.7521 
+#Kappa :  0.0859 
+
+auc <- roc(cpg_smote_test$significance,as.numeric(predictions))
+print(auc)
+#Area under the curve: 0.6126
+
+plot(auc, legacy.axes=TRUE)
+#cpg_thresh <- lift(significance ~ cpg.rf, data=cpg_smote_train)
+
+#cpg.rf$importance
+#varImpPlot(cpg.rf) #,type=2)
+#varImpPlot(cpg.rf,n.var=20)
+varImp(cpg.rf$finalModel)
+plot(varImp(cpg.rf,scale=TRUE))
+rf.varplot <- cbind.data.frame(Predictors=rownames(data.frame(varImp(cpg.rf,scale=TRUE)[1])),
+                                   Importance=data.frame(varImp(cpg.rf,scale=TRUE)[1])$Overall)
+rf.varplot <- rf.varplot[order(rf.varplot$Importance),]
+dim(rf.varplot)
+rf.varplot2 <- rf.varplot[34:53,]
+rf.varplot2$Predictors <- factor(rf.varplot2$Predictors,levels=rf.varplot2$Predictors)
+(p <- ggplot(rf.varplot2) + geom_point(aes(Importance,Predictors)) +ggtitle("Variable Importance Plot for Random Forest")) 
+
+ggplot(rf.varplot2, aes(x=Predictors, 
+                        y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Random Forest") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="blue") +
+  coord_flip()
+  #theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+```
+
+# GBM
+
+```{r}
+set.seed(2014)
+
+gbmModel <- train(y ~ ., data=train, method = "gbm", metric="ROC", trControl = fitControl, verbose=FALSE, tuneLength=5)
+
+pred.gbmModel <- as.vector(predict(gbmModel, newdata=test, type="prob")[,"Yes"])
+
+roc.gbmModel <- pROC::roc(test$y, pred.gbmModel)
+
+auc.gbmModel <- pROC::auc(roc.gbmModel)
+#0.7283
+```
+
+# Elastic Net
+
+```{r}
+set.seed(2014)
+
+eNetModel <- train(y ~ ., data=train, method = "glmnet", metric="ROC", trControl = fitControl, family="binomial", tuneLength=5)
+
+pred.eNetModel <- as.vector(predict(eNetModel, newdata=test, type="prob")[,"Yes"])
+
+roc.eNetModel <- pROC::roc(test$y, pred.eNetModel)
+
+auc.eNetModel <- pROC::auc(roc.eNetModel)
+#0.7182
+```
+
+# Plotting model performance
+
+```{r}
+test.auc <- data.frame(model=c("glm","gbm","glmnet","cart","rForest"),auc=c(auc.glmModel, auc.gbmModel, auc.eNetModel, auc.cartModel, auc.rfModel))
+
+test.auc <- test.auc[order(test.auc$auc, decreasing=TRUE),]
+
+test.auc$model <- factor(test.auc$model, levels=test.auc$model)
+
+test.auc
+
+p<-ggplot(data=test.auc, aes(x=model, y=auc)) +
+  geom_bar(stat="identity", fill="steelblue")+
+  theme_minimal()
+p
 ```
