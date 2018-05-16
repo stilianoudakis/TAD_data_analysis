@@ -367,3 +367,13 @@ logitdata$CHR <- seqnames(tad_subcomp_full)
 
 ```
 
+# Saving the data
+
+```{r}
+
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
+
+saveRDS(logitdata, "logitdata.rds")
+
+```
+
