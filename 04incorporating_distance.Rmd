@@ -27,7 +27,7 @@ library(dplyr)
 
 ```{r}
 
-setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/data")
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
 
 within <- readRDS("within.rds")
 none <- readRDS("none.rds")
