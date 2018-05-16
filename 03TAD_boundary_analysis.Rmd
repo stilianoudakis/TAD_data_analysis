@@ -112,6 +112,8 @@ subcompartgr <- reduce(subcompartgr)
 #adding the type of subcompartment as metadata for granges object
 mcols(subcompartgr)$compartment <- ifelse(strand(subcompartgr)=="+","A","B")
 
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
+
 saveRDS(subcompartgr, "subcompartgr.rds")
 
 #subcompartdf <- data.frame(chr = seqnames(subcompartgr),
@@ -382,6 +384,7 @@ table(mcols(tad_subcomp_full)$compartment)
 #      A       B       C       N 
 # 976450 1636185    2693  150986 
 
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
 
 #saving the types of overlaps
 saveRDS(tad_subcomp_full, "tad_subcomp_full.rds")
@@ -398,6 +401,8 @@ saveRDS(twointerval_g, "partial2.rds")
 logitdata <- data.frame(y = mcols(tad_subcomp_full)$y,
                         A = mcols(tad_subcomp_full)$percentA,
                         B = mcols(tad_subcomp_full)$percentB)
+
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
 
 saveRDS(logitdata, "logitdata.rds")
 ```
