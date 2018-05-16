@@ -1,0 +1,142 @@
+---
+title: "Modelling Chromosome 1"
+author: "Spiro Stilianoudakis"
+date: "May 16, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Loading Libraries
+
+```{r}
+#library(MultiAssayExperiment)
+library(GenomicRanges)
+#library(IRanges)
+library(caret)
+library(data.table)
+library(gbm)
+library(pROC)
+library(plyr)
+library(dplyr)
+library(DMwR)
+library(pROC)
+```
+
+# Reading in data
+
+```{r}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/data")
+
+logitdata <- readRDS("logitdata.rds")
+
+```
+
+# Isolating Chromosome 1
+
+```{r}
+
+chr1data <- logitdata[which(logitdata$CHR=="chr1"),]
+dim(chr1data)
+
+```
+
+# Transforming the distance variables and gerp/ucne score variables
+```{r}
+
+chr1data$left_dist <- log(chr1data$left_dist + 1, base = 2)
+chr1data$right_dist <- log(chr1data$right_dist + 1, base = 2)
+chr1data$closest_dist <- log(chr1data$closest_dist + 1, base = 2)
+
+chr1data$gerp_score <- log(chr1data$gerp_score + 1, base = 2)
+chr1data$UCNE_score <- log(chr1data$UCNE_score+ 1, base = 2)
+
+prop.table(table(chr1data$y))   #0.99342169 0.00657831 
+
+
+#Center and scale gerp score, distance variables
+chr1data$left_dist <- scale(chr1data$left_dist, center = TRUE, scale = TRUE)
+chr1data$right_dist <- scale(chr1data$right_dist, center = TRUE, scale = TRUE)
+chr1data$closest_dist <- scale(chr1data$closest_dist, center = TRUE, scale = TRUE)
+
+chr1data$gerp_score <- scale(chr1data$gerp_score, center = TRUE, scale = TRUE)
+chr1data$UCNE_score <- scale(chr1data$UCNE_score, center = TRUE, scale = TRUE)
+
+chr1data$left_dist <- as.numeric(chr1data$left_dist)
+chr1data$right_dist <- as.numeric(chr1data$right_dist)
+chr1data$closest_dist <- as.numeric(chr1data$closest_dist)
+
+chr1data$gerp_score <- as.numeric(chr1data$gerp_score)
+chr1data$UCNE_score <- as.numeric(chr1data$UCNE_score)
+
+
+```
+
+# Randomly sampling to create balanced dataset
+
+```{r}
+zeroclass <- chr1data[which(chr1data$y==0),]
+oneclass <- chr1data[-which(chr1data$y==0),]
+
+set.seed(2234)
+chr1data_r <- rbind.data.frame(oneclass, 
+                               zeroclass[sample.int(dim(zeroclass)[1]
+                                                    ,dim(oneclass)[1]),])
+```
+
+# shuffle data first since significance variable is not randomized
+
+```{r}
+set.seed(123)
+g <- runif(nrow(chr1data_r))
+chr1data_r <- chr1data_r[order(g),]
+
+```
+
+
+# Filtering data
+
+```{r include=FALSE}
+#Identify near-zero variance predictors
+nzv <- nearZeroVar(chr1data_r[,-1], saveMetrics= TRUE)
+nzv[nzv$nzv,]
+nzvar <- rownames(nzv[nzv$nzv,])
+
+#Removing zero variance predictors
+chr1data_rf <- chr1data_r[, -which(colnames(chr1data_r) %in% nzvar)]
+dim(chr1data_rf)
+#3258   40
+
+#check for linear dependencies
+comboinfo <- findLinearCombos(chr1data_rf)
+comboinfo
+#chr1data_rf <- chr1data_rf[,-comboinfo$remove]
+#dim(chr1data_rf)
+
+```
+
+# Splitting the data
+
+```{r}
+
+
+inTrainingSet <- sample(length(chr1data_rf$y),length(chr1data_rf$y)*.7)
+train <- chr1data_rf[inTrainingSet,]
+test <- chr1data_rf[-inTrainingSet,]
+
+prop.table(table(train$y))   #0.5109649 0.4890351  
+dim(train)  #2280   40
+
+
+set.seed(3432)
+inTrainingSet <- createDataPartition(chr1data_rf$y,p=.7,list=FALSE)
+train <- chr1data_rf[inTrainingSet,]
+test <- chr1data_rf[-inTrainingSet,]
+
+prop.table(table(train$y))   #0.5 0.5 
+dim(train)  #2282   40
+
+
+```
