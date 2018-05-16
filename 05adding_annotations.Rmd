@@ -1,0 +1,369 @@
+---
+title: "05adding_annotations"
+author: "Spiro Stilianoudakis"
+date: "May 15, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Reading in the TAD and Subcompartment overlap data (granges object)
+
+```{r}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
+
+tad_subcomp_full <- readRDS("tad_subcomp_full_2.rds")
+```
+
+
+#Adding other covariates of interest from Merlot folder
+
+#DGV
+```{r include=FALSE}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/DGV/DGV_files")
+
+temp = list.files()
+
+complex <- read.table(temp[1],header=FALSE,sep="\t")
+deletion <- read.table(temp[2],header=FALSE,sep="\t")
+duplication <- read.table(temp[3],header=FALSE,sep="\t")
+gain_loss <- read.table(temp[4],header=FALSE,sep="\t")
+insertion <- read.table(temp[5],header=FALSE,sep="\t")
+inversion <- read.table(temp[6],header=FALSE,sep="\t")
+mobile_element_insertion <- read.table(temp[7],header=FALSE,sep="\t")
+novel_sequence_insertion <- read.table(temp[8],header=FALSE,sep="\t")
+sequence_alteration <- read.table(temp[9],header=FALSE,sep="\t")
+tandem_duplication <- read.table(temp[10],header=FALSE,sep="\t")
+
+complex_gr <- GRanges(seqnames=complex$V1,IRanges(start=complex$V2,end=complex$V3))
+deletion_gr <- GRanges(seqnames=deletion$V1,IRanges(start=deletion$V2,end=deletion$V3))
+duplication_gr <- GRanges(seqnames=duplication$V1,IRanges(start=duplication$V2,end=duplication$V3))
+gain_loss_gr <- GRanges(seqnames=gain_loss$V1,IRanges(start=gain_loss$V2,end=gain_loss$V3))
+insertion_gr <- GRanges(seqnames=insertion$V1,IRanges(start=insertion$V2,end=insertion$V3))
+inversion_gr <- GRanges(seqnames=inversion$V1,IRanges(start=inversion$V2,end=inversion$V3))
+mobile_element_insertion_gr <- GRanges(seqnames=mobile_element_insertion$V1,IRanges(start=mobile_element_insertion$V2,end=mobile_element_insertion$V3))
+novel_sequence_insertion_gr <- GRanges(seqnames=novel_sequence_insertion$V1,IRanges(start=novel_sequence_insertion$V2,end=novel_sequence_insertion$V3))
+sequence_alteration_gr <- GRanges(seqnames=sequence_alteration$V1,IRanges(start=sequence_alteration$V2,end=sequence_alteration$V3))
+tandem_duplication_gr <- GRanges(seqnames=tandem_duplication$V1,IRanges(start=tandem_duplication$V2,end=tandem_duplication$V3))
+
+  logitdata$complex <- ifelse(countOverlaps(tad_subcomp_full,complex_gr)>=1,1,0)
+  logitdata$deletion <- ifelse(countOverlaps(tad_subcomp_full,deletion_gr)>=1,1,0)
+  logitdata$duplication <- ifelse(countOverlaps(tad_subcomp_full,duplication_gr)>=1,1,0)
+  logitdata$gain_loss <- ifelse(countOverlaps(tad_subcomp_full,gain_loss_gr)>=1,1,0)
+  logitdata$insertion <- ifelse(countOverlaps(tad_subcomp_full,insertion_gr)>=1,1,0)
+  logitdata$inversion <- ifelse(countOverlaps(tad_subcomp_full,inversion_gr)>=1,1,0)
+  logitdata$mobile_element_insertion <- ifelse(countOverlaps(tad_subcomp_full,mobile_element_insertion_gr)>=1,1,0)
+  logitdata$novel_sequence_insertion <- ifelse(countOverlaps(tad_subcomp_full,novel_sequence_insertion_gr)>=1,1,0)
+  logitdata$sequence_alteration <- ifelse(countOverlaps(tad_subcomp_full,sequence_alteration_gr)>=1,1,0)
+  logitdata$tandem_duplication <- ifelse(countOverlaps(tad_subcomp_full,tandem_duplication_gr)>=1,1,0)
+
+```
+
+# GERP
+
+```{r include=FALSE}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/GERP/GERP_hg19.bed")
+gerp <- read.table("GERP_hg19.BED",header=FALSE,sep="\t")
+gerp_gr <- GRanges(seqnames=gerp$V1,IRanges(start=gerp$V2,end=gerp$V3))
+mcols(gerp_gr)$score <- gerp$V5
+
+  logitdata$gerp <- ifelse(countOverlaps(tad_subcomp_full,gerp_gr)>=1,1,0)
+  
+#finding which flanks overlap the gerp file so that we can add a score variable
+#all other flanks will have a score of 0
+which(logitdata$gerp==1)
+logitdata$gerp_score <- 0
+gerpoverlap <- findOverlaps(tad_subcomp_full,gerp_gr)
+gerpoverlapdf <- data.frame(queryHits=queryHits(gerpoverlap), score=gerp_gr[subjectHits(gerpoverlap)]$score)
+gerpoverlapmean <- aggregate(gerpoverlapdf$score, list(gerpoverlapdf$queryHits), mean)
+logitdata$gerp_score[gerpoverlapmean$Group.1] <- gerpoverlapmean$x
+
+
+
+```
+
+# nestedRepeats
+
+```{r include=FALSE}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/nestedRepeats/nestedRepeats_files")
+
+temp = list.files()
+
+DNA <- read.table(temp[1],header=FALSE,sep="\t")
+line <- read.table(temp[2],header=FALSE,sep="\t")
+low_complexity <- read.table(temp[3],header=FALSE,sep="\t")
+LTR  <- read.table(temp[4],header=FALSE,sep="\t")
+other <- read.table(temp[5],header=FALSE,sep="\t")
+RC <- read.table(temp[6],header=FALSE,sep="\t")
+RNA <- read.table(temp[7],header=FALSE,sep="\t")
+rRNA <- read.table(temp[8],header=FALSE,sep="\t")
+satellite <- read.table(temp[9],header=FALSE,sep="\t")
+scRNA <- read.table(temp[10],header=FALSE,sep="\t")
+simple_repeat <- read.table(temp[11],header=FALSE,sep="\t")
+SINE <- read.table(temp[12],header=FALSE,sep="\t")
+snRNA <- read.table(temp[13],header=FALSE,sep="\t")
+srpRNA <- read.table(temp[14],header=FALSE,sep="\t")
+tRNA <- read.table(temp[15],header=FALSE,sep="\t")
+unknown <- read.table(temp[16],header=FALSE,sep="\t")
+
+DNA_gr <- GRanges(seqnames=DNA$V1,IRanges(start=DNA$V2,end=DNA$V3))
+line_gr <- GRanges(seqnames=line$V1,IRanges(start=line$V2,end=line$V3))
+low_complexity_gr <- GRanges(seqnames=low_complexity$V1,IRanges(start=low_complexity$V2,end=low_complexity$V3))
+LTR_gr <- GRanges(seqnames=LTR$V1,IRanges(start=LTR$V2,end=LTR$V3))
+other_gr <- GRanges(seqnames=other$V1,IRanges(start=other$V2,end=other$V3))
+RC_gr <- GRanges(seqnames=RC$V1,IRanges(start=RC$V2,end=RC$V3))
+RNA_gr <- GRanges(seqnames=RNA$V1,IRanges(start=RNA$V2,end=RNA$V3))
+rRNA_gr <- GRanges(seqnames=rRNA$V1,IRanges(start=rRNA$V2,end=rRNA$V3))
+satellite_gr <- GRanges(seqnames=satellite$V1,IRanges(start=satellite$V2,end=satellite$V3))
+scRNA_gr <- GRanges(seqnames=scRNA$V1,IRanges(start=scRNA$V2,end=scRNA$V3))
+simple_repeat_gr <- GRanges(seqnames=simple_repeat$V1,IRanges(start=simple_repeat$V2,end=simple_repeat$V3))
+SINE_gr <- GRanges(seqnames=SINE$V1,IRanges(start=SINE$V2,end=SINE$V3))
+snRNA_gr <- GRanges(seqnames=snRNA$V1,IRanges(start=snRNA$V2,end=snRNA$V3))
+srpRNA_gr <- GRanges(seqnames=srpRNA$V1,IRanges(start=srpRNA$V2,end=srpRNA$V3))
+tRNA_gr <- GRanges(seqnames=tRNA$V1,IRanges(start=tRNA$V2,end=tRNA$V3))
+unknown_gr <- GRanges(seqnames=unknown$V1,IRanges(start=unknown$V2,end=unknown$V3))
+
+  logitdata$DNA <- ifelse(countOverlaps(tad_subcomp_full,DNA_gr)>=1,1,0)
+  logitdata$line <- ifelse(countOverlaps(tad_subcomp_full,line_gr)>=1,1,0)
+  logitdata$low_complexity <- ifelse(countOverlaps(tad_subcomp_full,low_complexity_gr)>=1,1,0)
+  logitdata$LTR <- ifelse(countOverlaps(tad_subcomp_full,LTR_gr)>=1,1,0)
+  logitdata$other <- ifelse(countOverlaps(tad_subcomp_full,other_gr)>=1,1,0)
+  logitdata$RC <- ifelse(countOverlaps(tad_subcomp_full,RC_gr)>=1,1,0)
+  logitdata$RNA <- ifelse(countOverlaps(tad_subcomp_full,RNA_gr)>=1,1,0)
+  logitdata$rRNA <- ifelse(countOverlaps(tad_subcomp_full,rRNA_gr)>=1,1,0)
+  logitdata$satellite <- ifelse(countOverlaps(tad_subcomp_full,satellite_gr)>=1,1,0)
+  logitdata$scRNA <- ifelse(countOverlaps(tad_subcomp_full,scRNA_gr)>=1,1,0)
+  logitdata$simple_repeat <- ifelse(countOverlaps(tad_subcomp_full,simple_repeat_gr)>=1,1,0)
+  logitdata$SINE <- ifelse(countOverlaps(tad_subcomp_full,SINE_gr)>=1,1,0)
+  logitdata$snRNA <- ifelse(countOverlaps(tad_subcomp_full,snRNA_gr)>=1,1,0)
+  logitdata$srpRNA <- ifelse(countOverlaps(tad_subcomp_full,srpRNA_gr)>=1,1,0)
+  logitdata$tRNA <- ifelse(countOverlaps(tad_subcomp_full,tRNA_gr)>=1,1,0)
+  logitdata$unknown <- ifelse(countOverlaps(tad_subcomp_full,unknown_gr)>=1,1,0)
+```
+
+
+# super_enhancers
+```{r include=FALSE}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/super_enhancers")
+
+temp = list.files()
+
+se_GM12878 <- read.table(temp[1],header=FALSE,sep="\t")
+se_K562 <- read.table(temp[2],header=FALSE,sep="\t")
+
+se_GM12878_gr <- GRanges(seqnames=se_GM12878$V1,IRanges(start=se_GM12878$V2,end=se_GM12878$V3))
+se_K562_gr <- GRanges(seqnames=se_K562$V1,IRanges(start=se_K562$V2,end=se_K562$V3))
+
+  logitdata$se_GM12878 <- ifelse(countOverlaps(tad_subcomp_full,se_GM12878_gr)>=1,1,0)
+  logitdata$se_K562 <- ifelse(countOverlaps(tad_subcomp_full,se_K562_gr)>=1,1,0)
+
+```
+
+# UCNE
+```{r include=FALSE}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/UCNEs/UCNE.bed")
+
+UCNE <- read.table("UCNE.BED",header=FALSE,sep="\t")
+UCNE_gr <- GRanges(seqnames=UCNE$V1,IRanges(start=UCNE$V2,end=UCNE$V3))
+mcols(UCNE_gr)$score <- UCNE$V5
+
+  logitdata$UCNE <- ifelse(countOverlaps(tad_subcomp_full,UCNE_gr)>=1,1,0)
+  
+#finding which flanks overlap the unce file so that we can add a score variable
+#all other flanks will have a score of 0
+which(logitdata$UCNE==1)
+logitdata$UCNE_score <- 0
+UCNEoverlap <- findOverlaps(tad_subcomp_full,UCNE_gr)
+UCNEoverlapdf <- data.frame(queryHits=queryHits(UCNEoverlap), score=UCNE_gr[subjectHits(UCNEoverlap)]$score)
+UCNEoverlapmean <- aggregate(UCNEoverlapdf$score, list(UCNEoverlapdf$queryHits), mean)
+logitdata$UCNE_score[UCNEoverlapmean$Group.1] <- UCNEoverlapmean$x
+
+```
+
+# VMR
+```{r include=FALSE}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/VMRs")
+
+VMR <- read.table("VMR_hg19.BED",header=FALSE,sep="\t")
+VMR_gr <- GRanges(seqnames=VMR$V1,IRanges(start=VMR$V2,end=VMR$V3))
+
+  logitdata$VMR <- ifelse(countOverlaps(tad_subcomp_full,VMR_gr)>=1,1,0)
+
+```
+
+# BroadHMM
+```{r include=FALSE}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/BroadHmm")
+
+temp <- list.files()
+
+#Gm12878
+Gm12878_TxnElongation <- read.table(temp[2],header=FALSE,sep="\t")
+Gm12878_WeakTxn <- read.table(temp[3],header=FALSE,sep="\t")
+Gm12878_Repressed <- read.table(temp[4],header=FALSE,sep="\t")
+Gm12878_Heterochromlo <- read.table(temp[5],header=FALSE,sep="\t")
+Gm12878_RepetitiveCNV14 <- read.table(temp[6],header=FALSE,sep="\t")
+Gm12878_RepetitiveCNV15 <- read.table(temp[7],header=FALSE,sep="\t")
+Gm12878_ActivePromoter <- read.table(temp[8],header=FALSE,sep="\t")
+Gm12878_WeakPromoter <- read.table(temp[9],header=FALSE,sep="\t")
+Gm12878_PoisedPromoter <- read.table(temp[10],header=FALSE,sep="\t")
+Gm12878_StrongEnhancer4 <- read.table(temp[11],header=FALSE,sep="\t")
+Gm12878_StrongEnhancer5 <- read.table(temp[12],header=FALSE,sep="\t") 
+Gm12878_WeakEnhancer6 <- read.table(temp[13],header=FALSE,sep="\t")
+Gm12878_WeakEnhancer7 <- read.table(temp[14],header=FALSE,sep="\t")
+Gm12878_Insulator <- read.table(temp[15],header=FALSE,sep="\t")
+Gm12878_TxnTransition <- read.table(temp[16],header=FALSE,sep="\t")
+
+Gm12878_TxnElongation_gr <- GRanges(seqnames=Gm12878_TxnElongation$V1,IRanges(start=Gm12878_TxnElongation$V2,end=Gm12878_TxnElongation$V3))
+Gm12878_WeakTxn_gr <- GRanges(seqnames=Gm12878_WeakTxn$V1,IRanges(start=Gm12878_WeakTxn$V2,end=Gm12878_WeakTxn$V3))
+Gm12878_Repressed_gr <- GRanges(seqnames=Gm12878_Repressed$V1,IRanges(start=Gm12878_Repressed$V2,end=Gm12878_Repressed$V3))
+Gm12878_Heterochromlo_gr <- GRanges(seqnames=Gm12878_Heterochromlo$V1,IRanges(start=Gm12878_Heterochromlo$V2,end=Gm12878_Heterochromlo$V3)) 
+Gm12878_RepetitiveCNV14_gr <- GRanges(seqnames=Gm12878_RepetitiveCNV14$V1,IRanges(start=Gm12878_RepetitiveCNV14$V2,end=Gm12878_RepetitiveCNV14$V3)) 
+Gm12878_RepetitiveCNV15_gr <- GRanges(seqnames=Gm12878_RepetitiveCNV15$V1,IRanges(start=Gm12878_RepetitiveCNV15$V2,end=Gm12878_RepetitiveCNV15$V3))
+Gm12878_ActivePromoter_gr <- GRanges(seqnames=Gm12878_ActivePromoter$V1,IRanges(start=Gm12878_ActivePromoter$V2,end=Gm12878_ActivePromoter$V3))
+Gm12878_WeakPromoter_gr <- GRanges(seqnames=Gm12878_WeakPromoter$V1,IRanges(start=Gm12878_WeakPromoter$V2,end=Gm12878_WeakPromoter$V3))
+Gm12878_PoisedPromoter_gr <- GRanges(seqnames=Gm12878_PoisedPromoter$V1,IRanges(start=Gm12878_PoisedPromoter$V2,end=Gm12878_PoisedPromoter$V3)) 
+Gm12878_StrongEnhancer4_gr <- GRanges(seqnames=Gm12878_StrongEnhancer4$V1,IRanges(start=Gm12878_StrongEnhancer4$V2,end=Gm12878_StrongEnhancer4$V3)) 
+Gm12878_StrongEnhancer5_gr <- GRanges(seqnames=Gm12878_StrongEnhancer5$V1,IRanges(start=Gm12878_StrongEnhancer5$V2,end=Gm12878_StrongEnhancer5$V3))
+Gm12878_WeakEnhancer6_gr <- GRanges(seqnames=Gm12878_WeakEnhancer6$V1,IRanges(start=Gm12878_WeakEnhancer6$V2,end=Gm12878_WeakEnhancer6$V3)) 
+Gm12878_WeakEnhancer7_gr <- GRanges(seqnames=Gm12878_WeakEnhancer7$V1,IRanges(start=Gm12878_WeakEnhancer7$V2,end=Gm12878_WeakEnhancer7$V3)) 
+Gm12878_Insulator_gr <- GRanges(seqnames=Gm12878_Insulator$V1,IRanges(start=Gm12878_Insulator$V2,end=Gm12878_Insulator$V3))
+Gm12878_TxnTransition_gr <- GRanges(seqnames=Gm12878_TxnTransition$V1,IRanges(start=Gm12878_TxnTransition$V2,end=Gm12878_TxnTransition$V3)) 
+
+  logitdata$Gm12878_TxnElongation <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_TxnElongation_gr)>=1,1,0)
+  logitdata$Gm12878_WeakTxn <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_WeakTxn_gr)>=1,1,0)
+  logitdata$Gm12878_Repressed <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_Repressed_gr)>=1,1,0)
+  logitdata$Gm12878_Heterochromlo <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_Heterochromlo_gr)>=1,1,0)
+  logitdata$Gm12878_RepetitiveCNV14 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_RepetitiveCNV14_gr)>=1,1,0)
+  logitdata$Gm12878_RepetitiveCNV15 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_RepetitiveCNV15_gr)>=1,1,0)
+  logitdata$Gm12878_ActivePromoter <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_ActivePromoter_gr)>=1,1,0)
+  logitdata$Gm12878_WeakPromoter <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_WeakPromoter_gr)>=1,1,0)
+  logitdata$Gm12878_PoisedPromoter <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_PoisedPromoter_gr)>=1,1,0)
+  logitdata$Gm12878_StrongEnhancer4 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_StrongEnhancer4_gr)>=1,1,0)
+  logitdata$Gm12878_StrongEnhancer5 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_StrongEnhancer5_gr)>=1,1,0)
+  logitdata$Gm12878_WeakEnhancer6 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_WeakEnhancer6_gr)>=1,1,0)
+  logitdata$Gm12878_WeakEnhancer7 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_WeakEnhancer7_gr)>=1,1,0)
+  logitdata$Gm12878_Insulator <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_Insulator_gr)>=1,1,0)
+  logitdata$Gm12878_TxnTransition <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_TxnTransition_gr)>=1,1,0)
+
+#K562
+  
+K562_TxnElongation <- read.table(temp[18],header=FALSE,sep="\t")
+K562_WeakTxn <- read.table(temp[19],header=FALSE,sep="\t")
+K562_Repressed <- read.table(temp[20],header=FALSE,sep="\t")
+K562_Heterochromlo <- read.table(temp[21],header=FALSE,sep="\t")
+K562_RepetitiveCNV14 <- read.table(temp[22],header=FALSE,sep="\t")
+K562_RepetitiveCNV15 <- read.table(temp[23],header=FALSE,sep="\t")
+K562_ActivePromoter <- read.table(temp[24],header=FALSE,sep="\t")
+K562_WeakPromoter <- read.table(temp[25],header=FALSE,sep="\t")
+K562_PoisedPromoter <- read.table(temp[26],header=FALSE,sep="\t")
+K562_StrongEnhancer4 <- read.table(temp[27],header=FALSE,sep="\t")
+K562_StrongEnhancer5 <- read.table(temp[28],header=FALSE,sep="\t")
+K562_WeakEnhancer6 <- read.table(temp[29],header=FALSE,sep="\t")
+K562_WeakEnhancer7 <- read.table(temp[30],header=FALSE,sep="\t")
+K562_Insulator <- read.table(temp[31],header=FALSE,sep="\t")
+K562_TxnTransition <- read.table(temp[32],header=FALSE,sep="\t")
+
+K562_TxnElongation_gr <- GRanges(seqnames=K562_TxnElongation$V1,IRanges(start=K562_TxnElongation$V2,end=K562_TxnElongation$V3))
+K562_WeakTxn_gr <- GRanges(seqnames=K562_WeakTxn$V1,IRanges(start=K562_WeakTxn$V2,end=K562_WeakTxn$V3))
+K562_Repressed_gr <- GRanges(seqnames=K562_Repressed$V1,IRanges(start=K562_Repressed$V2,end=K562_Repressed$V3))
+K562_Heterochromlo_gr <- GRanges(seqnames=K562_Heterochromlo$V1,IRanges(start=K562_Heterochromlo$V2,end=K562_Heterochromlo$V3)) 
+K562_RepetitiveCNV14_gr <- GRanges(seqnames=K562_RepetitiveCNV14$V1,IRanges(start=K562_RepetitiveCNV14$V2,end=K562_RepetitiveCNV14$V3)) 
+K562_RepetitiveCNV15_gr <- GRanges(seqnames=K562_RepetitiveCNV15$V1,IRanges(start=K562_RepetitiveCNV15$V2,end=K562_RepetitiveCNV15$V3))
+K562_ActivePromoter_gr <- GRanges(seqnames=K562_ActivePromoter$V1,IRanges(start=K562_ActivePromoter$V2,end=K562_ActivePromoter$V3))
+K562_WeakPromoter_gr <- GRanges(seqnames=K562_WeakPromoter$V1,IRanges(start=K562_WeakPromoter$V2,end=K562_WeakPromoter$V3))
+K562_PoisedPromoter_gr <- GRanges(seqnames=K562_PoisedPromoter$V1,IRanges(start=K562_PoisedPromoter$V2,end=K562_PoisedPromoter$V3)) 
+K562_StrongEnhancer4_gr <- GRanges(seqnames=K562_StrongEnhancer4$V1,IRanges(start=K562_StrongEnhancer4$V2,end=K562_StrongEnhancer4$V3)) 
+K562_StrongEnhancer5_gr <- GRanges(seqnames=K562_StrongEnhancer5$V1,IRanges(start=K562_StrongEnhancer5$V2,end=K562_StrongEnhancer5$V3))
+K562_WeakEnhancer6_gr <- GRanges(seqnames=K562_WeakEnhancer6$V1,IRanges(start=K562_WeakEnhancer6$V2,end=K562_WeakEnhancer6$V3)) 
+K562_WeakEnhancer7_gr <- GRanges(seqnames=K562_WeakEnhancer7$V1,IRanges(start=K562_WeakEnhancer7$V2,end=K562_WeakEnhancer7$V3)) 
+K562_Insulator_gr <- GRanges(seqnames=K562_Insulator$V1,IRanges(start=K562_Insulator$V2,end=K562_Insulator$V3))
+K562_TxnTransition_gr <- GRanges(seqnames=K562_TxnTransition$V1,IRanges(start=K562_TxnTransition$V2,end=K562_TxnTransition$V3)) 
+
+  logitdata$K562_TxnElongation <- ifelse(countOverlaps(tad_subcomp_full,K562_TxnElongation_gr)>=1,1,0)
+  logitdata$K562_WeakTxn <- ifelse(countOverlaps(tad_subcomp_full,K562_WeakTxn_gr)>=1,1,0)
+  logitdata$K562_Repressed <- ifelse(countOverlaps(tad_subcomp_full,K562_Repressed_gr)>=1,1,0)
+  logitdata$K562_Heterochromlo <- ifelse(countOverlaps(tad_subcomp_full,K562_Heterochromlo_gr)>=1,1,0)
+  logitdata$K562_RepetitiveCNV14 <- ifelse(countOverlaps(tad_subcomp_full,K562_RepetitiveCNV14_gr)>=1,1,0)
+  logitdata$K562_RepetitiveCNV15 <- ifelse(countOverlaps(tad_subcomp_full,K562_RepetitiveCNV15_gr)>=1,1,0)
+  logitdata$K562_ActivePromoter <- ifelse(countOverlaps(tad_subcomp_full,K562_ActivePromoter_gr)>=1,1,0)
+  logitdata$K562_WeakPromoter <- ifelse(countOverlaps(tad_subcomp_full,K562_WeakPromoter_gr)>=1,1,0)
+  logitdata$K562_PoisedPromoter <- ifelse(countOverlaps(tad_subcomp_full,K562_PoisedPromoter_gr)>=1,1,0)
+  logitdata$K562_StrongEnhancer4 <- ifelse(countOverlaps(tad_subcomp_full,K562_StrongEnhancer4_gr)>=1,1,0)
+  logitdata$K562_StrongEnhancer5 <- ifelse(countOverlaps(tad_subcomp_full,K562_StrongEnhancer5_gr)>=1,1,0)
+  logitdata$K562_WeakEnhancer6 <- ifelse(countOverlaps(tad_subcomp_full,K562_WeakEnhancer6_gr)>=1,1,0)
+  logitdata$K562_WeakEnhancer7 <- ifelse(countOverlaps(tad_subcomp_full,K562_WeakEnhancer7_gr)>=1,1,0)
+  logitdata$K562_Insulator <- ifelse(countOverlaps(tad_subcomp_full,K562_Insulator_gr)>=1,1,0)
+  logitdata$K562_TxnTransition <- ifelse(countOverlaps(tad_subcomp_full,K562_TxnTransition_gr)>=1,1,0)
+  
+```
+
+# Combined
+```{r include=FALSE}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/Combined")
+
+temp <- list.files()
+
+#Gm12878
+Gm12878_CTCF <- read.table(temp[2],header=FALSE,sep="\t") 
+Gm12878_E <- read.table(temp[3],header=FALSE,sep="\t")
+Gm12878_PF <- read.table(temp[4],header=FALSE,sep="\t")
+Gm12878_R <- read.table(temp[5],header=FALSE,sep="\t")
+Gm12878_T <- read.table(temp[6],header=FALSE,sep="\t")
+Gm12878_TSS <- read.table(temp[7],header=FALSE,sep="\t")
+Gm12878_WE <- read.table(temp[8],header=FALSE,sep="\t")
+
+Gm12878_CTCF_gr <- GRanges(seqnames=Gm12878_CTCF$V1,IRanges(start=Gm12878_CTCF$V2,end=Gm12878_CTCF$V3))
+Gm12878_E_gr <- GRanges(seqnames=Gm12878_E$V1,IRanges(start=Gm12878_E$V2,end=Gm12878_E$V3))
+Gm12878_PF_gr <- GRanges(seqnames=Gm12878_PF$V1,IRanges(start=Gm12878_PF$V2,end=Gm12878_PF$V3))
+Gm12878_R_gr <- GRanges(seqnames=Gm12878_R$V1,IRanges(start=Gm12878_R$V2,end=Gm12878_R$V3))
+Gm12878_T_gr <- GRanges(seqnames=Gm12878_T$V1,IRanges(start=Gm12878_T$V2,end=Gm12878_T$V3))
+Gm12878_TSS_gr <- GRanges(seqnames=Gm12878_TSS$V1,IRanges(start=Gm12878_TSS$V2,end=Gm12878_TSS$V3))
+Gm12878_WE_gr <- GRanges(seqnames=Gm12878_WE$V1,IRanges(start=Gm12878_WE$V2,end=Gm12878_WE$V3))
+
+  logitdata$Gm12878_CTCF <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_CTCF_gr)>=1,1,0) 
+  logitdata$Gm12878_E <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_E_gr)>=1,1,0)
+  logitdata$Gm12878_PF <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_PF_gr)>=1,1,0)
+  logitdata$Gm12878_R <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_R_gr)>=1,1,0)
+  logitdata$Gm12878_T <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_T_gr)>=1,1,0)
+  logitdata$Gm12878_TSS <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_TSS_gr)>=1,1,0)
+  logitdata$Gm12878_WE <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_WE_gr)>=1,1,0)
+
+
+#K562
+K562_CTCF <- read.table(temp[10],header=FALSE,sep="\t")
+K562_E <- read.table(temp[11],header=FALSE,sep="\t")
+K562_PF <- read.table(temp[12],header=FALSE,sep="\t")
+K562_R <- read.table(temp[13],header=FALSE,sep="\t")
+K562_T <- read.table(temp[14],header=FALSE,sep="\t")
+K562_TSS <- read.table(temp[15],header=FALSE,sep="\t")
+K562_WE <- read.table(temp[16],header=FALSE,sep="\t")
+
+K562_CTCF_gr <- GRanges(seqnames=K562_CTCF$V1,IRanges(start=K562_CTCF$V2,end=K562_CTCF$V3))
+K562_E_gr <- GRanges(seqnames=K562_E$V1,IRanges(start=K562_E$V2,end=K562_E$V3))
+K562_PF_gr <- GRanges(seqnames=K562_PF$V1,IRanges(start=K562_PF$V2,end=K562_PF$V3))
+K562_R_gr <- GRanges(seqnames=K562_R$V1,IRanges(start=K562_R$V2,end=K562_R$V3))
+K562_T_gr <- GRanges(seqnames=K562_T$V1,IRanges(start=K562_T$V2,end=K562_T$V3))
+K562_TSS_gr <- GRanges(seqnames=K562_TSS$V1,IRanges(start=K562_TSS$V2,end=K562_TSS$V3))
+K562_WE_gr <- GRanges(seqnames=K562_WE$V1,IRanges(start=K562_WE$V2,end=K562_WE$V3))
+
+  logitdata$K562_CTCF <- ifelse(countOverlaps(tad_subcomp_full,K562_CTCF_gr)>=1,1,0) 
+  logitdata$K562_E <- ifelse(countOverlaps(tad_subcomp_full,K562_E_gr)>=1,1,0)
+  logitdata$K562_PF <- ifelse(countOverlaps(tad_subcomp_full,K562_PF_gr)>=1,1,0)
+  logitdata$K562_R <- ifelse(countOverlaps(tad_subcomp_full,K562_R_gr)>=1,1,0)
+  logitdata$K562_T <- ifelse(countOverlaps(tad_subcomp_full,K562_T_gr)>=1,1,0)
+  logitdata$K562_TSS <- ifelse(countOverlaps(tad_subcomp_full,K562_TSS_gr)>=1,1,0)
+  logitdata$K562_WE <- ifelse(countOverlaps(tad_subcomp_full,K562_WE_gr)>=1,1,0)
+
+```
+
+# Adding Chromosome information to the data
+
+```{r}
+
+logitdata$CHR <- seqnames(tad_subcomp_full)
+
+```
+
