@@ -35,6 +35,8 @@ partial1 <- readRDS("partial1.rds")
 partial2 <- readRDS("partial2.rds")
 subcompartgr <- readRDS("subcompartgr.rds")
 #tad_subcomp_full <- readRDS("tad_subcomp_full.rds")
+
+logitdata <- readRDS("logitdata.rds")
 ```
 
 # Calculating various distances: Left, Right, and Closest
@@ -65,23 +67,26 @@ mcols(within)$closest_dist <- closest_dist
 
 #looking at the bins that had no overlaps and calculating distances
 none_mid <- (start(none)+end(none))/2
+none_mid_gr <- GRanges(seqnames = seqnames(none),
+                       ranges = IRanges(start = none_mid, end = none_mid))
 #left distance (using precede function)
-pre <- precede(none,subcompartgr, select="all")
+pre <- precede(none_mid_gr,subcompartgr, select="all")
 pre <- pre[order(queryHits(pre), -subjectHits(pre))]
 pre <- pre[!duplicated(queryHits(pre))]
 pre_sub <- subcompartgr[subjectHits(pre)]
-pre_dist <- as.integer(none_mid) - end(pre_sub) 
+pre_dist <- distance(none_mid_gr,pre_sub)
 
 #right distance
-foll <- follow(none,subcompartgr, select="all")
+foll <- follow(none_mid_gr,subcompartgr, select="all")
 foll <- foll[order(queryHits(foll), -subjectHits(foll))]
 foll <- foll[!duplicated(queryHits(foll))]
 foll_sub <- subcompartgr[subjectHits(foll)]
-foll_dist <- start(foll_sub) - as.integer(none_mid)
+foll_dist <- distance(none_mid_gr, foll_sub)
 
 
 #closest distance
-closest_dist <- pmin(pre_dist, foll_dist)
+closest_dist <- distanceToNearest(none_mid_gr, subcompartgr)
+closest_dist <- mcols(closest_dist)$distance
 
 #assigning the distances to the none granges object
 mcols(none)$left_dist <- foll_dist
@@ -118,11 +123,10 @@ saveRDS(partial1, "partial1_2.rds")
 saveRDS(partial2, "partial2_2.rds")
 
 
-logitdata <- readRDS("logitdata.rds")
 logitdata$left_dist <- mcols(tad_subcomp_full_2)$left_dist
 logitdata$right_dist <- mcols(tad_subcomp_full_2)$right_dist
 logitdata$closest_dist <- mcols(tad_subcomp_full_2)$closest_dist
 
-saveRDS(logitdata, "logitdata_2.rds")
+saveRDS(logitdata, "logitdata.rds")
 ```
 

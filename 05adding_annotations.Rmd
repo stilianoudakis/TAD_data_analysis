@@ -15,6 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
 
 tad_subcomp_full <- readRDS("tad_subcomp_full_2.rds")
+logitdata <- readRDS("logitdata.rds")
 ```
 
 
@@ -365,6 +366,7 @@ K562_WE_gr <- GRanges(seqnames=K562_WE$V1,IRanges(start=K562_WE$V2,end=K562_WE$V
 
 logitdata$CHR <- seqnames(tad_subcomp_full)
 
+logitdata$CHR <- as.character(logitdata$CHR)
 ```
 
 # Saving the data
