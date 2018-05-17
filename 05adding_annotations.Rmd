@@ -152,13 +152,11 @@ setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/super_enhanc
 temp = list.files()
 
 se_GM12878 <- read.table(temp[1],header=FALSE,sep="\t")
-se_K562 <- read.table(temp[2],header=FALSE,sep="\t")
 
 se_GM12878_gr <- GRanges(seqnames=se_GM12878$V1,IRanges(start=se_GM12878$V2,end=se_GM12878$V3))
-se_K562_gr <- GRanges(seqnames=se_K562$V1,IRanges(start=se_K562$V2,end=se_K562$V3))
 
   logitdata$se_GM12878 <- ifelse(countOverlaps(tad_subcomp_full,se_GM12878_gr)>=1,1,0)
-  logitdata$se_K562 <- ifelse(countOverlaps(tad_subcomp_full,se_K562_gr)>=1,1,0)
+  
 
 ```
 
@@ -249,56 +247,7 @@ Gm12878_TxnTransition_gr <- GRanges(seqnames=Gm12878_TxnTransition$V1,IRanges(st
   logitdata$Gm12878_Insulator <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_Insulator_gr)>=1,1,0)
   logitdata$Gm12878_TxnTransition <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_TxnTransition_gr)>=1,1,0)
 
-#K562
-  
-K562_TxnElongation <- read.table(temp[18],header=FALSE,sep="\t")
-K562_WeakTxn <- read.table(temp[19],header=FALSE,sep="\t")
-K562_Repressed <- read.table(temp[20],header=FALSE,sep="\t")
-K562_Heterochromlo <- read.table(temp[21],header=FALSE,sep="\t")
-K562_RepetitiveCNV14 <- read.table(temp[22],header=FALSE,sep="\t")
-K562_RepetitiveCNV15 <- read.table(temp[23],header=FALSE,sep="\t")
-K562_ActivePromoter <- read.table(temp[24],header=FALSE,sep="\t")
-K562_WeakPromoter <- read.table(temp[25],header=FALSE,sep="\t")
-K562_PoisedPromoter <- read.table(temp[26],header=FALSE,sep="\t")
-K562_StrongEnhancer4 <- read.table(temp[27],header=FALSE,sep="\t")
-K562_StrongEnhancer5 <- read.table(temp[28],header=FALSE,sep="\t")
-K562_WeakEnhancer6 <- read.table(temp[29],header=FALSE,sep="\t")
-K562_WeakEnhancer7 <- read.table(temp[30],header=FALSE,sep="\t")
-K562_Insulator <- read.table(temp[31],header=FALSE,sep="\t")
-K562_TxnTransition <- read.table(temp[32],header=FALSE,sep="\t")
 
-K562_TxnElongation_gr <- GRanges(seqnames=K562_TxnElongation$V1,IRanges(start=K562_TxnElongation$V2,end=K562_TxnElongation$V3))
-K562_WeakTxn_gr <- GRanges(seqnames=K562_WeakTxn$V1,IRanges(start=K562_WeakTxn$V2,end=K562_WeakTxn$V3))
-K562_Repressed_gr <- GRanges(seqnames=K562_Repressed$V1,IRanges(start=K562_Repressed$V2,end=K562_Repressed$V3))
-K562_Heterochromlo_gr <- GRanges(seqnames=K562_Heterochromlo$V1,IRanges(start=K562_Heterochromlo$V2,end=K562_Heterochromlo$V3)) 
-K562_RepetitiveCNV14_gr <- GRanges(seqnames=K562_RepetitiveCNV14$V1,IRanges(start=K562_RepetitiveCNV14$V2,end=K562_RepetitiveCNV14$V3)) 
-K562_RepetitiveCNV15_gr <- GRanges(seqnames=K562_RepetitiveCNV15$V1,IRanges(start=K562_RepetitiveCNV15$V2,end=K562_RepetitiveCNV15$V3))
-K562_ActivePromoter_gr <- GRanges(seqnames=K562_ActivePromoter$V1,IRanges(start=K562_ActivePromoter$V2,end=K562_ActivePromoter$V3))
-K562_WeakPromoter_gr <- GRanges(seqnames=K562_WeakPromoter$V1,IRanges(start=K562_WeakPromoter$V2,end=K562_WeakPromoter$V3))
-K562_PoisedPromoter_gr <- GRanges(seqnames=K562_PoisedPromoter$V1,IRanges(start=K562_PoisedPromoter$V2,end=K562_PoisedPromoter$V3)) 
-K562_StrongEnhancer4_gr <- GRanges(seqnames=K562_StrongEnhancer4$V1,IRanges(start=K562_StrongEnhancer4$V2,end=K562_StrongEnhancer4$V3)) 
-K562_StrongEnhancer5_gr <- GRanges(seqnames=K562_StrongEnhancer5$V1,IRanges(start=K562_StrongEnhancer5$V2,end=K562_StrongEnhancer5$V3))
-K562_WeakEnhancer6_gr <- GRanges(seqnames=K562_WeakEnhancer6$V1,IRanges(start=K562_WeakEnhancer6$V2,end=K562_WeakEnhancer6$V3)) 
-K562_WeakEnhancer7_gr <- GRanges(seqnames=K562_WeakEnhancer7$V1,IRanges(start=K562_WeakEnhancer7$V2,end=K562_WeakEnhancer7$V3)) 
-K562_Insulator_gr <- GRanges(seqnames=K562_Insulator$V1,IRanges(start=K562_Insulator$V2,end=K562_Insulator$V3))
-K562_TxnTransition_gr <- GRanges(seqnames=K562_TxnTransition$V1,IRanges(start=K562_TxnTransition$V2,end=K562_TxnTransition$V3)) 
-
-  logitdata$K562_TxnElongation <- ifelse(countOverlaps(tad_subcomp_full,K562_TxnElongation_gr)>=1,1,0)
-  logitdata$K562_WeakTxn <- ifelse(countOverlaps(tad_subcomp_full,K562_WeakTxn_gr)>=1,1,0)
-  logitdata$K562_Repressed <- ifelse(countOverlaps(tad_subcomp_full,K562_Repressed_gr)>=1,1,0)
-  logitdata$K562_Heterochromlo <- ifelse(countOverlaps(tad_subcomp_full,K562_Heterochromlo_gr)>=1,1,0)
-  logitdata$K562_RepetitiveCNV14 <- ifelse(countOverlaps(tad_subcomp_full,K562_RepetitiveCNV14_gr)>=1,1,0)
-  logitdata$K562_RepetitiveCNV15 <- ifelse(countOverlaps(tad_subcomp_full,K562_RepetitiveCNV15_gr)>=1,1,0)
-  logitdata$K562_ActivePromoter <- ifelse(countOverlaps(tad_subcomp_full,K562_ActivePromoter_gr)>=1,1,0)
-  logitdata$K562_WeakPromoter <- ifelse(countOverlaps(tad_subcomp_full,K562_WeakPromoter_gr)>=1,1,0)
-  logitdata$K562_PoisedPromoter <- ifelse(countOverlaps(tad_subcomp_full,K562_PoisedPromoter_gr)>=1,1,0)
-  logitdata$K562_StrongEnhancer4 <- ifelse(countOverlaps(tad_subcomp_full,K562_StrongEnhancer4_gr)>=1,1,0)
-  logitdata$K562_StrongEnhancer5 <- ifelse(countOverlaps(tad_subcomp_full,K562_StrongEnhancer5_gr)>=1,1,0)
-  logitdata$K562_WeakEnhancer6 <- ifelse(countOverlaps(tad_subcomp_full,K562_WeakEnhancer6_gr)>=1,1,0)
-  logitdata$K562_WeakEnhancer7 <- ifelse(countOverlaps(tad_subcomp_full,K562_WeakEnhancer7_gr)>=1,1,0)
-  logitdata$K562_Insulator <- ifelse(countOverlaps(tad_subcomp_full,K562_Insulator_gr)>=1,1,0)
-  logitdata$K562_TxnTransition <- ifelse(countOverlaps(tad_subcomp_full,K562_TxnTransition_gr)>=1,1,0)
-  
 ```
 
 # Combined
@@ -333,30 +282,6 @@ Gm12878_WE_gr <- GRanges(seqnames=Gm12878_WE$V1,IRanges(start=Gm12878_WE$V2,end=
   logitdata$Gm12878_WE <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_WE_gr)>=1,1,0)
 
 
-#K562
-K562_CTCF <- read.table(temp[10],header=FALSE,sep="\t")
-K562_E <- read.table(temp[11],header=FALSE,sep="\t")
-K562_PF <- read.table(temp[12],header=FALSE,sep="\t")
-K562_R <- read.table(temp[13],header=FALSE,sep="\t")
-K562_T <- read.table(temp[14],header=FALSE,sep="\t")
-K562_TSS <- read.table(temp[15],header=FALSE,sep="\t")
-K562_WE <- read.table(temp[16],header=FALSE,sep="\t")
-
-K562_CTCF_gr <- GRanges(seqnames=K562_CTCF$V1,IRanges(start=K562_CTCF$V2,end=K562_CTCF$V3))
-K562_E_gr <- GRanges(seqnames=K562_E$V1,IRanges(start=K562_E$V2,end=K562_E$V3))
-K562_PF_gr <- GRanges(seqnames=K562_PF$V1,IRanges(start=K562_PF$V2,end=K562_PF$V3))
-K562_R_gr <- GRanges(seqnames=K562_R$V1,IRanges(start=K562_R$V2,end=K562_R$V3))
-K562_T_gr <- GRanges(seqnames=K562_T$V1,IRanges(start=K562_T$V2,end=K562_T$V3))
-K562_TSS_gr <- GRanges(seqnames=K562_TSS$V1,IRanges(start=K562_TSS$V2,end=K562_TSS$V3))
-K562_WE_gr <- GRanges(seqnames=K562_WE$V1,IRanges(start=K562_WE$V2,end=K562_WE$V3))
-
-  logitdata$K562_CTCF <- ifelse(countOverlaps(tad_subcomp_full,K562_CTCF_gr)>=1,1,0) 
-  logitdata$K562_E <- ifelse(countOverlaps(tad_subcomp_full,K562_E_gr)>=1,1,0)
-  logitdata$K562_PF <- ifelse(countOverlaps(tad_subcomp_full,K562_PF_gr)>=1,1,0)
-  logitdata$K562_R <- ifelse(countOverlaps(tad_subcomp_full,K562_R_gr)>=1,1,0)
-  logitdata$K562_T <- ifelse(countOverlaps(tad_subcomp_full,K562_T_gr)>=1,1,0)
-  logitdata$K562_TSS <- ifelse(countOverlaps(tad_subcomp_full,K562_TSS_gr)>=1,1,0)
-  logitdata$K562_WE <- ifelse(countOverlaps(tad_subcomp_full,K562_WE_gr)>=1,1,0)
 
 ```
 
