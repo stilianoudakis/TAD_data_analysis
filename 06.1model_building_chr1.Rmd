@@ -234,7 +234,6 @@ roc.rfModel <- pROC::roc(test$y, pred.rfModel)
 auc.rfModel <- pROC::auc(roc.rfModel)
 #0.7935
 
-plot(roc.rfModel, legacy.axes=TRUE)
 
 varImp(rfModel$finalModel)
 plot(varImp(rfModel,scale=TRUE))
@@ -242,7 +241,7 @@ rf.varplot <- cbind.data.frame(Predictors=rownames(data.frame(varImp(rfModel,sca
                                    Importance=data.frame(varImp(rfModel,scale=TRUE)[1])$Overall)
 rf.varplot <- rf.varplot[order(rf.varplot$Importance),]
 dim(rf.varplot)
-rf.varplot2 <- rf.varplot[19:38,]
+rf.varplot2 <- rf.varplot[51:70,]
 rf.varplot2$Predictors <- factor(rf.varplot2$Predictors,levels=rf.varplot2$Predictors)
 (p <- ggplot(rf.varplot2) + geom_point(aes(Importance,Predictors)) +ggtitle("Variable Importance Plot for Random Forest")) 
 
@@ -258,99 +257,6 @@ ggplot(rf.varplot2, aes(x=Predictors,
   coord_flip()
   #theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-
-###############################################################################################
-
-#We begin by creating a baseline model using the recommended tuning parameters
-
-control <- trainControl(method="cv", number=10)
-metric <- "Accuracy"
-mtry <- floor(sqrt(ncol(cpg_smote_train)-1))
-tunegrid <- expand.grid(.mtry=mtry)
-
-set.seed(54352)
-rf_default <- train(significance~., data=cpg_smote_train, method="rf", metric=metric, tuneGrid=tunegrid, trControl=control)
-print(rf_default)
-#Accuracy   Kappa    
-#0.7442424  0.4884848
-
-predictions<-predict.train(rf_default,cpg_smote_test[,-1])
-table(predictions)
-confusionMatrix(predictions,cpg_smote_test$significance)
-#Accuracy : 0.7293 
-#Kappa : 0.0705
-
-auc <- roc(cpg_smote_test$significance,as.numeric(predictions))
-print(auc)
-#Area under the curve: 0.5993
-
-#determining the best number of variables randomly sampled as candidates at each split
-set.seed(5430)
-bestmtry <- tuneRF(cpg_smote_train[,-1],cpg_smote_train$significance,
-                   improve=.01,trace=T,plot=T) #suggests mtry=4
-
-#determining best number of trees
-control <- trainControl(method="cv", number=10)
-tunegrid <- expand.grid(.mtry=4)
-modellist <- list()
-for (ntree in c(200,500,1000)) {
-  set.seed(333)
-  fit <- train(significance~., data=cpg_smote_train, method="rf", metric=metric, tuneGrid=tunegrid, trControl=control, ntree=ntree)
-  key <- toString(ntree)
-  modellist[[key]] <- fit
-}
-# compare results
-results <- resamples(modellist)
-summary(results)
-dotplot(results)
-
-set.seed(1006)
-cpg.rf <- train(significance~., data=cpg_smote_train, 
-                    method="rf", 
-                    metric="Accuracy", 
-                    tuneGrid=tunegrid, 
-                    trControl=control, 
-                    ntree=1000)
-cpg.rf
-
-set.seed(23454)
-predictions <- predict(cpg.rf,newdata=cpg_smote_test)
-table(predictions)
-confusionMatrix(predictions,factor(cpg_smote_test$significance))
-#Accuracy : 0.7521 
-#Kappa :  0.0859 
-
-auc <- roc(cpg_smote_test$significance,as.numeric(predictions))
-print(auc)
-#Area under the curve: 0.6126
-
-plot(auc, legacy.axes=TRUE)
-#cpg_thresh <- lift(significance ~ cpg.rf, data=cpg_smote_train)
-
-#cpg.rf$importance
-#varImpPlot(cpg.rf) #,type=2)
-#varImpPlot(cpg.rf,n.var=20)
-varImp(cpg.rf$finalModel)
-plot(varImp(cpg.rf,scale=TRUE))
-rf.varplot <- cbind.data.frame(Predictors=rownames(data.frame(varImp(cpg.rf,scale=TRUE)[1])),
-                                   Importance=data.frame(varImp(cpg.rf,scale=TRUE)[1])$Overall)
-rf.varplot <- rf.varplot[order(rf.varplot$Importance),]
-dim(rf.varplot)
-rf.varplot2 <- rf.varplot[34:53,]
-rf.varplot2$Predictors <- factor(rf.varplot2$Predictors,levels=rf.varplot2$Predictors)
-(p <- ggplot(rf.varplot2) + geom_point(aes(Importance,Predictors)) +ggtitle("Variable Importance Plot for Random Forest")) 
-
-ggplot(rf.varplot2, aes(x=Predictors, 
-                        y=Importance)) +
-  xlab("Predictors") +
-  ylab("Importance") +
-  #ggtitle("Importance Plot for Random Forest") +
-  geom_bar(stat="identity", 
-           width=.5, 
-           position="dodge",
-           fill="blue") +
-  coord_flip()
-  #theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 ```
 
@@ -368,14 +274,13 @@ roc.gbmModel <- pROC::roc(test$y, pred.gbmModel)
 auc.gbmModel <- pROC::auc(roc.gbmModel)
 #0.8156
 
-plot(roc.gbmModel, legacy.axis=TRUE)
+
 
 varImp(gbmModel)
-
 gbm.data <- data.frame(varImp(gbmModel)[1])
 gbm.data2 <- cbind.data.frame(Predictors=rownames(gbm.data),Importance=gbm.data$Overall)
-gbm.data2 <- gbm.data2[order(gbm.data2$Importance,decreasing=T),]
-gbm.data2 <- gbm.data2[1:20,]
+gbm.data2 <- gbm.data2[order(gbm.data2$Importance),]
+gbm.data2 <- gbm.data2[51:70,]
 gbm.data2 <- gbm.data2[order(gbm.data2$Importance),]
 gbm.data2$Predictors <- factor(gbm.data2$Predictors,levels=gbm.data2$Predictors)
 (p <- ggplot(gbm.data2) + geom_point(aes(Importance,Predictors)) + ggtitle("Variable Importance Plot for GBM Model"))
@@ -408,22 +313,16 @@ roc.eNetModel <- pROC::roc(test$y, pred.eNetModel)
 auc.eNetModel <- pROC::auc(roc.eNetModel)
 #0.8052
 
-plot(roc.eNetModel, legacy.axis=TRUE)
 
-vimp <- varImp(eNetModel)$importance
-vimp2 <- data.frame(Feature=rownames(vimp), Importance=vimp$Overall)
-vimp2$Feature <- as.character(vimp2$Feature)
-rownames(vimp2) <- c()
-vimp2 <- vimp2[order(-vimp2$Importance),]
-vimp2 <- vimp2[1:20,]
-vimp2 <- within(vimp2, 
-                   Feature <- factor(Feature, 
-                                      levels=names(sort(table(Feature), 
-                                                        decreasing=TRUE))))
 
-plot(varImp(eNetModel))
+enetdata <- varImp(eNetModel)$importance
+enetdata2 <- data.frame(Feature=rownames(enetdata), Importance=enetdata$Overall)
+enetdata2$Feature <- as.character(enetdata2$Feature)
+enetdata2 <- enetdata2[order(enetdata2$Importance),]
+enetdata2 <- enetdata2[51:70,]
+enetdata2$Feature <- factor(enetdata2$Feature, levels=enetdata2$Feature[order(enetdata2$Importance)])
 
-ggplot(vimp2, aes(x=Feature, 
+ggplot(enetdata2, aes(x=Feature, 
                         y=Importance)) +
   xlab("Predictors") +
   ylab("Importance") +
@@ -431,7 +330,7 @@ ggplot(vimp2, aes(x=Feature,
   geom_bar(stat="identity", 
            width=.5, 
            position="dodge",
-           fill="red") +
+           fill="green") +
   coord_flip()
   #theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
@@ -451,6 +350,13 @@ p<-ggplot(data=test.auc, aes(x=model, y=auc)) +
   geom_bar(stat="identity", fill="steelblue")+
   theme_minimal()
 p
+
+plot(roc.rfModel, legacy.axes=TRUE, y=c(0,1), col="red")
+lines(roc.gbmModel, col="blue")
+lines(roc.eNetModel, col="green")
+
+
+
 ```
 
 # Comparing results when using smote
@@ -473,12 +379,12 @@ dim(train_smote)
 #4564   71
 
 # Classic GLM method
-glmModel <- glm(y ~ ., 
+glmModel_sm <- glm(y ~ ., 
                 data = train_smote, 
                 family = binomial)
-pred.glmModel <- predict(glmModel, newdata=test, type="response")
-roc.glmModel <- roc(test$y, pred.glmModel)
-auc.glmModel <- pROC::auc(roc.glmModel)
+pred.glmModel_sm <- predict(glmModel_sm, newdata=test, type="response")
+roc.glmModel_sm <- roc(test$y, pred.glmModel_sm)
+auc.glmModel_sm <- pROC::auc(roc.glmModel_sm)
 #0.7971
 
 # Establishing tuning/training parameters
@@ -493,44 +399,149 @@ fitControl <- trainControl(method = "repeatedcv",
 
 # CART model
 set.seed(2014)
-cartModel <- train(y ~ ., data=train_smote, method = "rpart", metric="ROC", trControl = fitControl, tuneLength=5)
-pred.cartModel <- as.vector(predict(cartModel, newdata=test, type="prob")[,"Yes"])
-roc.cartModel <- pROC::roc(test$y, pred.cartModel)
-auc.cartModel <- pROC::auc(roc.cartModel)
+cartModel_sm <- train(y ~ ., data=train_smote, method = "rpart", metric="ROC", trControl = fitControl, tuneLength=5)
+pred.cartModel_sm <- as.vector(predict(cartModel_sm, newdata=test, type="prob")[,"Yes"])
+roc.cartModel_sm <- pROC::roc(test$y, pred.cartModel_sm)
+auc.cartModel_sm <- pROC::auc(roc.cartModel_sm)
 #0.7824
 
 # Elastic Net
 set.seed(2014)
-eNetModel <- train(y ~ ., data=train_smote, method = "glmnet", metric="ROC", trControl = fitControl, family="binomial", tuneLength=5)
-pred.eNetModel <- as.vector(predict(eNetModel, newdata=test, type="prob")[,"Yes"])
-roc.eNetModel <- pROC::roc(test$y, pred.eNetModel)
-auc.eNetModel <- pROC::auc(roc.eNetModel)
+eNetModel_sm <- train(y ~ ., data=train_smote, method = "glmnet", metric="ROC", trControl = fitControl, family="binomial", tuneLength=5)
+pred.eNetModel_sm <- as.vector(predict(eNetModel_sm, newdata=test, type="prob")[,"Yes"])
+roc.eNetModel_sm <- pROC::roc(test$y, pred.eNetModel_sm)
+auc.eNetModel_sm <- pROC::auc(roc.eNetModel_sm)
 #0.7977
 
 # GBM
 set.seed(2014)
-gbmModel <- train(y ~ ., data=train_smote, method = "gbm", metric="ROC", trControl = fitControl, verbose=FALSE, tuneLength=5)
-pred.gbmModel <- as.vector(predict(gbmModel, newdata=test, type="prob")[,"Yes"])
-roc.gbmModel <- pROC::roc(test$y, pred.gbmModel)
-auc.gbmModel <- pROC::auc(roc.gbmModel)
+gbmModel_sm <- train(y ~ ., data=train_smote, method = "gbm", metric="ROC", trControl = fitControl, verbose=FALSE, tuneLength=5)
+pred.gbmModel_sm <- as.vector(predict(gbmModel_sm, newdata=test, type="prob")[,"Yes"])
+roc.gbmModel_sm <- pROC::roc(test$y, pred.gbmModel_sm)
+auc.gbmModel_sm <- pROC::auc(roc.gbmModel_sm)
 #0.7872
 
 # Random Forest
 set.seed(2014)
-rfModel <- train(y ~ ., data=train_smote, method = "rf", metric="ROC", trControl = fitControl, verbose=FALSE, tuneLength=5)
-pred.rfModel <- as.vector(predict(rfModel, newdata=test, type="prob")[,"Yes"])
-roc.rfModel <- pROC::roc(test$y, pred.rfModel)
-auc.rfModel <- pROC::auc(roc.rfModel)
+rfModel_sm <- train(y ~ ., data=train_smote, method = "rf", metric="ROC", trControl = fitControl, verbose=FALSE, tuneLength=5)
+pred.rfModel_sm <- as.vector(predict(rfModel_sm, newdata=test, type="prob")[,"Yes"])
+roc.rfModel_sm <- pROC::roc(test$y, pred.rfModel_sm)
+auc.rfModel_sm <- pROC::auc(roc.rfModel_sm)
 #0.7858
 
 # Plotting model performance
-test.auc <- data.frame(model=c("glm","gbm","glmnet","cart","rForest"),auc=c(auc.glmModel, auc.gbmModel, auc.eNetModel, auc.cartModel, auc.rfModel))
-test.auc <- test.auc[order(test.auc$auc, decreasing=TRUE),]
-test.auc$model <- factor(test.auc$model, levels=test.auc$model)
-test.auc
-p<-ggplot(data=test.auc, aes(x=model, y=auc)) +
+test.auc <- data.frame(model=c("glm","gbm","glmnet","cart","rForest"),auc=c(auc.glmModel_sm, auc.gbmModel_sm, auc.eNetModel_sm, auc.cartModel_sm, auc.rfModel_sm))
+test.auc_sm <- test.auc_sm[order(test.auc_sm$auc, decreasing=TRUE),]
+test.auc_sm$model <- factor(test.auc_sm$model, levels=test.auc_sm$model)
+test.auc_sm
+p_sm<-ggplot(data=test.auc_sm, aes(x=model, y=auc)) +
   geom_bar(stat="identity", fill="steelblue")+
   theme_minimal()
-p
+p_sm
+
+plot(roc.rfModel_sm, legacy.axes=TRUE, col="red")
+lines(roc.gbmModel_sm, col="blue")
+lines(roc.eNetModel_sm, col="green")
+
+#feature importance plots
+#RF
+rf.varplot_sm <- cbind.data.frame(Predictors=rownames(data.frame(varImp(rfModel_sm,scale=TRUE)[1])),
+                                   Importance=data.frame(varImp(rfModel_sm,scale=TRUE)[1])$Overall)
+rf.varplot_sm <- rf.varplot_sm[order(rf.varplot_sm$Importance),]
+dim(rf.varplot_sm)
+rf.varplot2_sm <- rf.varplot_sm[51:70,]
+rf.varplot2_sm$Predictors <- factor(rf.varplot2_sm$Predictors,levels=rf.varplot2_sm$Predictors)
+(p <- ggplot(rf.varplot2_sm) + geom_point(aes(Importance,Predictors)) +ggtitle("Variable Importance Plot for Random Forest")) 
+
+ggplot(rf.varplot2_sm, aes(x=Predictors, 
+                        y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Random Forest") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="blue") +
+  coord_flip()
+
+#GBM
+varImp(gbmModel_sm)
+gbm.data_sm <- data.frame(varImp(gbmModel_sm)[1])
+gbm.data2_sm <- cbind.data.frame(Predictors=rownames(gbm.data_sm),Importance=gbm.data_sm$Overall)
+gbm.data2_sm <- gbm.data2_sm[order(gbm.data2_sm$Importance),]
+gbm.data2_sm <- gbm.data2_sm[51:70,]
+gbm.data2_sm <- gbm.data2_sm[order(gbm.data2_sm$Importance),]
+gbm.data2_sm$Predictors <- factor(gbm.data2_sm$Predictors,levels=gbm.data2_sm$Predictors)
+(p <- ggplot(gbm.data2_sm) + geom_point(aes(Importance,Predictors)) + ggtitle("Variable Importance Plot for GBM Model"))
+
+ggplot(gbm.data2_sm, aes(x=Predictors, 
+                        y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="red") +
+  coord_flip()
+
+#ElasticNet
+enetdata_sm <- varImp(eNetModel_sm)$importance
+enetdata2_sm <- data.frame(Feature=rownames(enetdata_sm), Importance=enetdata_sm$Overall)
+enetdata2_sm$Feature <- as.character(enetdata2_sm$Feature)
+enetdata2_sm <- enetdata2_sm[order(enetdata2_sm$Importance),]
+enetdata2_sm <- enetdata2_sm[51:70,]
+enetdata2_sm$Feature <- factor(enetdata2_sm$Feature, levels=enetdata2_sm$Feature[order(enetdata2_sm$Importance)])
+
+ggplot(enetdata2_sm, aes(x=Feature, 
+                        y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="green") +
+  coord_flip()
+
 ```
 
+
+# Comparing Models
+
+```{r include=FALSE}
+#Without SMOTE
+
+#finding common features between the models
+intersect(rf.varplot2$Predictors,gbm.data2$Predictors)
+commonfeats <- intersect(intersect(rf.varplot2$Predictors,gbm.data2$Predictors),enetdata2$Feature)
+
+rf.varplot2$ranking <- rank(-rf.varplot2$Importance)
+gbm.data2$ranking <- rank(-gbm.data2$Importance)
+enetdata2$ranking <- rank(-enetdata2$Importance)
+
+#rankings between rf, gbm, and elastic net
+commonfeatsdf <- data.frame(Features = commonfeats,
+                          RandomForest = rf.varplot2$ranking[rf.varplot2$Predictors %in% commonfeats],
+                          GBM = gbm.data2$ranking[gbm.data2$Predictors %in% commonfeats],
+                          ElasticNet = enetdata2[order(match(enetdata2$Feature, commonfeats)),]$ranking[enetdata2[order(match(enetdata2$Feature, commonfeats)),]$Feature %in% commonfeats])
+
+
+#With SMOTE
+
+#finding common features between the models
+intersect(rf.varplot2_sm$Predictors,gbm.data2_sm$Predictors)
+commonfeats_sm <- intersect(intersect(rf.varplot2_sm$Predictors,gbm.data2_sm$Predictors),enetdata2_sm$Feature)
+
+rf.varplot2_sm$ranking <- rank(-rf.varplot2_sm$Importance)
+gbm.data2_sm$ranking <- rank(-gbm.data2_sm$Importance)
+enetdata2_sm$ranking <- rank(-enetdata2_sm$Importance)
+
+#rankings between rf, gbm, and elastic net
+commonfeatsdf_sm <- data.frame(Features = commonfeats_sm,
+                          RandomForest = rf.varplot2_sm$ranking[rf.varplot2_sm$Predictors %in% commonfeats_sm],
+                          GBM = gbm.data2_sm$ranking[gbm.data2_sm$Predictors %in% commonfeats_sm],
+                          ElasticNet = enetdata2_sm[order(match(enetdata2_sm$Feature, commonfeats_sm)),]$ranking[enetdata2_sm[order(match(enetdata2_sm$Feature, commonfeats_sm)),]$Feature %in% commonfeats_sm])
+
+
+```
