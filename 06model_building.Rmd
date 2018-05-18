@@ -169,19 +169,6 @@ fitControl <- trainControl(method = "repeatedcv",
                            summaryFunction = twoClassSummary)
 ```
 
-# Establishing tuning/training parameters
-
-```{r}
-fitControl <- trainControl(method = "repeatedcv",
-                           number = 5,
-                           repeats = 10,
-                           ## Estimate class probabilities
-                           classProbs = TRUE,
-                           ## Evaluate performance using 
-                           ## the following function
-                           summaryFunction = twoClassSummary)
-```
-
 
 # CART model
 
