@@ -111,6 +111,8 @@ subcompartgr <- reduce(subcompartgr)
 #reduce command shrunk the subcompartment intervals from 3849 to 2909
 #adding the type of subcompartment as metadata for granges object
 mcols(subcompartgr)$compartment <- ifelse(strand(subcompartgr)=="+","A","B")
+#getting rid of strand information
+strand(subcompartgr) <- "*"
 
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
 
