@@ -361,7 +361,7 @@ logitdata$CHR <- as.character(logitdata$CHR)
 
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
 
-saveRDS(logitdata, "logitdata.rds")
+saveRDS(logitdata, "logitdata2.rds")
 
 ```
 
