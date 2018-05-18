@@ -145,3 +145,64 @@ plot(perf)
 auc <- performance(pred, measure = "auc")
 auc <- auc@y.values[[1]]
 auc
+
+
+
+#looking at within overlaps to find interval for distance calculation
+
+#A compartment
+wA <- distanceToNearest(within, Asubcompartgr)
+A_dist <- mcols(wA)$distance
+
+#B compartment
+wB <- distanceToNearest(within, Bsubcompartgr)
+B_dist <- mcols(wB)$distance
+
+#closest distance
+#wClosest <- distanceToNearest(within, subcompartgr)
+#Closest_dist <- mcols(wClosest)$distance
+
+#assigning the distances to the within granges object
+mcols(within)$A_dist <- A_dist
+mcols(within)$B_dist <- B_dist
+#mcols(within)$Closest_dist <- Closest_dist
+
+
+#looking at the bins that had no overlaps and calculating distances
+#none_mid <- (start(none)+end(none))/2
+#none_mid_gr <- GRanges(seqnames = seqnames(none),
+#                       ranges = IRanges(start = none_mid, end = none_mid))
+
+#left distance (using precede function)
+pre <- precede(none_mid_gr,subcompartgr, select="all")
+pre <- pre[order(queryHits(pre), -subjectHits(pre))]
+pre <- pre[!duplicated(queryHits(pre))]
+pre_sub <- subcompartgr[subjectHits(pre)]
+pre_dist <- distance(none_mid_gr,pre_sub)
+
+#right distance
+foll <- follow(none_mid_gr,subcompartgr, select="all")
+foll <- foll[order(queryHits(foll), -subjectHits(foll))]
+foll <- foll[!duplicated(queryHits(foll))]
+foll_sub <- subcompartgr[subjectHits(foll)]
+foll_dist <- distance(none_mid_gr, foll_sub)
+
+
+#closest distance
+closest_dist <- distanceToNearest(none_mid_gr, subcompartgr)
+closest_dist <- mcols(closest_dist)$distance
+
+#assigning the distances to the none granges object
+mcols(none)$left_dist <- foll_dist
+mcols(none)$right_dist <- pre_dist
+mcols(none)$closest_dist <- closest_dist
+
+
+#assigning 0 for distances for partial overlaps
+mcols(partial1)$left_dist <- 0
+mcols(partial1)$right_dist <- 0
+mcols(partial1)$closest_dist <- 0
+
+mcols(partial2)$left_dist <- 0
+mcols(partial2)$right_dist <- 0
+mcols(partial2)$closest_dist <- 0
