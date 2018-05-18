@@ -523,8 +523,13 @@ enetdata2$ranking <- rank(-enetdata2$Importance)
 #rankings between rf, gbm, and elastic net
 commonfeatsdf <- data.frame(Features = commonfeats,
                           RandomForest = rf.varplot2$ranking[rf.varplot2$Predictors %in% commonfeats],
-                          GBM = gbm.data2$ranking[gbm.data2$Predictors %in% commonfeats],
-                          ElasticNet = enetdata2[order(match(enetdata2$Feature, commonfeats)),]$ranking[enetdata2[order(match(enetdata2$Feature, commonfeats)),]$Feature %in% commonfeats])
+                          RFImp = rf.varplot2$Importance[rf.varplot2$Predictors %in% commonfeats],
+                          GBM = gbm.data2[order(match(gbm.data2$Predictors, commonfeats)),]$ranking[gbm.data2[order(match(gbm.data2$Predictors, commonfeats)),]$Predictors %in% commonfeats],
+                          GBMImp = gbm.data2[order(match(gbm.data2$Predictors, commonfeats)),]$Importance[gbm.data2[order(match(gbm.data2$Predictors, commonfeats)),]$Predictors %in% commonfeats],
+                          ElasticNet = enetdata2[order(match(enetdata2$Feature, commonfeats)),]$ranking[enetdata2[order(match(enetdata2$Feature, commonfeats)),]$Feature %in% commonfeats],
+                          ENetImp = enetdata2[order(match(enetdata2$Feature, commonfeats)),]$Importance[enetdata2[order(match(enetdata2$Feature, commonfeats)),]$Feature %in% commonfeats]
+                          )
+
 
 
 #With SMOTE
@@ -540,8 +545,12 @@ enetdata2_sm$ranking <- rank(-enetdata2_sm$Importance)
 #rankings between rf, gbm, and elastic net
 commonfeatsdf_sm <- data.frame(Features = commonfeats_sm,
                           RandomForest = rf.varplot2_sm$ranking[rf.varplot2_sm$Predictors %in% commonfeats_sm],
-                          GBM = gbm.data2_sm$ranking[gbm.data2_sm$Predictors %in% commonfeats_sm],
-                          ElasticNet = enetdata2_sm[order(match(enetdata2_sm$Feature, commonfeats_sm)),]$ranking[enetdata2_sm[order(match(enetdata2_sm$Feature, commonfeats_sm)),]$Feature %in% commonfeats_sm])
+                          RFImp = rf.varplot2_sm$Importance[rf.varplot2_sm$Predictors %in% commonfeats_sm],
+                          GBM = gbm.data2_sm[order(match(gbm.data2_sm$Predictors, commonfeats_sm)),]$ranking[gbm.data2_sm[order(match(gbm.data2_sm$Predictors, commonfeats_sm)),]$Predictors %in% commonfeats_sm],
+                          GBMImp = gbm.data2_sm[order(match(gbm.data2_sm$Predictors, commonfeats_sm)),]$Importance[gbm.data2_sm[order(match(gbm.data2_sm$Predictors, commonfeats_sm)),]$Predictors %in% commonfeats_sm],
+                          ElasticNet = enetdata2_sm[order(match(enetdata2_sm$Feature, commonfeats_sm)),]$ranking[enetdata2_sm[order(match(enetdata2_sm$Feature, commonfeats_sm)),]$Feature %in% commonfeats_sm],
+                          ENetImp = enetdata2_sm[order(match(enetdata2_sm$Feature, commonfeats_sm)),]$Importance[enetdata2_sm[order(match(enetdata2_sm$Feature, commonfeats_sm)),]$Feature %in% commonfeats_sm]
+                          )
 
 
 ```
