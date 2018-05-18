@@ -40,7 +40,7 @@ package.check <- lapply(packages, FUN = function(x) {
 ```{r}
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/data")
 
-logitdata <- readRDS("logitdata.rds")
+logitdata <- readRDS("logitdata2.rds")
 
 ```
 
@@ -50,41 +50,23 @@ logitdata <- readRDS("logitdata.rds")
 
 chr1data <- logitdata[which(logitdata$CHR=="chr1"),]
 dim(chr1data)
+#247632    107
 
-#removing A and left_dist variables
-chr1data <- chr1data[,-which(colnames(chr1data)=="A" | colnames(chr1data)=="left_dist")]
+#removing A and B indicator variables
+chr1data <- chr1data[,-which(colnames(chr1data)=="A" | colnames(chr1data)=="B")]
 
 ```
 
 # Transforming the distance variables and gerp/ucne score variables
 ```{r}
-
-#chr1data$left_dist <- log(chr1data$left_dist + 1, base = 2)
-chr1data$right_dist <- log(chr1data$right_dist + 1, base = 2)
-chr1data$closest_dist <- log(chr1data$closest_dist + 1, base = 2)
-
-chr1data$gerp_score <- log(chr1data$gerp_score + 1, base = 2)
-chr1data$UCNE_score <- log(chr1data$UCNE_score+ 1, base = 2)
-
-prop.table(table(chr1data$y))   #0.99342169 0.00657831 
+cols <- c(grep("dist",colnames(chr1data)), which(colnames(chr1data)=="gerp_score" | colnames(chr1data)=="UCNE_score"))
+chr1data[,cols] <- apply(chr1data[,cols], 2, function(x){log(x + 1, base=2)})
 
 
 #Center and scale gerp score, distance variables
-#chr1data$left_dist <- scale(chr1data$left_dist, center = TRUE, scale = TRUE)
-chr1data$right_dist <- scale(chr1data$right_dist, center = TRUE, scale = TRUE)
-chr1data$closest_dist <- scale(chr1data$closest_dist, center = TRUE, scale = TRUE)
+chr1data[,cols] <- apply(chr1data[,cols], 2, function(x){scale(x, center = TRUE, scale = TRUE)})
 
-chr1data$gerp_score <- scale(chr1data$gerp_score, center = TRUE, scale = TRUE)
-chr1data$UCNE_score <- scale(chr1data$UCNE_score, center = TRUE, scale = TRUE)
-
-#chr1data$left_dist <- as.numeric(chr1data$left_dist)
-chr1data$right_dist <- as.numeric(chr1data$right_dist)
-chr1data$closest_dist <- as.numeric(chr1data$closest_dist)
-
-chr1data$gerp_score <- as.numeric(chr1data$gerp_score)
-chr1data$UCNE_score <- as.numeric(chr1data$UCNE_score)
-
-
+prop.table(table(chr1data$y))   #0.99342169 0.00657831 
 ```
 
 # Randomly sampling to create balanced dataset
@@ -97,6 +79,8 @@ set.seed(2234)
 chr1data_r <- rbind.data.frame(oneclass, 
                                zeroclass[sample.int(dim(zeroclass)[1]
                                                     ,dim(oneclass)[1]),])
+
+table(chr1data_r$y)
 
 ```
 
@@ -121,13 +105,14 @@ nzvar <- rownames(nzv[nzv$nzv,])
 #Removing zero variance predictors
 chr1data_rf <- chr1data_r[, -which(colnames(chr1data_r) %in% nzvar)]
 dim(chr1data_rf)
-#3258   39
+#3258   72
 
 #check for linear dependencies
 comboinfo <- findLinearCombos(chr1data_rf)
 comboinfo
-#chr1data_rf <- chr1data_rf[,-comboinfo$remove]
-#dim(chr1data_rf)
+chr1data_rf <- chr1data_rf[,-comboinfo$remove]
+dim(chr1data_rf)
+#3258   71
 
 ```
 
@@ -141,7 +126,7 @@ train <- chr1data_rf[inTrainingSet,]
 test <- chr1data_rf[-inTrainingSet,]
 
 prop.table(table(train$y))   #0.5109649 0.4890351  
-dim(train)  #2280   40
+dim(train)  #2280   71
 
 
 set.seed(3432)
@@ -150,7 +135,7 @@ train <- chr1data_rf[inTrainingSet,]
 test <- chr1data_rf[-inTrainingSet,]
 
 prop.table(table(train$y))   #0.5 0.5 
-dim(train)  #2282   39
+dim(train)  #2282   71
 
 
 ```
@@ -233,6 +218,31 @@ roc.rfModel <- pROC::roc(test$y, pred.rfModel)
 
 auc.rfModel <- pROC::auc(roc.rfModel)
 #0.7188
+
+plot(roc.rfModel, legacy.axes=TRUE)
+
+varImp(rfModel$finalModel)
+plot(varImp(rfModel,scale=TRUE))
+rf.varplot <- cbind.data.frame(Predictors=rownames(data.frame(varImp(rfModel,scale=TRUE)[1])),
+                                   Importance=data.frame(varImp(rfModel,scale=TRUE)[1])$Overall)
+rf.varplot <- rf.varplot[order(rf.varplot$Importance),]
+dim(rf.varplot)
+rf.varplot2 <- rf.varplot[19:38,]
+rf.varplot2$Predictors <- factor(rf.varplot2$Predictors,levels=rf.varplot2$Predictors)
+(p <- ggplot(rf.varplot2) + geom_point(aes(Importance,Predictors)) +ggtitle("Variable Importance Plot for Random Forest")) 
+
+ggplot(rf.varplot2, aes(x=Predictors, 
+                        y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Random Forest") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="blue") +
+  coord_flip()
+  #theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
 
 ###############################################################################################
 
@@ -342,6 +352,31 @@ roc.gbmModel <- pROC::roc(test$y, pred.gbmModel)
 
 auc.gbmModel <- pROC::auc(roc.gbmModel)
 #0.7283
+
+plot(roc.gbmModel, legacy.axis=TRUE)
+
+varImp(gbmModel)
+
+gbm.data <- data.frame(varImp(gbmModel)[1])
+gbm.data2 <- cbind.data.frame(Predictors=rownames(gbm.data),Importance=gbm.data$Overall)
+gbm.data2 <- gbm.data2[order(gbm.data2$Importance,decreasing=T),]
+gbm.data2 <- gbm.data2[1:20,]
+gbm.data2 <- gbm.data2[order(gbm.data2$Importance),]
+gbm.data2$Predictors <- factor(gbm.data2$Predictors,levels=gbm.data2$Predictors)
+(p <- ggplot(gbm.data2) + geom_point(aes(Importance,Predictors)) + ggtitle("Variable Importance Plot for GBM Model"))
+
+ggplot(gbm.data2, aes(x=Predictors, 
+                        y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="red") +
+  coord_flip()
+  #theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
 ```
 
 # Elastic Net
@@ -357,6 +392,33 @@ roc.eNetModel <- pROC::roc(test$y, pred.eNetModel)
 
 auc.eNetModel <- pROC::auc(roc.eNetModel)
 #0.7182
+
+plot(roc.eNetModel, legacy.axis=TRUE)
+
+vimp <- varImp(eNetModel)$importance
+vimp2 <- data.frame(Feature=rownames(vimp), Importance=vimp$Overall)
+vimp2$Feature <- as.character(vimp2$Feature)
+rownames(vimp2) <- c()
+vimp2 <- vimp2[order(-vimp2$Importance),]
+vimp2 <- vimp2[1:20,]
+vimp2 <- within(vimp2, 
+                   Feature <- factor(Feature, 
+                                      levels=names(sort(table(Feature), 
+                                                        decreasing=TRUE))))
+
+plot(varImp(eNetModel))
+
+ggplot(vimp2, aes(x=Feature, 
+                        y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="red") +
+  coord_flip()
+  #theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
 # Plotting model performance
