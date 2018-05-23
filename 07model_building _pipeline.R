@@ -199,10 +199,13 @@ test.auc$model <- factor(test.auc$model, levels=test.auc$model)
 
 test.auc
 
-p<-ggplot(data=test.auc, aes(x=model, y=auc)) +
+perf_nosmote<-ggplot(data=test.auc, aes(x=model, y=auc)) +
   geom_bar(stat="identity", fill="steelblue") +
   theme_minimal()
-p
+
+jpeg("/home/stilianoudakisc/TAD_data_analysis/output/perf_nosmote")
+perf_nosmote
+dev.off()
 
 
 #Variable Importance Plots
@@ -227,6 +230,9 @@ enetp <- ggplot(varimp.enet.df, aes(x=Feature,
   coord_flip()
 #theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
+jpeg("/home/stilianoudakisc/TAD_data_analysis/output/enet_varimp_nosmote")
+enetp
+dev.off()
 
 
 #RF
@@ -249,6 +255,9 @@ rfp <- ggplot(varimp.rf.df, aes(x=Feature,
   coord_flip()
 #theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
+jpeg("/home/stilianoudakisc/TAD_data_analysis/output/rf_varimp_nosmote")
+rfp
+dev.off()
 
 #GBM
 varimp.gbm <- as.vector(rowMeans(performlst[[3]]))
@@ -270,6 +279,9 @@ gbmp <- ggplot(varimp.gbm.df, aes(x=Feature,
   coord_flip()
 #theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
+jpeg("/home/stilianoudakisc/TAD_data_analysis/output/gbm_varimp_nosmote")
+gbmp
+dev.off()
 
 #SVM
 varimp.svm <- as.vector(rowMeans(performlst[[4]]))
@@ -291,7 +303,13 @@ svmp <- ggplot(varimp.svm.df, aes(x=Feature,
   coord_flip()
 #theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
+jpeg("/home/stilianoudakisc/TAD_data_analysis/output/svm_varimp_nosmote")
+grid.arrange(enetp,rfp,gbmp,svmp, ncol=2,nrow=2)
+dev.off()
 
+jpeg("/home/stilianoudakisc/TAD_data_analysis/output/varimps_nosmote")
+svmp
+dev.off()
 
 #Comparing Results
 #finding common features between the models
@@ -320,9 +338,13 @@ commonfeatsdf <- data.frame(Features = z,
                             SVMImp = varimp.svm.df[order(match(varimp.svm.df$Feature, z)),]$Importance[varimp.svm.df[order(match(varimp.svm.df$Feature, z)),]$Feature %in% z]
                             )
 
+commonfeatsdf
 
+saveRDS(commonfeatsdf, "/home/stilianoudakisc/TAD_data_analysis/output/commonfeats_nosmote")
+
+jpeg("/home/stilianoudakisc/TAD_data_analysis/output/common_feats_nosmote")
 datatable(commonfeatsdf)
-
+dev.off()
 
 
 
