@@ -442,36 +442,36 @@ enetp
 
 ```{r}
 
-set.seed(5354)
+#set.seed(5354)
 
-svmModel <- train(y ~., data = train, method = "svmRadial",
-  trControl=fitControl,
-  metric="ROC",
-  tuneLength = 10)
+#svmModel <- train(y ~., data = train, method = "svmRadial",
+#  trControl=fitControl,
+#  metric="ROC",
+#  tuneLength = 10)
 
-grid_radial <- expand.grid(sigma = c(0,0.01, 0.02, 0.025, 0.03, 0.04,
- 0.05, 0.06, 0.07,0.08, 0.09, 0.1, 0.25, 0.5, 0.75,0.9),
- C = c(0,0.01, 0.05, 0.1, 0.25, 0.5, 0.75,
- 1, 1.5, 2,5))
-svmModel <- train(y ~., data = train, method = "svmRadial",
-                    trControl=fitControl,
-                    metric="ROC",
-                    tuneGrid = grid_radial,
-                    tuneLength = 10)
+#grid_radial <- expand.grid(sigma = c(0,0.01, 0.02, 0.025, 0.03, 0.04,
+# 0.05, 0.06, 0.07,0.08, 0.09, 0.1, 0.25, 0.5, 0.75,0.9),
+# C = c(0,0.01, 0.05, 0.1, 0.25, 0.5, 0.75,
+# 1, 1.5, 2,5))
+#svmModel <- train(y ~., data = train, method = "svmRadial",
+#                    trControl=fitControl,
+#                    metric="ROC",
+#                    tuneGrid = grid_radial,
+#                   tuneLength = 10)
  
 
-svm.c <- train(y ~., data = train,
-               method='svmRadial',
-               trControl=fitControl,
-               metric="ROC",tuneLength = 10)
+#svm.c <- train(y ~., data = train,
+#               method='svmRadial',
+#               trControl=fitControl,
+#               metric="ROC",tuneLength = 10)
 
-plot(svm.c)
+#plot(svm.c)
 
-pred.svmModel <- as.vector(predict(svm.c, newdata=test, type="prob")[,"Yes"])
+#pred.svmModel <- as.vector(predict(svm.c, newdata=test, type="prob")[,"Yes"])
 
-roc.svmModel <- pROC::roc(test$y, pred.svmModel)
+#roc.svmModel <- pROC::roc(test$y, pred.svmModel)
 
-auc.svmModel <- pROC::auc(roc.svmModel)
+#auc.svmModel <- pROC::auc(roc.svmModel)
 #0.7659
 
 ```
@@ -481,27 +481,27 @@ auc.svmModel <- pROC::auc(roc.svmModel)
 
 ```{r}
 
-nnetGrid <- expand.grid(.size=1:10,
-                        .decay=c(0,.1,1,2))
-maxSize <- max(nnetGrid$.size)
-numWts <- 1*(maxSize*(length(dim(train)[2])) + maxSize + 1)
+#nnetGrid <- expand.grid(.size=1:10,
+#                        .decay=c(0,.1,1,2))
+#maxSize <- max(nnetGrid$.size)
+#numWts <- 1*(maxSize*(length(dim(train)[2])) + maxSize + 1)
 
-set.seed(5346)
-nnetModel <- train(y ~ ., data=train,
-                   method="nnet",
-                   metric="ROC",
-                   trControl=fitControl,
-                   tuneLength=5,
-                   trace=FALSE,
-                   maxit=2000)
+#set.seed(5346)
+#nnetModel <- train(y ~ ., data=train,
+#                   method="nnet",
+#                   metric="ROC",
+#                   trControl=fitControl,
+#                   tuneLength=5,
+#                   trace=FALSE,
+#                   maxit=2000)
 
-plot(nnetModel)
+#plot(nnetModel)
 
-pred.nnetModel <- as.vector(predict(nnetModel, newdata=test, type="prob")[,"Yes"])
+#pred.nnetModel <- as.vector(predict(nnetModel, newdata=test, type="prob")[,"Yes"])
 
-roc.nnetModel <- pROC::roc(test$y, pred.nnetModel)
+#roc.nnetModel <- pROC::roc(test$y, pred.nnetModel)
 
-auc.nnetModel <- pROC::auc(roc.nnetModel)
+#auc.nnetModel <- pROC::auc(roc.nnetModel)
 
 ```
 
@@ -509,7 +509,7 @@ auc.nnetModel <- pROC::auc(roc.nnetModel)
 # Plotting model performance
 
 ```{r}
-test.auc <- data.frame(model=c("glm","gbm","glmnet","cart","rForest"),auc=c(auc.glmModel, auc.gbmModel, auc.eNetModel, auc.cartModel, auc.rfModel))
+test.auc <- data.frame(model=c("glm","gbm","glmnet","rForest"),auc=c(auc.glmModel, auc.gbmModel, auc.eNetModel, auc.rfModel))
 
 test.auc <- test.auc[order(test.auc$auc, decreasing=TRUE),]
 
@@ -612,7 +612,7 @@ auc.rfModel_sm <- pROC::auc(roc.rfModel_sm)
 #0.784
 
 #SVM
-set.seed(5354)
+#set.seed(5354)
 #svmModel <- train(y ~., data = train_smote, method = "svmRadial",
 #  trControl=fitControl,
 #  metric="ROC",
@@ -621,35 +621,35 @@ set.seed(5354)
 # 0.05, 0.06, 0.07,0.08, 0.09, 0.1, 0.25, 0.5, 0.75,0.9),
 # C = c(0,0.01, 0.05, 0.1, 0.25, 0.5, 0.75,
 # 1, 1.5, 2,5))
-svm.c <- train(y ~., data = train_smote,
-               method='svmRadial',
-               trControl=fitControl,
-               metric="ROC",tuneLength = 5)
+#svm.c <- train(y ~., data = train_smote,
+#               method='svmRadial',
+#               trControl=fitControl,
+#               metric="ROC",tuneLength = 5)
 
 #plot(svmModel)
-pred.svmModel <- as.vector(predict(svm.c, newdata=test, type="prob")[,"Yes"])
-roc.svmModel <- pROC::roc(test$y, pred.svmModel)
-auc.svmModel <- pROC::auc(roc.svmModel)
+#pred.svmModel <- as.vector(predict(svm.c, newdata=test, type="prob")[,"Yes"])
+#roc.svmModel <- pROC::roc(test$y, pred.svmModel)
+#auc.svmModel <- pROC::auc(roc.svmModel)
 
 #Neural Network
 #nnetGrid <- expand.grid(.size=1:10,
 #                        .decay=c(0,.1,1,2))
 #maxSize <- max(nnetGrid$.size)
 #numWts <- 1*(maxSize*(length(dim(train)[2])) + maxSize + 1)
-set.seed(5346)
-nnetModel <- train(y ~ ., data=train_smote,
-                   method="nnet",
-                   metric="ROC",
-                   trControl=fitControl,
-                   tuneLength=5,
-                   trace=FALSE,
-                   maxit=2000)
-pred.nnetModel <- as.vector(predict(nnetModel, newdata=test, type="prob")[,"Yes"])
-roc.nnetModel <- pROC::roc(test$y, pred.nnetModel)
-auc.nnetModel <- pROC::auc(roc.nnetModel)
+#set.seed(5346)
+#nnetModel <- train(y ~ ., data=train_smote,
+#                   method="nnet",
+#                   metric="ROC",
+#                   trControl=fitControl,
+#                   tuneLength=5,
+#                   trace=FALSE,
+#                   maxit=2000)
+#pred.nnetModel <- as.vector(predict(nnetModel, newdata=test, type="prob")[,"Yes"])
+#roc.nnetModel <- pROC::roc(test$y, pred.nnetModel)
+#auc.nnetModel <- pROC::auc(roc.nnetModel)
 
 # Plotting model performance
-test.auc_sm <- data.frame(model=c("glm","gbm","glmnet","cart","rForest"),auc=c(auc.glmModel_sm, auc.gbmModel_sm, auc.eNetModel_sm, auc.cartModel_sm, auc.rfModel_sm))
+test.auc_sm <- data.frame(model=c("glm","gbm","glmnet","rForest"),auc=c(auc.glmModel_sm, auc.gbmModel_sm, auc.eNetModel_sm, auc.rfModel_sm))
 test.auc_sm <- test.auc_sm[order(test.auc_sm$auc, decreasing=TRUE),]
 test.auc_sm$model <- factor(test.auc_sm$model, levels=test.auc_sm$model)
 test.auc_sm
