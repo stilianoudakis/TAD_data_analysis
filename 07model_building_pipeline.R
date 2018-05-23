@@ -12,7 +12,8 @@ library(gridExtra)
 library(DT)
 library(ggplot2)
 
-setwd("/home/stilianoudakisc/TAD_data_analysis/Rdata")
+#setwd("/home/stilianoudakisc/TAD_data_analysis/Rdata")
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
 
 logitdata <- readRDS("logitdata2.rds")
 
@@ -86,13 +87,11 @@ datapart <- ceil(length(chr1data_f$y[which(chr1data_f$y==1)])*2*.3) + 1
 
 auclst <- list(auc.enet <- numeric(bootsamps),
                auc.rf <- numeric(bootsamps),
-               auc.gbm <- numeric(bootsamps),
-               auc.svm <- numeric(bootsamps))
+               auc.gbm <- numeric(bootsamps))
 performlst <- list(varimp.enet <- matrix(nrow=dim(chr1data_f)[2]-1,ncol=bootsamps),
                    varimp.rf <- matrix(nrow=dim(chr1data_f)[2]-1,ncol=bootsamps),
-                   varimp.gbm <- matrix(nrow=dim(chr1data_f)[2]-1,ncol=bootsamps),
-                   varimp.svm <- matrix(nrow=dim(chr1data_f)[2]-1,ncol=bootsamps))
-rownames(performlst[[1]]) <- rownames(performlst[[2]]) <- rownames(performlst[[3]]) <- rownames(performlst[[4]]) <- colnames(chr1data_f)[-1]
+                   varimp.gbm <- matrix(nrow=dim(chr1data_f)[2]-1,ncol=bootsamps))
+rownames(performlst[[1]]) <- rownames(performlst[[2]]) <- rownames(performlst[[3]]) <- colnames(chr1data_f)[-1]
 
 #filling in the sample ids matrix
 set.seed(123)
@@ -171,30 +170,29 @@ for(i in 1:bootsamps){
   performlst[[3]][,i] <- varImp(gbmModel)$importance[,1]
   
   #SVM
-  svmModel <- train(y ~., data = train,
-                    method='svmRadial',
-                    trControl=fitControl,
-                    metric="ROC",
-                    verbose=FALSE,
-                    tuneLength = 5)
-  pred.svmModel <- as.vector(predict(svmModel, 
-                                     newdata=test, 
-                                     type="prob")[,"Yes"])
-  roc.svmModel <- pROC::roc(test$y, pred.svmModel)
-  auclst[[4]][i] <- pROC::auc(roc.svmModel)
-  #gbm varimp
-  performlst[[4]][,i] <- varImp(svmModel)$importance[,1]
+  #svmModel <- train(train[,-1], train$y, data = train,
+  #                  method='svmRadial',
+  #                  trControl=fitControl,
+  #                  metric="ROC",
+  #                  verbose=FALSE,
+  #                  tuneLength = 5)
+  #pred.svmModel <- as.vector(predict(svmModel, 
+  #                                   newdata=test, 
+  #                                   type="prob")[,"Yes"])
+  #roc.svmModel <- pROC::roc(test$y, pred.svmModel)
+  #auclst[[4]][i] <- pROC::auc(roc.svmModel)
+  #svm varimp
+  #performlst[[4]][,i] <- varImp(svmModel)$importance[,1]
 }
 
 
 
 #plotting performance
-test.auc <- data.frame(model=c("GLM","ElasticNet","RForest","GBM","SVM"),
+test.auc <- data.frame(model=c("GLM","ElasticNet","RForest","GBM"),
                        auc=c(auc.glmModel,
                              mean(auclst[[1]]), 
                              mean(auclst[[2]]), 
-                             mean(auclst[[3]]), 
-                             mean(auclst[[4]])))
+                             mean(auclst[[3]])))
 
 test.auc <- test.auc[order(test.auc$auc, decreasing=TRUE),]
 
@@ -287,46 +285,46 @@ gbmp
 #dev.off()
 
 #SVM
-varimp.svm <- as.vector(rowMeans(performlst[[4]]))
-varimp.svm.df <- data.frame(Feature=rownames(performlst[[4]]),
-                            Importance=varimp.svm)
-varimp.svm.df <- varimp.svm.df[order(varimp.svm.df$Importance),]
-numvarsvm <- dim(varimp.svm.df)[1]
-varimp.svm.df <- varimp.svm.df[(numvarsvm-19):numvarsvm,]
-varimp.svm.df$Feature <- factor(varimp.svm.df$Feature,levels=varimp.svm.df$Feature)
-svmp <- ggplot(varimp.svm.df, aes(x=Feature, 
-                                  y=Importance)) +
-  xlab("Predictors") +
-  ylab("Importance") +
-  #ggtitle("Importance Plot for Gradient Boosting Machine") +
-  geom_bar(stat="identity", 
-           width=.5, 
-           position="dodge",
-           fill="red") +
-  coord_flip()
+#varimp.svm <- as.vector(rowMeans(performlst[[4]]))
+#varimp.svm.df <- data.frame(Feature=rownames(performlst[[4]]),
+#                            Importance=varimp.svm)
+#varimp.svm.df <- varimp.svm.df[order(varimp.svm.df$Importance),]
+#numvarsvm <- dim(varimp.svm.df)[1]
+#varimp.svm.df <- varimp.svm.df[(numvarsvm-19):numvarsvm,]
+#varimp.svm.df$Feature <- factor(varimp.svm.df$Feature,levels=varimp.svm.df$Feature)
+#svmp <- ggplot(varimp.svm.df, aes(x=Feature, 
+#                                  y=Importance)) +
+#  xlab("Predictors") +
+#  ylab("Importance") +
+#  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+#  geom_bar(stat="identity", 
+#           width=.5, 
+#           position="dodge",
+#           fill="red") +
+#  coord_flip()
 #theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 #jpeg("/home/stilianoudakisc/TAD_data_analysis/output/svm_varimp_nosmote")
-grid.arrange(enetp,rfp,gbmp,svmp, ncol=2,nrow=2)
+grid.arrange(enetp,rfp,gbmp, ncol=2)
 #dev.off()
 
 #jpeg("/home/stilianoudakisc/TAD_data_analysis/output/varimps_nosmote")
-svmp
+#svmp
 #dev.off()
 
 #Comparing Results
 #finding common features between the models
 
 x <- intersect(varimp.rf.df$Feature,varimp.gbm.df$Feature)
-y <- intersect(x,varimp.enet.df$Feature)
-z <- intersect(y,varimp.svm.df$Feature)
-z
+z <- intersect(x,varimp.enet.df$Feature)
+#z <- intersect(y,varimp.svm.df$Feature)
+#z
 
 
 varimp.rf.df$ranking <- rank(-varimp.rf.df$Importance)
 varimp.gbm.df$ranking <- rank(-varimp.gbm.df$Importance)
 varimp.enet.df$ranking <- rank(-varimp.enet.df$Importance)
-varimp.svm.df$ranking <- rank(-varimp.svm.df$Importance)
+#varimp.svm.df$ranking <- rank(-varimp.svm.df$Importance)
 
 
 #rankings between rf, gbm, svm, and elastic net
@@ -336,10 +334,8 @@ commonfeatsdf <- data.frame(Features = z,
                             GBM = varimp.gbm.df[order(match(varimp.gbm.df$Feature, z)),]$ranking[varimp.gbm.df[order(match(varimp.gbm.df$Feature, z)),]$Feature %in% z],
                             GBMImp = varimp.gbm.df[order(match(varimp.gbm.df$Feature, z)),]$Importance[varimp.gbm.df[order(match(varimp.gbm.df$Feature, z)),]$Feature %in% z],
                             ElasticNet = varimp.enet.df[order(match(varimp.enet.df$Feature, z)),]$ranking[varimp.enet.df[order(match(varimp.enet.df$Feature, z)),]$Feature %in% z],
-                            ENetImp = varimp.enet.df[order(match(varimp.enet.df$Feature, z)),]$Importance[varimp.enet.df[order(match(varimp.enet.df$Feature, z)),]$Feature %in% z],
-                            SVM = varimp.svm.df[order(match(varimp.svm.df$Feature, z)),]$ranking[varimp.svm.df[order(match(varimp.svm.df$Feature, z)),]$Feature %in% z],
-                            SVMImp = varimp.svm.df[order(match(varimp.svm.df$Feature, z)),]$Importance[varimp.svm.df[order(match(varimp.svm.df$Feature, z)),]$Feature %in% z]
-)
+                            ENetImp = varimp.enet.df[order(match(varimp.enet.df$Feature, z)),]$Importance[varimp.enet.df[order(match(varimp.enet.df$Feature, z)),]$Feature %in% z]
+                            )
 
 commonfeatsdf
 
