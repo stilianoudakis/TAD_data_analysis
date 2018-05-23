@@ -1,5 +1,5 @@
 #library(MultiAssayExperiment)
-library(GenomicRanges)
+#library(GenomicRanges)
 #library(IRanges)
 library(caret)
 library(data.table)
@@ -10,6 +10,9 @@ library(dplyr)
 library(DMwR)
 library(gridExtra)
 library(DT)
+library(ggplot2)
+
+setwd("/home/stilianoudakisc/TAD_data_analysis/Rdata")
 
 logitdata <- readRDS("logitdata2.rds")
 
@@ -94,11 +97,11 @@ rownames(performlst[[1]]) <- rownames(performlst[[2]]) <- rownames(performlst[[3
 #filling in the sample ids matrix
 set.seed(123)
 for(j in 1:bootsamps){
-sampids[,j] <- sample(which(chr1data_f$y==0),
-                      length(which(chr1data_f$y==1)),
-                      replace = TRUE)
+  sampids[,j] <- sample(which(chr1data_f$y==0),
+                        length(which(chr1data_f$y==1)),
+                        replace = TRUE)
 }
-  
+
 
 for(i in 1:bootsamps){
   set.seed(7215)
@@ -169,11 +172,11 @@ for(i in 1:bootsamps){
   
   #SVM
   svmModel <- train(y ~., data = train,
-                 method='svmRadial',
-                 trControl=fitControl,
-                 metric="ROC",
-                 verbose=FALSE,
-                 tuneLength = 5)
+                    method='svmRadial',
+                    trControl=fitControl,
+                    metric="ROC",
+                    verbose=FALSE,
+                    tuneLength = 5)
   pred.svmModel <- as.vector(predict(svmModel, 
                                      newdata=test, 
                                      type="prob")[,"Yes"])
@@ -203,9 +206,9 @@ perf_nosmote<-ggplot(data=test.auc, aes(x=model, y=auc)) +
   geom_bar(stat="identity", fill="steelblue") +
   theme_minimal()
 
-jpeg("/home/stilianoudakisc/TAD_data_analysis/output/perf_nosmote")
+#jpeg("/home/stilianoudakisc/TAD_data_analysis/output/perf_nosmote")
 perf_nosmote
-dev.off()
+#dev.off()
 
 
 #Variable Importance Plots
@@ -219,7 +222,7 @@ numvarenet <- dim(varimp.enet.df)[1]
 varimp.enet.df <- varimp.enet.df[(numvarenet-19):numvarenet,]
 varimp.enet.df$Feature <- factor(varimp.enet.df$Feature,levels=varimp.enet.df$Feature)
 enetp <- ggplot(varimp.enet.df, aes(x=Feature, 
-                              y=Importance)) +
+                                    y=Importance)) +
   xlab("Predictors") +
   ylab("Importance") +
   #ggtitle("Importance Plot for Gradient Boosting Machine") +
@@ -230,21 +233,21 @@ enetp <- ggplot(varimp.enet.df, aes(x=Feature,
   coord_flip()
 #theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-jpeg("/home/stilianoudakisc/TAD_data_analysis/output/enet_varimp_nosmote")
+#jpeg("/home/stilianoudakisc/TAD_data_analysis/output/enet_varimp_nosmote")
 enetp
-dev.off()
+#dev.off()
 
 
 #RF
 varimp.rf <- as.vector(rowMeans(performlst[[2]]))
 varimp.rf.df <- data.frame(Feature=rownames(performlst[[2]]),
-                             Importance=varimp.rf)
+                           Importance=varimp.rf)
 varimp.rf.df <- varimp.rf.df[order(varimp.rf.df$Importance),]
 numvarrf <- dim(varimp.rf.df)[1]
 varimp.rf.df <- varimp.rf.df[(numvarrf-19):numvarrf,]
 varimp.rf.df$Feature <- factor(varimp.rf.df$Feature,levels=varimp.rf.df$Feature)
 rfp <- ggplot(varimp.rf.df, aes(x=Feature, 
-                                    y=Importance)) +
+                                y=Importance)) +
   xlab("Predictors") +
   ylab("Importance") +
   #ggtitle("Importance Plot for Gradient Boosting Machine") +
@@ -255,9 +258,9 @@ rfp <- ggplot(varimp.rf.df, aes(x=Feature,
   coord_flip()
 #theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-jpeg("/home/stilianoudakisc/TAD_data_analysis/output/rf_varimp_nosmote")
+#jpeg("/home/stilianoudakisc/TAD_data_analysis/output/rf_varimp_nosmote")
 rfp
-dev.off()
+#dev.off()
 
 #GBM
 varimp.gbm <- as.vector(rowMeans(performlst[[3]]))
@@ -279,9 +282,9 @@ gbmp <- ggplot(varimp.gbm.df, aes(x=Feature,
   coord_flip()
 #theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-jpeg("/home/stilianoudakisc/TAD_data_analysis/output/gbm_varimp_nosmote")
+#jpeg("/home/stilianoudakisc/TAD_data_analysis/output/gbm_varimp_nosmote")
 gbmp
-dev.off()
+#dev.off()
 
 #SVM
 varimp.svm <- as.vector(rowMeans(performlst[[4]]))
@@ -303,13 +306,13 @@ svmp <- ggplot(varimp.svm.df, aes(x=Feature,
   coord_flip()
 #theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-jpeg("/home/stilianoudakisc/TAD_data_analysis/output/svm_varimp_nosmote")
+#jpeg("/home/stilianoudakisc/TAD_data_analysis/output/svm_varimp_nosmote")
 grid.arrange(enetp,rfp,gbmp,svmp, ncol=2,nrow=2)
-dev.off()
+#dev.off()
 
-jpeg("/home/stilianoudakisc/TAD_data_analysis/output/varimps_nosmote")
+#jpeg("/home/stilianoudakisc/TAD_data_analysis/output/varimps_nosmote")
 svmp
-dev.off()
+#dev.off()
 
 #Comparing Results
 #finding common features between the models
@@ -336,15 +339,15 @@ commonfeatsdf <- data.frame(Features = z,
                             ENetImp = varimp.enet.df[order(match(varimp.enet.df$Feature, z)),]$Importance[varimp.enet.df[order(match(varimp.enet.df$Feature, z)),]$Feature %in% z],
                             SVM = varimp.svm.df[order(match(varimp.svm.df$Feature, z)),]$ranking[varimp.svm.df[order(match(varimp.svm.df$Feature, z)),]$Feature %in% z],
                             SVMImp = varimp.svm.df[order(match(varimp.svm.df$Feature, z)),]$Importance[varimp.svm.df[order(match(varimp.svm.df$Feature, z)),]$Feature %in% z]
-                            )
+)
 
 commonfeatsdf
 
-saveRDS(commonfeatsdf, "/home/stilianoudakisc/TAD_data_analysis/output/commonfeats_nosmote")
+#saveRDS(commonfeatsdf, "/home/stilianoudakisc/TAD_data_analysis/output/commonfeats_nosmote")
 
-jpeg("/home/stilianoudakisc/TAD_data_analysis/output/common_feats_nosmote")
+#jpeg("/home/stilianoudakisc/TAD_data_analysis/output/common_feats_nosmote")
 datatable(commonfeatsdf)
-dev.off()
+#dev.off()
 
 
 
