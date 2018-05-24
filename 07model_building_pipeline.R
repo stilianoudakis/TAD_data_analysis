@@ -61,7 +61,7 @@ auc.glmModel <- pROC::auc(roc.glmModel)
 ############################################################################
 
 #set number of bootstrap samples
-bootsamps = 100
+bootsamps = 5
 
 #set tuning parameters
 fitControl <- trainControl(method = "repeatedcv",
@@ -188,6 +188,7 @@ for(i in 1:bootsamps){
 
 
 #plotting performance
+auc.glmModel <- 0.7884
 test.auc <- data.frame(model=c("GLM","ElasticNet","RForest","GBM"),
                        auc=c(auc.glmModel,
                              mean(auclst[[1]]), 
@@ -304,13 +305,15 @@ gbmp
 #  coord_flip()
 #theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-#jpeg("/home/stilianoudakisc/TAD_data_analysis/output/svm_varimp_nosmote")
-grid.arrange(enetp,rfp,gbmp, ncol=2)
-#dev.off()
-
 #jpeg("/home/stilianoudakisc/TAD_data_analysis/output/varimps_nosmote")
 #svmp
 #dev.off()
+
+#jpeg("/home/stilianoudakisc/TAD_data_analysis/output/svm_varimp_nosmote")
+grid.arrange(enetp,rfp,gbmp, ncol=3)
+#dev.off()
+
+
 
 #Comparing Results
 #finding common features between the models
