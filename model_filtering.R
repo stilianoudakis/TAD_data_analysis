@@ -19,12 +19,12 @@ setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
 
 logitdata <- readRDS("logitdata2.rds")
 
-logitdata <- logitdata[,-which(colnames(logitdata)=="A" 
-                               | colnames(logitdata)=="B"
-                               | colnames(logitdata)=="UCNE"
-                               | colnames(logitdata)=="UCNE_score" 
-                               | colnames(logitdata)=="UCNE_dist"
-                               | colnames(logitdata)=="gerp_score")]
+#logitdata <- logitdata[,-which(colnames(logitdata)=="A" 
+#                               | colnames(logitdata)=="B"
+#                               | colnames(logitdata)=="UCNE"
+#                               | colnames(logitdata)=="UCNE_score" 
+#                               | colnames(logitdata)=="UCNE_dist"
+#                               | colnames(logitdata)=="gerp_score")]
 
 #Full Data
 
@@ -41,7 +41,7 @@ logitdata_f <- logitdata[, -which(colnames(logitdata) %in% nzvar)]
 comboinfo <- findLinearCombos(logitdata_f)
 logitdata_f <- logitdata_f[,-comboinfo$remove]
 
-saveRDS(logitdata_f, "logitdata_f")
+saveRDS(logitdata_f, "logitdata_f.rds")
 
 
 
@@ -62,6 +62,6 @@ chr1data_f <- chr1data[, -which(colnames(chr1data) %in% nzvar)]
 comboinfo <- findLinearCombos(chr1data_f)
 chr1data_f <- chr1data_f[,-comboinfo$remove]
 
-saveRDS(chr1data_f, "chr1data_f")
+saveRDS(chr1data_f, "chr1data_f.rds")
 
 

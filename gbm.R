@@ -3,10 +3,10 @@
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
 
 #Chromosome 1
-chr1data_f <- readRDS("chr1data_f")
+chr1data_f <- readRDS("chr1data_f.rds")
 
 #Full data
-#logitdata_f <- readRDS("logitdata_f")
+#logitdata_f <- readRDS("logitdata_f.rds")
 
 #set number of bootstrap samples
 bootsamps = 3
