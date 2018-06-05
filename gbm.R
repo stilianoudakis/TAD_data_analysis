@@ -6,7 +6,7 @@ setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
 chr1data_f <- readRDS("chr1data_f")
 
 #Full data
-logitdata_f <- readRDS("logitdata_f")
+#logitdata_f <- readRDS("logitdata_f")
 
 #set number of bootstrap samples
 bootsamps = 3
@@ -27,8 +27,8 @@ fitControl <- trainControl(method = "repeatedcv",
 sampids <- matrix(ncol=bootsamps, 
                   nrow=length(chr1data_f$y[which(chr1data_f$y==1)]))
 
-sampids <- matrix(ncol=bootsamps, 
-                  nrow=length(logitdata_f$y[which(logitdata_f$y==1)]))
+#sampids <- matrix(ncol=bootsamps, 
+#                  nrow=length(logitdata_f$y[which(logitdata_f$y==1)]))
 
 #filling in the sample ids matrix
 set.seed(123)
@@ -38,12 +38,12 @@ for(j in 1:bootsamps){
                         replace = TRUE)
 }
 
-set.seed(123)
-for(j in 1:bootsamps){
-  sampids[,j] <- sample(which(logitdata_f$y==0),
-                        length(which(logitdata_f$y==1)),
-                        replace = TRUE)
-}
+#set.seed(123)
+#for(j in 1:bootsamps){
+#  sampids[,j] <- sample(which(logitdata_f$y==0),
+#                        length(which(logitdata_f$y==1)),
+#                        replace = TRUE)
+#}
 
 
 #function for roc curves
@@ -63,14 +63,14 @@ gbmlst <- list(tpr <- matrix(nrow=ceiling((length(which(chr1data_f$y==1))*2)*.3)
                                ncol=bootsamps))
 rownames(gbmlst[[4]]) <- colnames(chr1data_f)[-1]
 
-gbmlst <- list(tpr <- matrix(nrow=ceiling((length(which(logitdata_f$y==1))*2)*.3), 
-                            ncol=bootsamps),
-              fpr <- matrix(nrow=ceiling((length(which(logitdata_f$y==1))*2)*.3), 
-                            ncol=bootsamps),
-              auc <- numeric(bootsamps),
-              varimp <- matrix(nrow=dim(logitdata_f)[2]-1,
-                               ncol=bootsamps))
-rownames(gbmlst[[4]]) <- colnames(logitdata_f)[-1]
+#gbmlst <- list(tpr <- matrix(nrow=ceiling((length(which(logitdata_f$y==1))*2)*.3), 
+#                            ncol=bootsamps),
+#              fpr <- matrix(nrow=ceiling((length(which(logitdata_f$y==1))*2)*.3), 
+#                            ncol=bootsamps),
+#              auc <- numeric(bootsamps),
+#              varimp <- matrix(nrow=dim(logitdata_f)[2]-1,
+#                               ncol=bootsamps))
+#rownames(gbmlst[[4]]) <- colnames(logitdata_f)[-1]
 
 
 #filling in the sample ids matrix
@@ -88,8 +88,8 @@ for(i in 1:bootsamps){
   data <- rbind.data.frame(chr1data_f[which(chr1data_f$y==1),],
                            chr1data_f[sampids[,i],])
   
-  data <- rbind.data.frame(logitdata_f[which(logitdata_f$y==1),],
-                           logitdata_f[sampids[,i],])
+  #data <- rbind.data.frame(logitdata_f[which(logitdata_f$y==1),],
+  #                         logitdata_f[sampids[,i],])
   
   #shuffle the data
   #g <- runif(nrow(data))
