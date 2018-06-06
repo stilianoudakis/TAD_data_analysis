@@ -27,4 +27,11 @@ knitr::opts_chunk$set(echo = TRUE)
 * Explore the correlation between A and B
     
 
+### 06/06/18
+
+* Change structure of categorical variables to factors
+* Do log2 transformation then standardize inside train function. Try without log2 transformation and compare
+* Change sampling to with replacement (bootstrap)
+* For SMOTE generate data and test results for perc.over/perc.under
+*Think about how to use figures and tables to tell a story
 
