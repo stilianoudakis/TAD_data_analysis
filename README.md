@@ -7,7 +7,7 @@ Analysis of Topologically Associated Domain data and their respective boundaries
 
 * subcompartments.bed: subcompartment data classifying genomic coordinates as being in specific subcompartments A and B.
 
-## arrowhead_data.Rmd
+## `01arrowhead_data.Rmd`
 
 The TAD boundary data was retrieved from from the paper by Rao, Huntley, et. al titled,
 "A three-dimensional map of the human genome at kilobase resolution reveals prinicples of chromatin looping"
@@ -27,7 +27,7 @@ Explanations of the fields are as follows:
 
 * color = the color that the feature will be rendered as if loaded in Juicebox 
 
-## investigating_tad_boundaries.Rmd
+## `02investigating_tad_boundaries.Rmd`
 
 Investigating the different type of boundaries that occur in the domain data.
 
@@ -40,7 +40,7 @@ Investigating the different type of boundaries that occur in the domain data.
    3. Consecutive End and Start sites
    4. Duplicate intervals (none of these)
 
-## TAD_boundary_analysis.rmd
+## `03TAD_boundary_analysis.Rmd`
 
 * Purpose: To create flanked TAD boundary regions of size 1kb (500 bases on each side of TAD boundary) and identify where on the 1 kb binned genome they appear. Likewise, identifying what compartment each of these bins correspond to.
 * The Data: arrowhead_data.txt, GSE63525_GM12878_subcompartments.BED
