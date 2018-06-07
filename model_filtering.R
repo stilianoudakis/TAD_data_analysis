@@ -19,31 +19,37 @@ setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
 
 logitdata <- readRDS("logitdata2.rds")
 
-#logitdata <- logitdata[,-which(colnames(logitdata)=="A" 
-#                               | colnames(logitdata)=="B"
-#                               | colnames(logitdata)=="UCNE"
-#                               | colnames(logitdata)=="UCNE_score" 
-#                               | colnames(logitdata)=="UCNE_dist"
-#                               | colnames(logitdata)=="gerp_score")]
+##################################################################
 
 #Full Data
 
+#Remove CHR variable
+logitdata <- logitdata[,-which(colnames(logitdata)=="CHR")]
+
+#Taking log2 transform of continous data
 cols <- c(grep("dist",colnames(logitdata)))
 logitdata[,cols] <- apply(logitdata[,cols], 2, function(x){log(x + 1, base=2)})
 
-nzv <- nearZeroVar(logitdata[,-1], saveMetrics= TRUE)
-nzvar <- rownames(nzv[nzv$nzv,])
+#Changing binary variables to factors
+cols <- c(grep("dist",colnames(logitdata), invert = TRUE))
+logitdata[,cols] <- lapply(logitdata[,cols], factor)
+
+#Changing levels of response (y) to yes no
+levels(logitdata$y) <- c("No", "Yes")
 
 #Removing zero variance predictors
+nzv <- nearZeroVar(logitdata[,-1], saveMetrics= TRUE)
+nzvar <- rownames(nzv[nzv$nzv,])
 logitdata_f <- logitdata[, -which(colnames(logitdata) %in% nzvar)]
 
 #check for linear dependencies
-comboinfo <- findLinearCombos(logitdata_f)
-logitdata_f <- logitdata_f[,-comboinfo$remove]
+#comboinfo <- findLinearCombos(logitdata_f)
+#logitdata_f <- logitdata_f[,-comboinfo$remove]
+
 
 saveRDS(logitdata_f, "logitdata_f.rds")
 
-
+##
 
 #Chromosome 1
 
@@ -59,8 +65,8 @@ nzvar <- rownames(nzv[nzv$nzv,])
 chr1data_f <- chr1data[, -which(colnames(chr1data) %in% nzvar)]
 
 #check for linear dependencies
-comboinfo <- findLinearCombos(chr1data_f)
-chr1data_f <- chr1data_f[,-comboinfo$remove]
+#comboinfo <- findLinearCombos(chr1data_f)
+#chr1data_f <- chr1data_f[,-comboinfo$remove]
 
 saveRDS(chr1data_f, "chr1data_f.rds")
 
