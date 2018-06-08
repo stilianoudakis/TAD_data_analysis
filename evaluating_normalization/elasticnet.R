@@ -187,3 +187,26 @@ for(i in 1:bootsamps){
 mean(enetlst_nl[[3]])
 
 saveRDS(enetlst_nl, "enetlst_nl.rds")
+
+#####################################################################
+
+#plotting performance
+
+
+
+test.auc <- data.frame(Normalization=c("With", "Without"),auc=c(mean(enetlst_wl[[3]]),mean(enetlst_nl[[3]])))
+
+test.auc <- test.auc[order(test.auc$auc, decreasing=TRUE),]
+
+#test.auc$model <- factor(test.auc$model, levels=test.auc$model)
+
+test.auc
+
+p<-ggplot(data=test.auc, aes(x=Normalization, y=auc)) +
+  geom_bar(stat="identity", fill="steelblue") + ylim(0,1) +
+  theme_minimal()
+p
+
+
+plot(rowMeans(enetlst_wl[[2]]),rowMeans(enetlst_wl[[1]]), type="l", col="red")
+lines(rowMeans(enetlst_nl[[2]]),rowMeans(enetlst_nl[[1]]), type="l", col="blue")
