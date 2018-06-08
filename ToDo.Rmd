@@ -9,6 +9,9 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+Tentative title: "Predictive modeling using genomic annotations: pitfalls and recommendations"
+
+
 # List of topics to review and methods to explore
 
 ### 05/11/18
