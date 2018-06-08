@@ -13,7 +13,7 @@ library(gridExtra)
 
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
 
-chr1data_f <- readRDS("chr1data.rds")
+chr1data_f <- readRDS("chr1data_f.rds")
 
 # Splitting the data
 set.seed(5228)
@@ -70,7 +70,7 @@ for(i in 1:4){
                          metric="ROC", 
                          trControl = fitControl, 
                          family="binomial", 
-                         #tuneLength=5,
+                         tuneLength=5,
                          standardize=TRUE)
       pred.eNetModel <- as.vector(predict(eNetModel_sm, 
                                           newdata=test, 
@@ -94,7 +94,7 @@ for(i in 1:4){
                               metric="ROC", 
                               trControl = fitControl, 
                               family="binomial", 
-                              #tuneLength=5,
+                              tuneLength=5,
                               standardize=TRUE)
       pred.eNetModel <- as.vector(predict(eNetModel_sm, 
                                             newdata=test, 
@@ -197,14 +197,15 @@ for(i in 1:4){
                       method = "gbm", 
                       metric="ROC", 
                       trControl = fitControl, 
-                      verbose=FALSE)
+                      verbose=FALSE,
+                      tuneLength=5)
   pred.gbmModel <- as.vector(predict(gbmModel_sm, 
                                     newdata=test, 
                                     type="prob")[,"Yes"])
-  gbmlst[[1]][,i] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.gbmModel)[,1]
-  gbmlst[[2]][,i] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.gbmModel)[,2]
-  gbmlst[[3]][i] <- pROC::auc(pROC::roc(test$y, pred.gbmModel))
-  gbmlst[[4]][,i] <- varImp(gbmModel_sm)$importance[,1]
+  gbmlst_sm[[1]][,i] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.gbmModel)[,1]
+  gbmlst_sm[[2]][,i] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.gbmModel)[,2]
+  gbmlst_sm[[3]][i] <- pROC::auc(pROC::roc(test$y, pred.gbmModel))
+  gbmlst_sm[[4]][,i] <- varImp(gbmModel_sm)$importance[,1]
   
   set.seed(111)
   train_smote <- SMOTE(y ~ ., 
@@ -216,7 +217,8 @@ for(i in 1:4){
   gbmModel_sm <- train(y ~ ., data=train_smote, 
                       method = "gbm", 
                       metric="ROC", 
-                      trControl = fitControl, 
+                      trControl = fitControl,
+                      tuneLength=5,
                       verbose=FALSE)
   pred.gbmModel <- as.vector(predict(gbmModel_sm, 
                                     newdata=test, 
@@ -227,3 +229,73 @@ for(i in 1:4){
   gbmlst_sm[[4]][,i+4] <- varImp(gbmModel_sm)$importance[,1]
   
 }
+
+
+
+#####################################################################
+
+#Plotting performance
+
+#enet
+test.auc <- data.frame(Combination=c("100/200","200/200","300/200","400/200",
+                                     "100/300","200/300","300/300","400/300"),
+                       auc=c(enetlst_sm[[3]][1],enelst_sm[[3]][2],enetlst_sm[[3]][3],
+                             enetlst_sm[[3]][4],enelst_sm[[3]][5],enetlst_sm[[3]][6],
+                             enetlst_sm[[3]][7],enetlst_sm[[3]][8]))
+
+test.auc <- test.auc[order(test.auc$auc, decreasing=TRUE),]
+
+test.auc$model <- factor(test.auc$model, levels=test.auc$model)
+
+test.auc
+
+p<-ggplot(data=test.auc, aes(x=Combination, y=auc)) +
+  geom_bar(stat="identity", fill="steelblue") + ylim(0,1)+
+  theme_minimal()
+p
+
+plot(enetlst_sm[[2]][,1],enetlst_sm[[1]][,1], type="l",col=1)
+for(i in 2:8){lines(enetlst_sm[[2]][,i],enetlst_sm[[1]][,i], type="l",col=i)}
+
+#rf
+test.auc <- data.frame(Combination=c("100/200","200/200","300/200","400/200",
+                                     "100/300","200/300","300/300","400/300"),
+                       auc=c(rflst_sm[[3]][1],rflst_sm[[3]][2],rflst_sm[[3]][3],
+                             rflst_sm[[3]][4],rflst_sm[[3]][5],rflst_sm[[3]][6],
+                             rflst_sm[[3]][7],rflst_sm[[3]][8]))
+
+test.auc <- test.auc[order(test.auc$auc, decreasing=TRUE),]
+
+test.auc$model <- factor(test.auc$model, levels=test.auc$model)
+
+test.auc
+
+p<-ggplot(data=test.auc, aes(x=Combination, y=auc)) +
+  geom_bar(stat="identity", fill="steelblue") + ylim(0,1)+
+  theme_minimal()
+p
+
+plot(rflst_sm[[2]][,1],rflst_sm[[1]][,1], type="l",col=1)
+for(i in 2:8){lines(rflst_sm[[2]][,i],rflst_sm[[1]][,i], type="l",col=i)}
+
+
+#gbm
+test.auc <- data.frame(Combination=c("100/200","200/200","300/200","400/200",
+                               "100/300","200/300","300/300","400/300"),
+                       auc=c(gbmlst_sm[[3]][1],gbmlst_sm[[3]][2],gbmlst_sm[[3]][3],
+                             gbmlst_sm[[3]][4],gbmlst_sm[[3]][5],gbmlst_sm[[3]][6],
+                             gbmlst_sm[[3]][7],gbmlst_sm[[3]][8]))
+
+test.auc <- test.auc[order(test.auc$auc, decreasing=TRUE),]
+
+test.auc$model <- factor(test.auc$model, levels=test.auc$model)
+
+test.auc
+
+p<-ggplot(data=test.auc, aes(x=Combination, y=auc)) +
+  geom_bar(stat="identity", fill="steelblue") + ylim(0,1)+
+  theme_minimal()
+p
+
+plot(gbmlst_sm[[2]][,1],gbmlst_sm[[1]][,1], type="l",col=1)
+for(i in 2:8){lines(gbmlst_sm[[2]][,i],gbmlst_sm[[1]][,i], type="l",col=i)}
