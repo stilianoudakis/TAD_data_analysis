@@ -28,7 +28,8 @@ library(dplyr)
 
 ```{r}
 
-setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/data")
+#setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/data")
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data_analysis/data")
 
 domains <- read.table("arrowhead_data.txt", header=T)
 domains <- domains[,1:3]
