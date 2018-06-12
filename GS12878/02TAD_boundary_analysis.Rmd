@@ -76,6 +76,8 @@ prop.table(table(seqnames(bounds)))
 
 ```{r}
 
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/data")
+
 subcompart <- read.table("GSE63525_GM12878_subcompartments.BED",header = F)
 subcompart <- subcompart[,1:4]
 names(subcompart) <- c("chr", "x1", "x2", "compartment")
@@ -253,6 +255,7 @@ tad_subcomp <- tad_subcomp[order(substr(seqnames(tad_subcomp),4,5), start(tad_su
 
 #attaching a class variable y to denote that a tad boundary exists in the flanked interval
 mcols(tad_subcomp)$y <- 1
+
 ```
 
 
@@ -401,12 +404,11 @@ saveRDS(twointerval_g, "partial2.rds")
 # Creating the dataset more model development
 
 ```{r}
-logitdata <- data.frame(y = mcols(tad_subcomp_full)$y,
+gs12878 <- data.frame(y = mcols(tad_subcomp_full)$y,
                         A = mcols(tad_subcomp_full)$percentA,
                         B = mcols(tad_subcomp_full)$percentB)
 
-setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
 
-saveRDS(logitdata, "logitdata.rds")
+saveRDS(gs12878, "gs12878.rds")
 ```
 

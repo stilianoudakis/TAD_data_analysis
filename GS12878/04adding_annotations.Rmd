@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
 
 tad_subcomp_full <- readRDS("tad_subcomp_full.rds")
-logitdata <- readRDS("logitdata.rds")
+gs12878 <- readRDS("gs12878.rds")
 
 tad_subcomp_dist <- GRanges(seqnames = seqnames(tad_subcomp_full),
                             ranges = IRanges(start = start(tad_subcomp_full)+500,
@@ -54,27 +54,27 @@ novel_sequence_insertion_gr <- GRanges(seqnames=novel_sequence_insertion$V1,IRan
 sequence_alteration_gr <- GRanges(seqnames=sequence_alteration$V1,IRanges(start=sequence_alteration$V2,end=sequence_alteration$V3))
 tandem_duplication_gr <- GRanges(seqnames=tandem_duplication$V1,IRanges(start=tandem_duplication$V2,end=tandem_duplication$V3))
 
-  logitdata$complex <- ifelse(countOverlaps(tad_subcomp_full,complex_gr)>=1,1,0)
-  logitdata$deletion <- ifelse(countOverlaps(tad_subcomp_full,deletion_gr)>=1,1,0)
-  logitdata$duplication <- ifelse(countOverlaps(tad_subcomp_full,duplication_gr)>=1,1,0)
-  logitdata$gain_loss <- ifelse(countOverlaps(tad_subcomp_full,gain_loss_gr)>=1,1,0)
-  logitdata$insertion <- ifelse(countOverlaps(tad_subcomp_full,insertion_gr)>=1,1,0)
-  logitdata$inversion <- ifelse(countOverlaps(tad_subcomp_full,inversion_gr)>=1,1,0)
-  logitdata$mobile_element_insertion <- ifelse(countOverlaps(tad_subcomp_full,mobile_element_insertion_gr)>=1,1,0)
-  logitdata$novel_sequence_insertion <- ifelse(countOverlaps(tad_subcomp_full,novel_sequence_insertion_gr)>=1,1,0)
-  logitdata$sequence_alteration <- ifelse(countOverlaps(tad_subcomp_full,sequence_alteration_gr)>=1,1,0)
-  logitdata$tandem_duplication <- ifelse(countOverlaps(tad_subcomp_full,tandem_duplication_gr)>=1,1,0)
+  gs12878$complex <- ifelse(countOverlaps(tad_subcomp_full,complex_gr)>=1,1,0)
+  gs12878$deletion <- ifelse(countOverlaps(tad_subcomp_full,deletion_gr)>=1,1,0)
+  gs12878$duplication <- ifelse(countOverlaps(tad_subcomp_full,duplication_gr)>=1,1,0)
+  gs12878$gain_loss <- ifelse(countOverlaps(tad_subcomp_full,gain_loss_gr)>=1,1,0)
+  gs12878$insertion <- ifelse(countOverlaps(tad_subcomp_full,insertion_gr)>=1,1,0)
+  gs12878$inversion <- ifelse(countOverlaps(tad_subcomp_full,inversion_gr)>=1,1,0)
+  gs12878$mobile_element_insertion <- ifelse(countOverlaps(tad_subcomp_full,mobile_element_insertion_gr)>=1,1,0)
+  gs12878$novel_sequence_insertion <- ifelse(countOverlaps(tad_subcomp_full,novel_sequence_insertion_gr)>=1,1,0)
+  gs12878$sequence_alteration <- ifelse(countOverlaps(tad_subcomp_full,sequence_alteration_gr)>=1,1,0)
+  gs12878$tandem_duplication <- ifelse(countOverlaps(tad_subcomp_full,tandem_duplication_gr)>=1,1,0)
   
-  logitdata$complex_dist <- mcols(distanceToNearest(tad_subcomp_dist, complex_gr))$distance
-  logitdata$deletion_dist <- mcols(distanceToNearest(tad_subcomp_dist, deletion_gr))$distance
-  logitdata$duplication_dist <- mcols(distanceToNearest(tad_subcomp_dist, duplication_gr))$distance
-  logitdata$gain_loss_dist <- mcols(distanceToNearest(tad_subcomp_dist, gain_loss_gr))$distance
-  logitdata$insertion_dist <- mcols(distanceToNearest(tad_subcomp_dist, insertion_gr))$distance
-  logitdata$inversion_dist <- mcols(distanceToNearest(tad_subcomp_dist, inversion_gr))$distance
-  logitdata$mobile_element_insertion_dist <- mcols(distanceToNearest(tad_subcomp_dist, mobile_element_insertion_gr))$distance
-  logitdata$novel_sequence_insertion_dist <- mcols(distanceToNearest(tad_subcomp_dist, novel_sequence_insertion_gr))$distance
-  logitdata$sequence_alteration_dist <- mcols(distanceToNearest(tad_subcomp_dist, sequence_alteration_gr))$distance
-  logitdata$tandem_duplication_dist <- mcols(distanceToNearest(tad_subcomp_dist, tandem_duplication_gr))$distance
+  gs12878$complex_dist <- mcols(distanceToNearest(tad_subcomp_dist, complex_gr))$distance
+  gs12878$deletion_dist <- mcols(distanceToNearest(tad_subcomp_dist, deletion_gr))$distance
+  gs12878$duplication_dist <- mcols(distanceToNearest(tad_subcomp_dist, duplication_gr))$distance
+  gs12878$gain_loss_dist <- mcols(distanceToNearest(tad_subcomp_dist, gain_loss_gr))$distance
+  gs12878$insertion_dist <- mcols(distanceToNearest(tad_subcomp_dist, insertion_gr))$distance
+  gs12878$inversion_dist <- mcols(distanceToNearest(tad_subcomp_dist, inversion_gr))$distance
+  gs12878$mobile_element_insertion_dist <- mcols(distanceToNearest(tad_subcomp_dist, mobile_element_insertion_gr))$distance
+  gs12878$novel_sequence_insertion_dist <- mcols(distanceToNearest(tad_subcomp_dist, novel_sequence_insertion_gr))$distance
+  gs12878$sequence_alteration_dist <- mcols(distanceToNearest(tad_subcomp_dist, sequence_alteration_gr))$distance
+  gs12878$tandem_duplication_dist <- mcols(distanceToNearest(tad_subcomp_dist, tandem_duplication_gr))$distance
   
 
 ```
@@ -87,18 +87,18 @@ gerp <- read.table("GERP_hg19.BED",header=FALSE,sep="\t")
 gerp_gr <- GRanges(seqnames=gerp$V1,IRanges(start=gerp$V2,end=gerp$V3))
 mcols(gerp_gr)$score <- gerp$V5
 
-  logitdata$gerp <- ifelse(countOverlaps(tad_subcomp_full,gerp_gr)>=1,1,0)
+  gs12878$gerp <- ifelse(countOverlaps(tad_subcomp_full,gerp_gr)>=1,1,0)
   
-  logitdata$gerp_dist <- mcols(distanceToNearest(tad_subcomp_dist, gerp_gr))$distance
+  gs12878$gerp_dist <- mcols(distanceToNearest(tad_subcomp_dist, gerp_gr))$distance
   
 #finding which flanks overlap the gerp file so that we can add a score variable
 #all other flanks will have a score of 0
-which(logitdata$gerp==1)
-logitdata$gerp_score <- 0
+which(gs12878$gerp==1)
+gs12878$gerp_score <- 0
 gerpoverlap <- findOverlaps(tad_subcomp_full,gerp_gr)
 gerpoverlapdf <- data.frame(queryHits=queryHits(gerpoverlap), score=gerp_gr[subjectHits(gerpoverlap)]$score)
 gerpoverlapmean <- aggregate(gerpoverlapdf$score, list(gerpoverlapdf$queryHits), mean)
-logitdata$gerp_score[gerpoverlapmean$Group.1] <- gerpoverlapmean$x
+gs12878$gerp_score[gerpoverlapmean$Group.1] <- gerpoverlapmean$x
 
 
 
@@ -145,39 +145,39 @@ srpRNA_gr <- GRanges(seqnames=srpRNA$V1,IRanges(start=srpRNA$V2,end=srpRNA$V3))
 tRNA_gr <- GRanges(seqnames=tRNA$V1,IRanges(start=tRNA$V2,end=tRNA$V3))
 unknown_gr <- GRanges(seqnames=unknown$V1,IRanges(start=unknown$V2,end=unknown$V3))
 
-  logitdata$DNA <- ifelse(countOverlaps(tad_subcomp_full,DNA_gr)>=1,1,0)
-  logitdata$line <- ifelse(countOverlaps(tad_subcomp_full,line_gr)>=1,1,0)
-  logitdata$low_complexity <- ifelse(countOverlaps(tad_subcomp_full,low_complexity_gr)>=1,1,0)
-  logitdata$LTR <- ifelse(countOverlaps(tad_subcomp_full,LTR_gr)>=1,1,0)
-  logitdata$other <- ifelse(countOverlaps(tad_subcomp_full,other_gr)>=1,1,0)
-  logitdata$RC <- ifelse(countOverlaps(tad_subcomp_full,RC_gr)>=1,1,0)
-  logitdata$RNA <- ifelse(countOverlaps(tad_subcomp_full,RNA_gr)>=1,1,0)
-  logitdata$rRNA <- ifelse(countOverlaps(tad_subcomp_full,rRNA_gr)>=1,1,0)
-  logitdata$satellite <- ifelse(countOverlaps(tad_subcomp_full,satellite_gr)>=1,1,0)
-  logitdata$scRNA <- ifelse(countOverlaps(tad_subcomp_full,scRNA_gr)>=1,1,0)
-  logitdata$simple_repeat <- ifelse(countOverlaps(tad_subcomp_full,simple_repeat_gr)>=1,1,0)
-  logitdata$SINE <- ifelse(countOverlaps(tad_subcomp_full,SINE_gr)>=1,1,0)
-  logitdata$snRNA <- ifelse(countOverlaps(tad_subcomp_full,snRNA_gr)>=1,1,0)
-  logitdata$srpRNA <- ifelse(countOverlaps(tad_subcomp_full,srpRNA_gr)>=1,1,0)
-  logitdata$tRNA <- ifelse(countOverlaps(tad_subcomp_full,tRNA_gr)>=1,1,0)
-  logitdata$unknown <- ifelse(countOverlaps(tad_subcomp_full,unknown_gr)>=1,1,0)
+  gs12878$DNA <- ifelse(countOverlaps(tad_subcomp_full,DNA_gr)>=1,1,0)
+  gs12878$line <- ifelse(countOverlaps(tad_subcomp_full,line_gr)>=1,1,0)
+  gs12878$low_complexity <- ifelse(countOverlaps(tad_subcomp_full,low_complexity_gr)>=1,1,0)
+  gs12878$LTR <- ifelse(countOverlaps(tad_subcomp_full,LTR_gr)>=1,1,0)
+  gs12878$other <- ifelse(countOverlaps(tad_subcomp_full,other_gr)>=1,1,0)
+  gs12878$RC <- ifelse(countOverlaps(tad_subcomp_full,RC_gr)>=1,1,0)
+  gs12878$RNA <- ifelse(countOverlaps(tad_subcomp_full,RNA_gr)>=1,1,0)
+  gs12878$rRNA <- ifelse(countOverlaps(tad_subcomp_full,rRNA_gr)>=1,1,0)
+  gs12878$satellite <- ifelse(countOverlaps(tad_subcomp_full,satellite_gr)>=1,1,0)
+  gs12878$scRNA <- ifelse(countOverlaps(tad_subcomp_full,scRNA_gr)>=1,1,0)
+  gs12878$simple_repeat <- ifelse(countOverlaps(tad_subcomp_full,simple_repeat_gr)>=1,1,0)
+  gs12878$SINE <- ifelse(countOverlaps(tad_subcomp_full,SINE_gr)>=1,1,0)
+  gs12878$snRNA <- ifelse(countOverlaps(tad_subcomp_full,snRNA_gr)>=1,1,0)
+  gs12878$srpRNA <- ifelse(countOverlaps(tad_subcomp_full,srpRNA_gr)>=1,1,0)
+  gs12878$tRNA <- ifelse(countOverlaps(tad_subcomp_full,tRNA_gr)>=1,1,0)
+  gs12878$unknown <- ifelse(countOverlaps(tad_subcomp_full,unknown_gr)>=1,1,0)
   
-  logitdata$DNA_dist <- mcols(distanceToNearest(tad_subcomp_dist, DNA_gr))$distance 
-  logitdata$line_dist <- mcols(distanceToNearest(tad_subcomp_dist, line_gr))$distance 
-  logitdata$low_complexity_dist <- mcols(distanceToNearest(tad_subcomp_dist, low_complexity_gr))$distance 
-  logitdata$LTR_dist <- mcols(distanceToNearest(tad_subcomp_dist, LTR_gr))$distance 
-  logitdata$other_dist <- mcols(distanceToNearest(tad_subcomp_dist, other_gr))$distance 
-  logitdata$RC_dist <- mcols(distanceToNearest(tad_subcomp_dist, RC_gr))$distance 
-  #logitdata$RNA_dist <- mcols(distanceToNearest(tad_subcomp_dist, RNA_gr))$distance 
-  #logitdata$rRNA_dist <- mcols(distanceToNearest(tad_subcomp_dist, rRNA_gr))$distance 
-  logitdata$satellite_dist <- mcols(distanceToNearest(tad_subcomp_dist, satellite_gr))$distance 
-  #logitdata$scRNA_dist <- mcols(distanceToNearest(tad_subcomp_dist, scRNA_gr))$distance 
-  logitdata$simple_repeat_dist <- mcols(distanceToNearest(tad_subcomp_dist, simple_repeat_gr))$distance 
-  logitdata$SINE_dist <- mcols(distanceToNearest(tad_subcomp_dist, SINE_gr))$distance 
-  #logitdata$snRNA_dist <- mcols(distanceToNearest(tad_subcomp_dist, snRNA_gr))$distance 
-  logitdata$srpRNA_dist <- mcols(distanceToNearest(tad_subcomp_dist, srpRNA_gr))$distance 
-  #logitdata$tRNA_dist <- mcols(distanceToNearest(tad_subcomp_dist, tRNA_gr))$distance 
-  logitdata$unknown_dist <- mcols(distanceToNearest(tad_subcomp_dist, unknown_gr))$distance 
+  gs12878$DNA_dist <- mcols(distanceToNearest(tad_subcomp_dist, DNA_gr))$distance 
+  gs12878$line_dist <- mcols(distanceToNearest(tad_subcomp_dist, line_gr))$distance 
+  gs12878$low_complexity_dist <- mcols(distanceToNearest(tad_subcomp_dist, low_complexity_gr))$distance 
+  gs12878$LTR_dist <- mcols(distanceToNearest(tad_subcomp_dist, LTR_gr))$distance 
+  gs12878$other_dist <- mcols(distanceToNearest(tad_subcomp_dist, other_gr))$distance 
+  gs12878$RC_dist <- mcols(distanceToNearest(tad_subcomp_dist, RC_gr))$distance 
+  #gs12878$RNA_dist <- mcols(distanceToNearest(tad_subcomp_dist, RNA_gr))$distance 
+  #gs12878$rRNA_dist <- mcols(distanceToNearest(tad_subcomp_dist, rRNA_gr))$distance 
+  gs12878$satellite_dist <- mcols(distanceToNearest(tad_subcomp_dist, satellite_gr))$distance 
+  #gs12878$scRNA_dist <- mcols(distanceToNearest(tad_subcomp_dist, scRNA_gr))$distance 
+  gs12878$simple_repeat_dist <- mcols(distanceToNearest(tad_subcomp_dist, simple_repeat_gr))$distance 
+  gs12878$SINE_dist <- mcols(distanceToNearest(tad_subcomp_dist, SINE_gr))$distance 
+  #gs12878$snRNA_dist <- mcols(distanceToNearest(tad_subcomp_dist, snRNA_gr))$distance 
+  gs12878$srpRNA_dist <- mcols(distanceToNearest(tad_subcomp_dist, srpRNA_gr))$distance 
+  #gs12878$tRNA_dist <- mcols(distanceToNearest(tad_subcomp_dist, tRNA_gr))$distance 
+  gs12878$unknown_dist <- mcols(distanceToNearest(tad_subcomp_dist, unknown_gr))$distance 
   
   
 ```
@@ -193,9 +193,9 @@ se_GM12878 <- read.table(temp[1],header=FALSE,sep="\t")
 
 se_GM12878_gr <- GRanges(seqnames=se_GM12878$V1,IRanges(start=se_GM12878$V2,end=se_GM12878$V3))
 
-  logitdata$se_GM12878 <- ifelse(countOverlaps(tad_subcomp_full,se_GM12878_gr)>=1,1,0)
+  gs12878$se_GM12878 <- ifelse(countOverlaps(tad_subcomp_full,se_GM12878_gr)>=1,1,0)
   
-  logitdata$se_GM12878_dist <- mcols(distanceToNearest(tad_subcomp_dist, se_GM12878_gr))$distance
+  gs12878$se_GM12878_dist <- mcols(distanceToNearest(tad_subcomp_dist, se_GM12878_gr))$distance
   
 ```
 
@@ -207,18 +207,18 @@ UCNE <- read.table("UCNE.BED",header=FALSE,sep="\t")
 UCNE_gr <- GRanges(seqnames=UCNE$V1,IRanges(start=UCNE$V2,end=UCNE$V3))
 mcols(UCNE_gr)$score <- UCNE$V5
 
-  logitdata$UCNE <- ifelse(countOverlaps(tad_subcomp_full,UCNE_gr)>=1,1,0)
+  gs12878$UCNE <- ifelse(countOverlaps(tad_subcomp_full,UCNE_gr)>=1,1,0)
   
-  logitdata$UCNE_dist <- mcols(distanceToNearest(tad_subcomp_dist, UCNE_gr))$distance
+  gs12878$UCNE_dist <- mcols(distanceToNearest(tad_subcomp_dist, UCNE_gr))$distance
   
 #finding which flanks overlap the unce file so that we can add a score variable
 #all other flanks will have a score of 0
-which(logitdata$UCNE==1)
-logitdata$UCNE_score <- 0
+which(gs12878$UCNE==1)
+gs12878$UCNE_score <- 0
 UCNEoverlap <- findOverlaps(tad_subcomp_full,UCNE_gr)
 UCNEoverlapdf <- data.frame(queryHits=queryHits(UCNEoverlap), score=UCNE_gr[subjectHits(UCNEoverlap)]$score)
 UCNEoverlapmean <- aggregate(UCNEoverlapdf$score, list(UCNEoverlapdf$queryHits), mean)
-logitdata$UCNE_score[UCNEoverlapmean$Group.1] <- UCNEoverlapmean$x
+gs12878$UCNE_score[UCNEoverlapmean$Group.1] <- UCNEoverlapmean$x
 
 ```
 
@@ -229,9 +229,9 @@ setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/VMRs")
 VMR <- read.table("VMR_hg19.BED",header=FALSE,sep="\t")
 VMR_gr <- GRanges(seqnames=VMR$V1,IRanges(start=VMR$V2,end=VMR$V3))
 
-  logitdata$VMR <- ifelse(countOverlaps(tad_subcomp_full,VMR_gr)>=1,1,0)
+  gs12878$VMR <- ifelse(countOverlaps(tad_subcomp_full,VMR_gr)>=1,1,0)
   
-  logitdata$VMR_dist <- mcols(distanceToNearest(tad_subcomp_dist, VMR_gr))$distance
+  gs12878$VMR_dist <- mcols(distanceToNearest(tad_subcomp_dist, VMR_gr))$distance
 
 ```
 
@@ -274,37 +274,37 @@ Gm12878_WeakEnhancer7_gr <- GRanges(seqnames=Gm12878_WeakEnhancer7$V1,IRanges(st
 Gm12878_Insulator_gr <- GRanges(seqnames=Gm12878_Insulator$V1,IRanges(start=Gm12878_Insulator$V2,end=Gm12878_Insulator$V3))
 Gm12878_TxnTransition_gr <- GRanges(seqnames=Gm12878_TxnTransition$V1,IRanges(start=Gm12878_TxnTransition$V2,end=Gm12878_TxnTransition$V3)) 
 
-  logitdata$Gm12878_TxnElongation <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_TxnElongation_gr)>=1,1,0)
-  logitdata$Gm12878_WeakTxn <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_WeakTxn_gr)>=1,1,0)
-  logitdata$Gm12878_Repressed <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_Repressed_gr)>=1,1,0)
-  logitdata$Gm12878_Heterochromlo <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_Heterochromlo_gr)>=1,1,0)
-  logitdata$Gm12878_RepetitiveCNV14 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_RepetitiveCNV14_gr)>=1,1,0)
-  logitdata$Gm12878_RepetitiveCNV15 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_RepetitiveCNV15_gr)>=1,1,0)
-  logitdata$Gm12878_ActivePromoter <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_ActivePromoter_gr)>=1,1,0)
-  logitdata$Gm12878_WeakPromoter <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_WeakPromoter_gr)>=1,1,0)
-  logitdata$Gm12878_PoisedPromoter <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_PoisedPromoter_gr)>=1,1,0)
-  logitdata$Gm12878_StrongEnhancer4 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_StrongEnhancer4_gr)>=1,1,0)
-  logitdata$Gm12878_StrongEnhancer5 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_StrongEnhancer5_gr)>=1,1,0)
-  logitdata$Gm12878_WeakEnhancer6 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_WeakEnhancer6_gr)>=1,1,0)
-  logitdata$Gm12878_WeakEnhancer7 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_WeakEnhancer7_gr)>=1,1,0)
-  logitdata$Gm12878_Insulator <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_Insulator_gr)>=1,1,0)
-  logitdata$Gm12878_TxnTransition <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_TxnTransition_gr)>=1,1,0)
+  gs12878$Gm12878_TxnElongation <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_TxnElongation_gr)>=1,1,0)
+  gs12878$Gm12878_WeakTxn <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_WeakTxn_gr)>=1,1,0)
+  gs12878$Gm12878_Repressed <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_Repressed_gr)>=1,1,0)
+  gs12878$Gm12878_Heterochromlo <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_Heterochromlo_gr)>=1,1,0)
+  gs12878$Gm12878_RepetitiveCNV14 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_RepetitiveCNV14_gr)>=1,1,0)
+  gs12878$Gm12878_RepetitiveCNV15 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_RepetitiveCNV15_gr)>=1,1,0)
+  gs12878$Gm12878_ActivePromoter <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_ActivePromoter_gr)>=1,1,0)
+  gs12878$Gm12878_WeakPromoter <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_WeakPromoter_gr)>=1,1,0)
+  gs12878$Gm12878_PoisedPromoter <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_PoisedPromoter_gr)>=1,1,0)
+  gs12878$Gm12878_StrongEnhancer4 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_StrongEnhancer4_gr)>=1,1,0)
+  gs12878$Gm12878_StrongEnhancer5 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_StrongEnhancer5_gr)>=1,1,0)
+  gs12878$Gm12878_WeakEnhancer6 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_WeakEnhancer6_gr)>=1,1,0)
+  gs12878$Gm12878_WeakEnhancer7 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_WeakEnhancer7_gr)>=1,1,0)
+  gs12878$Gm12878_Insulator <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_Insulator_gr)>=1,1,0)
+  gs12878$Gm12878_TxnTransition <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_TxnTransition_gr)>=1,1,0)
 
-  logitdata$Gm12878_TxnElongation_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_TxnElongation_gr))$distance
-  logitdata$Gm12878_WeakTxn_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_WeakTxn_gr))$distance
-  logitdata$Gm12878_Repressed_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_Repressed_gr))$distance
-  logitdata$Gm12878_Heterochromlo_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_Heterochromlo_gr))$distance
-  logitdata$Gm12878_RepetitiveCNV14_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_RepetitiveCNV14_gr))$distance
-  logitdata$Gm12878_RepetitiveCNV15_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_RepetitiveCNV15_gr))$distance
-  logitdata$Gm12878_ActivePromoter_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_ActivePromoter_gr))$distance
-  logitdata$Gm12878_WeakPromoter_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_WeakPromoter_gr))$distance
-  logitdata$Gm12878_PoisedPromoter_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_PoisedPromoter_gr))$distance
-  logitdata$Gm12878_StrongEnhancer4_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_StrongEnhancer4_gr))$distance
-  logitdata$Gm12878_StrongEnhancer5_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_StrongEnhancer5_gr))$distance
-  logitdata$Gm12878_WeakEnhancer6_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_WeakEnhancer6_gr))$distance
-  logitdata$Gm12878_WeakEnhancer7_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_WeakEnhancer7_gr))$distance
-  logitdata$Gm12878_Insulator_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_Insulator_gr))$distance
-  logitdata$Gm12878_TxnTransition_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_TxnTransition_gr))$distance
+  gs12878$Gm12878_TxnElongation_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_TxnElongation_gr))$distance
+  gs12878$Gm12878_WeakTxn_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_WeakTxn_gr))$distance
+  gs12878$Gm12878_Repressed_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_Repressed_gr))$distance
+  gs12878$Gm12878_Heterochromlo_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_Heterochromlo_gr))$distance
+  gs12878$Gm12878_RepetitiveCNV14_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_RepetitiveCNV14_gr))$distance
+  gs12878$Gm12878_RepetitiveCNV15_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_RepetitiveCNV15_gr))$distance
+  gs12878$Gm12878_ActivePromoter_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_ActivePromoter_gr))$distance
+  gs12878$Gm12878_WeakPromoter_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_WeakPromoter_gr))$distance
+  gs12878$Gm12878_PoisedPromoter_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_PoisedPromoter_gr))$distance
+  gs12878$Gm12878_StrongEnhancer4_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_StrongEnhancer4_gr))$distance
+  gs12878$Gm12878_StrongEnhancer5_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_StrongEnhancer5_gr))$distance
+  gs12878$Gm12878_WeakEnhancer6_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_WeakEnhancer6_gr))$distance
+  gs12878$Gm12878_WeakEnhancer7_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_WeakEnhancer7_gr))$distance
+  gs12878$Gm12878_Insulator_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_Insulator_gr))$distance
+  gs12878$Gm12878_TxnTransition_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_TxnTransition_gr))$distance
 
   
 ```
@@ -332,21 +332,21 @@ Gm12878_T_gr <- GRanges(seqnames=Gm12878_T$V1,IRanges(start=Gm12878_T$V2,end=Gm1
 Gm12878_TSS_gr <- GRanges(seqnames=Gm12878_TSS$V1,IRanges(start=Gm12878_TSS$V2,end=Gm12878_TSS$V3))
 Gm12878_WE_gr <- GRanges(seqnames=Gm12878_WE$V1,IRanges(start=Gm12878_WE$V2,end=Gm12878_WE$V3))
 
-  logitdata$Gm12878_CTCF <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_CTCF_gr)>=1,1,0) 
-  logitdata$Gm12878_E <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_E_gr)>=1,1,0)
-  logitdata$Gm12878_PF <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_PF_gr)>=1,1,0)
-  logitdata$Gm12878_R <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_R_gr)>=1,1,0)
-  logitdata$Gm12878_T <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_T_gr)>=1,1,0)
-  logitdata$Gm12878_TSS <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_TSS_gr)>=1,1,0)
-  logitdata$Gm12878_WE <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_WE_gr)>=1,1,0)
+  gs12878$Gm12878_CTCF <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_CTCF_gr)>=1,1,0) 
+  gs12878$Gm12878_E <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_E_gr)>=1,1,0)
+  gs12878$Gm12878_PF <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_PF_gr)>=1,1,0)
+  gs12878$Gm12878_R <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_R_gr)>=1,1,0)
+  gs12878$Gm12878_T <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_T_gr)>=1,1,0)
+  gs12878$Gm12878_TSS <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_TSS_gr)>=1,1,0)
+  gs12878$Gm12878_WE <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_WE_gr)>=1,1,0)
 
-  logitdata$Gm12878_CTCF_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_CTCF_gr))$distance
-  logitdata$Gm12878_E_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_CTCF_gr))$distance
-  logitdata$Gm12878_PF_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_PF_gr))$distance
-  logitdata$Gm12878_R_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_R_gr))$distance
-  logitdata$Gm12878_T_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_T_gr))$distance
-  logitdata$Gm12878_TSS_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_TSS_gr))$distance
-  logitdata$Gm12878_WE_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_WE_gr))$distance
+  gs12878$Gm12878_CTCF_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_CTCF_gr))$distance
+  gs12878$Gm12878_E_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_CTCF_gr))$distance
+  gs12878$Gm12878_PF_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_PF_gr))$distance
+  gs12878$Gm12878_R_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_R_gr))$distance
+  gs12878$Gm12878_T_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_T_gr))$distance
+  gs12878$Gm12878_TSS_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_TSS_gr))$distance
+  gs12878$Gm12878_WE_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_WE_gr))$distance
 
 
 ```
@@ -355,9 +355,9 @@ Gm12878_WE_gr <- GRanges(seqnames=Gm12878_WE$V1,IRanges(start=Gm12878_WE$V2,end=
 
 ```{r}
 
-logitdata$CHR <- seqnames(tad_subcomp_full)
+gs12878$CHR <- seqnames(tad_subcomp_full)
 
-logitdata$CHR <- as.character(logitdata$CHR)
+gs12878$CHR <- as.character(gs12878$CHR)
 ```
 
 # Saving the data
@@ -366,7 +366,6 @@ logitdata$CHR <- as.character(logitdata$CHR)
 
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
 
-saveRDS(logitdata, "logitdata2.rds")
+saveRDS(gs12878, "gs12878.rds")
 
 ```
-

@@ -36,7 +36,7 @@ partial2 <- readRDS("partial2.rds")
 subcompartgr <- readRDS("subcompartgr.rds")
 #tad_subcomp_full <- readRDS("tad_subcomp_full.rds")
 
-logitdata <- readRDS("logitdata.rds")
+gs12878 <- readRDS("gs12878.rds")
 ```
 
 # Calculating various distances: Distance to A and Distance to B
@@ -66,10 +66,9 @@ mcols(tad_subcomp_full)$B_dist <- B_dist
 
 saveRDS(tad_subcomp_full, "tad_subcomp_full.rds")
 
-logitdata$A_dist <- mcols(tad_subcomp_full)$A_dist
-logitdata$B_dist <- mcols(tad_subcomp_full)$B_dist
+gs12878$A_dist <- mcols(tad_subcomp_full)$A_dist
+gs12878$B_dist <- mcols(tad_subcomp_full)$B_dist
 
 
-saveRDS(logitdata, "logitdata.rds")
+saveRDS(gs12878, "gs12878.rds")
 ```
-

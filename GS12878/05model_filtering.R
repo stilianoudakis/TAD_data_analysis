@@ -17,57 +17,50 @@ library(ggplot2)
 #setwd("/home/stilianoudakisc/TAD_data_analysis/Rdata")
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
 
-logitdata <- readRDS("logitdata2.rds")
+gs12878 <- readRDS("gs12878.rds")
 
 ##################################################################
 
 #Full Data
 
 #Remove CHR variable
-logitdata <- logitdata[,-which(colnames(logitdata)=="CHR")]
+gs12878_f <- gs12878[,-which(colnames(gs12878)=="CHR")]
 
 #Taking log2 transform of continous data
-cols <- c(grep("dist",colnames(logitdata)))
-logitdata[,cols] <- apply(logitdata[,cols], 2, function(x){log(x + 1, base=2)})
+cols <- c(grep("dist",colnames(gs12878_f)))
+gs12878_f[,cols] <- apply(gs12878_f[,cols], 2, function(x){log(x + 1, base=2)})
 
 #Changing binary variables to factors
-cols <- c(grep("dist",colnames(logitdata), invert = TRUE))
-logitdata[,cols] <- lapply(logitdata[,cols], factor)
+cols <- c(grep("dist",colnames(gs12878_f), invert = TRUE))
+gs12878_f[,cols] <- lapply(gs12878_f[,cols], factor)
 
 #Changing levels of response (y) to yes no
-levels(logitdata$y) <- c("No", "Yes")
+levels(gs12878_f$y) <- c("No", "Yes")
 
 #Removing zero variance predictors
-nzv <- nearZeroVar(logitdata[,-1], saveMetrics= TRUE)
+nzv <- nearZeroVar(gs12878_f[,-1], saveMetrics= TRUE)
 nzvar <- rownames(nzv[nzv$nzv,])
-logitdata_f <- logitdata[, -which(colnames(logitdata) %in% nzvar)]
-
-#check for linear dependencies
-#comboinfo <- findLinearCombos(logitdata_f)
-#logitdata_f <- logitdata_f[,-comboinfo$remove]
+gs12878_f <- gs12878_f[, -which(colnames(gs12878_f) %in% nzvar)]
 
 
-saveRDS(logitdata_f, "logitdata_f.rds")
+saveRDS(gs12878_f, "gs12878_f.rds")
 
 ##
 
 #Chromosome 1
 
-chr1data <- logitdata[which(logitdata$CHR=="chr1"),]
+chr1_gs12878 <- gs12878[which(gs12878$CHR=="chr1"),]
 
-cols <- c(grep("dist",colnames(chr1data)))
-chr1data[,cols] <- apply(chr1data[,cols], 2, function(x){log(x + 1, base=2)})
+cols <- c(grep("dist",colnames(chr1_gs12878)))
+chr1_gs12878[,cols] <- apply(chr1_gs12878[,cols], 2, function(x){log(x + 1, base=2)})
 
-nzv <- nearZeroVar(chr1data[,-1], saveMetrics= TRUE)
+nzv <- nearZeroVar(chr1_gs12878[,-1], saveMetrics= TRUE)
 nzvar <- rownames(nzv[nzv$nzv,])
 
 #Removing zero variance predictors
-chr1data_f <- chr1data[, -which(colnames(chr1data) %in% nzvar)]
+chr1_gs12878_f <- chr1_gs12878[, -which(colnames(chr1_gs12878) %in% nzvar)]
 
-#check for linear dependencies
-#comboinfo <- findLinearCombos(chr1data_f)
-#chr1data_f <- chr1data_f[,-comboinfo$remove]
 
-saveRDS(chr1data_f, "chr1data_f.rds")
+saveRDS(chr1_gs12878_f, "chr1_gs12878_f.rds")
 
 
