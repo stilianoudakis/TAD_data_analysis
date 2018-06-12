@@ -239,13 +239,13 @@ for(i in 1:4){
 #enet
 test.auc <- data.frame(Combination=c("100/200","200/200","300/200","400/200",
                                      "100/300","200/300","300/300","400/300"),
-                       auc=c(enetlst_sm[[3]][1],enelst_sm[[3]][2],enetlst_sm[[3]][3],
-                             enetlst_sm[[3]][4],enelst_sm[[3]][5],enetlst_sm[[3]][6],
+                       auc=c(enetlst_sm[[3]][1],enetlst_sm[[3]][2],enetlst_sm[[3]][3],
+                             enetlst_sm[[3]][4],enetlst_sm[[3]][5],enetlst_sm[[3]][6],
                              enetlst_sm[[3]][7],enetlst_sm[[3]][8]))
 
 test.auc <- test.auc[order(test.auc$auc, decreasing=TRUE),]
 
-test.auc$model <- factor(test.auc$model, levels=test.auc$model)
+test.auc$Combination <- factor(test.auc$Combination, levels=test.auc$Combination)
 
 test.auc
 
@@ -256,46 +256,78 @@ p
 
 plot(enetlst_sm[[2]][,1],enetlst_sm[[1]][,1], type="l",col=1)
 for(i in 2:8){lines(enetlst_sm[[2]][,i],enetlst_sm[[1]][,i], type="l",col=i)}
+legend("bottomright",c("100/200","200/200","300/200",
+                       "400/200","100/300","200/300",
+                       "300/300","400/300"), fill=1:8)
+
+varimp.enet1 <- as.vector(enetlst_sm[[4]][,1])
+varimp.enet.df1 <- data.frame(Feature=rownames(enetlst_sm[[4]]),
+                             Importance=varimp.enet1)
+varimp.enet.df1 <- varimp.enet.df1[order(varimp.enet.df1$Importance),]
+numvarenet <- dim(varimp.enet.df1)[1]
+varimp.enet.df1 <- varimp.enet.df1[(numvarenet-19):numvarenet,]
+varimp.enet.df1$Feature <- factor(varimp.enet.df1$Feature,levels=varimp.enet.df1$Feature)
+enetp1 <- ggplot(varimp.enet.df1, aes(x=Feature, 
+                                    y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="green") +
+  coord_flip()
+
+
+#############################################################################
 
 #rf
-test.auc <- data.frame(Combination=c("100/200","200/200","300/200","400/200",
+test.auc.rf <- data.frame(Combination=c("100/200","200/200","300/200","400/200",
                                      "100/300","200/300","300/300","400/300"),
                        auc=c(rflst_sm[[3]][1],rflst_sm[[3]][2],rflst_sm[[3]][3],
                              rflst_sm[[3]][4],rflst_sm[[3]][5],rflst_sm[[3]][6],
                              rflst_sm[[3]][7],rflst_sm[[3]][8]))
 
-test.auc <- test.auc[order(test.auc$auc, decreasing=TRUE),]
+test.auc.rf <- test.auc.rf[order(test.auc.rf$auc, decreasing=TRUE),]
 
-test.auc$model <- factor(test.auc$model, levels=test.auc$model)
+test.auc.rf$Combination <- factor(test.auc.rf$Combination, levels=test.auc.rf$Combination)
 
-test.auc
+test.auc.rf
 
-p<-ggplot(data=test.auc, aes(x=Combination, y=auc)) +
+p<-ggplot(data=test.auc.rf, aes(x=Combination, y=auc)) +
   geom_bar(stat="identity", fill="steelblue") + ylim(0,1)+
   theme_minimal()
 p
 
 plot(rflst_sm[[2]][,1],rflst_sm[[1]][,1], type="l",col=1)
 for(i in 2:8){lines(rflst_sm[[2]][,i],rflst_sm[[1]][,i], type="l",col=i)}
+legend("bottomright",c("100/200","200/200","300/200",
+                       "400/200","100/300","200/300",
+                       "300/300","400/300"), fill=1:8)
 
+
+#################################################################################
 
 #gbm
-test.auc <- data.frame(Combination=c("100/200","200/200","300/200","400/200",
+test.auc.gbm <- data.frame(Combination=c("100/200","200/200","300/200","400/200",
                                "100/300","200/300","300/300","400/300"),
                        auc=c(gbmlst_sm[[3]][1],gbmlst_sm[[3]][2],gbmlst_sm[[3]][3],
                              gbmlst_sm[[3]][4],gbmlst_sm[[3]][5],gbmlst_sm[[3]][6],
                              gbmlst_sm[[3]][7],gbmlst_sm[[3]][8]))
 
-test.auc <- test.auc[order(test.auc$auc, decreasing=TRUE),]
+test.auc.gbm <- test.auc.gbm[order(test.auc.gbm$auc, decreasing=TRUE),]
 
-test.auc$model <- factor(test.auc$model, levels=test.auc$model)
+test.auc.gbm$Combination <- factor(test.auc.gbm$Combination, levels=test.auc.gbm$Combination)
 
-test.auc
+test.auc.gbm
 
-p<-ggplot(data=test.auc, aes(x=Combination, y=auc)) +
+p<-ggplot(data=test.auc.gbm, aes(x=Combination, y=auc)) +
   geom_bar(stat="identity", fill="steelblue") + ylim(0,1)+
   theme_minimal()
 p
 
 plot(gbmlst_sm[[2]][,1],gbmlst_sm[[1]][,1], type="l",col=1)
 for(i in 2:8){lines(gbmlst_sm[[2]][,i],gbmlst_sm[[1]][,i], type="l",col=i)}
+legend("bottomright",c("100/200","200/200","300/200",
+                       "400/200","100/300","200/300",
+                       "300/300","400/300"), fill=1:8)
