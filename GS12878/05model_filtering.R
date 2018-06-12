@@ -31,8 +31,8 @@ cols <- c(grep("dist",colnames(gm12878_f)))
 gm12878_f[,cols] <- apply(gm12878_f[,cols], 2, function(x){log(x + 1, base=2)})
 
 #Changing binary variables to factors
-cols <- c(grep("score",colnames(gm12878_f), invert = TRUE),
-          grep("dist",colnames(gm12878_f), invert = TRUE))
+cols <- c(intersect(grep("score",colnames(gm12878_f), invert = TRUE),
+          grep("dist",colnames(gm12878_f), invert = TRUE)))
 gm12878_f[,cols] <- lapply(gm12878_f[,cols], factor)
 
 #Changing levels of response (y) to yes no
