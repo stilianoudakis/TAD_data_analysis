@@ -1,0 +1,180 @@
+---
+title: "Investigating TAD boundaries"
+author: "Spiro Stilianoudakis"
+date: "April 22, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+library(dplyr)
+
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data_analysis/data")
+arrowhead_data <- read.table("arrowhead_data.txt", header=T)
+dim(arrowhead_data)
+```
+
+# There are 9274 TAD boundary intervals in the data
+
+# Plotting TAD boundaries for Chromosome 22
+
+```{r echo=FALSE}
+
+arrowhead_data <- arrowhead_data[,1:3]
+plot(arrowhead_data$Start[which(arrowhead_data$Chromosome=="chr22")],arrowhead_data$End[which(arrowhead_data$Chromosome=="chr22")],pch='.', col="blue", xlab="Start", ylab="End")
+```
+
+# Zooming in to a square window of 32000000-34000000 coordinates
+
+```{r echo=FALSE}
+plot(arrowhead_data$Start[which(arrowhead_data$Chromosome=="chr22")],arrowhead_data$End[which(arrowhead_data$Chromosome=="chr22")], col="blue", xlim=c(3.2e+07,3.4e+07),ylim=c(3.2e+07,3.4e+07), xlab="Start", ylab="End")
+#adding diagonal line
+abline(0,1)
+
+arrowhead_data[which(arrowhead_data$Start>=32000000 & arrowhead_data$Chromosome=="chr22" & arrowhead_data$End<=34000000),]
+
+# There appear to be situations where we have a TAD within a TAD
+# In other words, the starting coordinate is the same for two TAD boundaries
+```
+
+# How many ways can TAD boundaries share coordinates?
+
+## 1. They could share the same Start site
+
+Example:
+
+| CHR | Start    | End      |
+|:---:|:--------:|:--------:|
+| 22  | 32370000 | 32890000 |
+| 22  | 32370000 | 32495000 |
+
+## 2. They could share the same End site
+
+Example:
+
+| CHR | Start    | End      |
+|:---:|:--------:|:--------:|
+| 22  | 33695000 | 33985000 |
+| 22  | 33900000 | 33985000 |
+
+## 3. They could be consecutive (start site = end site)
+
+Example:
+
+| CHR | Start    | End      |
+|:---:|:--------:|:--------:|
+| 22  | 33605000 | 33695000 |
+| 22  | 33695000 | 33985000 |
+
+## 4. They could be the same start and end site (duplicate intervals)
+
+Example:
+
+| CHR | Start    | End      |
+|:---:|:--------:|:--------:|
+| 22  | X        | Y        |
+| 22  | X        | Y        |
+
+# Finding all type 1 TAD boundaries
+
+## Here I will sort by chromosome and start site the count the duplicates across chromosome and start site
+
+```{r echo=FALSE}
+# The data is already sorted by chromosome and start site
+dupstart <- arrowhead_data[duplicated(arrowhead_data[,1:2]),]
+head(dupstart)
+dim(dupstart)
+#303   3
+table(dupstart$Chromosome)
+```
+
+### There are some situations where there are multiple nested TADs
+
+```{r echo=FALSE}
+dupstart[duplicated(dupstart$Start),]
+#example
+#     Chromosome     Start       End
+#5968       chr3  51425000  51535000
+
+```
+
+### For example chromosome 3 has two TADs nested inside an interval from 51425000 to 51880000
+```{r echo=FALSE}
+arrowhead_data[which(arrowhead_data$Start==51425000 & arrowhead_data$Chromosome=="chr3"),]
+
+table(dupstart[duplicated(dupstart$Start),][,1])
+```
+
+# Finding all type 2 TAD boundaries
+
+## Here I will sort by chromosome and end site the count the duplicates across chromosome and end site
+
+```{r echo=FALSE}
+dupend <- arrowhead_data[order(arrowhead_data$Chromosome,arrowhead_data$End),]
+head(dupend)
+
+dupend <- dupend[duplicated(dupend[,c(1,3)]),]
+head(dupend)
+dim(dupend)
+#304   3
+table(dupend$Chromosome)
+
+#finding nested TADs
+dupend[duplicated(dupend$end),]
+#There were were no multiple nested tads here
+
+```
+
+# Finding all type 3 TAD boundaries
+
+## Here I will lag the end site so as to line up starting and ending sites then search for where start=end
+
+```{r echo=FALSE}
+# creating a function to lag a column of a data frame
+#lagpad <- function(x, k) {
+#    if (!is.vector(x)) 
+#        stop('x must be a vector')
+#    if (!is.numeric(x)) 
+#        stop('x must be numeric')
+#    if (!is.numeric(k))
+#        stop('k must be numeric')
+#    if (1 != length(k))
+#        stop('k must be a single number')
+#    c(rep(NA, k), x)[1 : length(x)] 
+#}
+
+lagtad <- arrowhead_data %>% mutate(End=lag(End))
+
+#setting positions where chromosomes change equal to NA
+head(lagtad[ diff(c(0,lagtad$Chromosome)) != 0, ])
+lagtad[ diff(c(0,lagtad$Chromosome)) != 0, ][,3] <- NA
+head(lagtad[ diff(c(0,lagtad$Chromosome)) != 0, ])
+
+lagtaddup <- lagtad[which(lagtad$Start==lagtad$End),]
+head(lagtaddup)
+dim(lagtaddup)
+#477 3
+table(lagtaddup$Chromosome)
+
+arrowhead_data[which((arrowhead_data$Start==3540000 | arrowhead_data$End==3540000) & arrowhead_data$Chromosome=="chr1"),]
+#    Chromosome   Start     End
+#477       chr1 3395000 3540000
+#784       chr1 3540000 3660000
+```
+
+# Finding all type 4 TAD boundaries
+
+## Here I will simply search for duplicates across all columns
+
+```{r echo=FALSE}
+arrowhead_data[duplicated(arrowhead_data),]
+#there are no duplicate intervals
+```
+
+
+
+
+
