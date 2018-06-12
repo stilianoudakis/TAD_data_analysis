@@ -34,7 +34,7 @@ none <- readRDS("none.rds")
 partial1 <- readRDS("partial1.rds")
 partial2 <- readRDS("partial2.rds")
 subcompartgr <- readRDS("subcompartgr.rds")
-#tad_subcomp_full <- readRDS("tad_subcomp_full.rds")
+tad_subcomp_full <- readRDS("tad_subcomp_full.rds")
 
 gm12878 <- readRDS("gm12878.rds")
 ```
