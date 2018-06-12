@@ -404,11 +404,11 @@ saveRDS(twointerval_g, "partial2.rds")
 # Creating the dataset more model development
 
 ```{r}
-gs12878 <- data.frame(y = mcols(tad_subcomp_full)$y,
+gm12878 <- data.frame(y = mcols(tad_subcomp_full)$y,
                         A = mcols(tad_subcomp_full)$percentA,
                         B = mcols(tad_subcomp_full)$percentB)
 
 
-saveRDS(gs12878, "gs12878.rds")
+saveRDS(gm12878, "gm12878.rds")
 ```
 
