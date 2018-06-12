@@ -383,7 +383,7 @@ enetp2 <- ggplot(varimp.enet.dfnls, aes(x=Feature,
   geom_bar(stat="identity", 
            width=.5, 
            position="dodge",
-           fill="blue") +
+           fill="black") +
   coord_flip()
 
 varimp.enetlns <- as.vector(rowMeans(enetlst_lns[[4]]))
@@ -401,7 +401,7 @@ enetp3 <- ggplot(varimp.enet.dflns, aes(x=Feature,
   geom_bar(stat="identity", 
            width=.5, 
            position="dodge",
-           fill="black") +
+           fill="blue") +
   coord_flip()
 
 varimp.enetnlns <- as.vector(rowMeans(enetlst_nlns[[4]]))
