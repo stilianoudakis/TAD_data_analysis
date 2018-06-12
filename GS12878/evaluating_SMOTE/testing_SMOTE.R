@@ -237,19 +237,19 @@ for(i in 1:4){
 #Plotting performance
 
 #enet
-test.auc <- data.frame(Combination=c("100/200","200/200","300/200","400/200",
+test.auc.enet <- data.frame(Combination=c("100/200","200/200","300/200","400/200",
                                      "100/300","200/300","300/300","400/300"),
                        auc=c(enetlst_sm[[3]][1],enetlst_sm[[3]][2],enetlst_sm[[3]][3],
                              enetlst_sm[[3]][4],enetlst_sm[[3]][5],enetlst_sm[[3]][6],
                              enetlst_sm[[3]][7],enetlst_sm[[3]][8]))
 
-test.auc <- test.auc[order(test.auc$auc, decreasing=TRUE),]
+test.auc.enet <- test.auc.enet[order(test.auc.enet$auc, decreasing=TRUE),]
 
-test.auc$Combination <- factor(test.auc$Combination, levels=test.auc$Combination)
+test.auc.enet$Combination <- factor(test.auc.enet$Combination, levels=test.auc.enet$Combination)
 
-test.auc
+test.auc.enet
 
-p<-ggplot(data=test.auc, aes(x=Combination, y=auc)) +
+p<-ggplot(data=test.auc.enet, aes(x=Combination, y=auc)) +
   geom_bar(stat="identity", fill="steelblue") + ylim(0,1)+
   theme_minimal()
 p
@@ -295,16 +295,35 @@ test.auc.rf$Combination <- factor(test.auc.rf$Combination, levels=test.auc.rf$Co
 test.auc.rf
 
 p<-ggplot(data=test.auc.rf, aes(x=Combination, y=auc)) +
-  geom_bar(stat="identity", fill="steelblue") + ylim(0,1)+
+  geom_bar(stat="identity", fill="steelblue") + ylim(0,1)+ggtitle("Random Forest")+
   theme_minimal()
 p
 
-plot(rflst_sm[[2]][,1],rflst_sm[[1]][,1], type="l",col=1)
+plot(rflst_sm[[2]][,1],rflst_sm[[1]][,1], type="l",col=1,xlab="1-Specificity", ylab="Sensitivity", main="Elastic Net")
 for(i in 2:8){lines(rflst_sm[[2]][,i],rflst_sm[[1]][,i], type="l",col=i)}
 legend("bottomright",c("100/200","200/200","300/200",
                        "400/200","100/300","200/300",
                        "300/300","400/300"), fill=1:8)
 
+varimp.rf1 <- as.vector(rflst_sm[[4]][,1])
+varimp.rf.df1 <- data.frame(Feature=rownames(rflst_sm[[4]]),
+                              Importance=varimp.enet1)
+varimp.rf.df1 <- varimp.rf.df1[order(varimp.rf.df1$Importance),]
+numvarrf <- dim(varimp.rf.df1)[1]
+varimp.rf.df1 <- varimp.rf.df1[(numvarrf-19):numvarrf,]
+varimp.rf.df1$Feature <- factor(varimp.rf.df1$Feature,levels=varimp.rf.df1$Feature)
+rfp1 <- ggplot(varimp.rf.df1, aes(x=Feature, 
+                                      y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="blue") +
+  coord_flip()
+
+grid.arrange(rfp1,rfp2,rfp3,rfp4,rfp5,rfp6,rfp7,rfp8,ncol=4,top="Random Forest")
 
 #################################################################################
 
@@ -322,12 +341,33 @@ test.auc.gbm$Combination <- factor(test.auc.gbm$Combination, levels=test.auc.gbm
 test.auc.gbm
 
 p<-ggplot(data=test.auc.gbm, aes(x=Combination, y=auc)) +
-  geom_bar(stat="identity", fill="steelblue") + ylim(0,1)+
+  geom_bar(stat="identity", fill="steelblue") + ylim(0,1)+ggtitle("GBM")+
   theme_minimal()
 p
 
-plot(gbmlst_sm[[2]][,1],gbmlst_sm[[1]][,1], type="l",col=1)
+plot(gbmlst_sm[[2]][,1],gbmlst_sm[[1]][,1], type="l",col=1,xlab="1-Specificity", ylab="Sensitivity", main="GBM")
 for(i in 2:8){lines(gbmlst_sm[[2]][,i],gbmlst_sm[[1]][,i], type="l",col=i)}
 legend("bottomright",c("100/200","200/200","300/200",
                        "400/200","100/300","200/300",
                        "300/300","400/300"), fill=1:8)
+
+varimp.gbm1 <- as.vector(gbmlst_sm[[4]][,1])
+varimp.gbm.df1 <- data.frame(Feature=rownames(gbmlst_sm[[4]]),
+                            Importance=varimp.gbm1)
+varimp.gbm.df1 <- varimp.gbm.df1[order(varimp.gbm.df1$Importance),]
+numvargbm <- dim(varimp.gbm.df1)[1]
+varimp.gbm.df1 <- varimp.gbm.df1[(numvargbm-19):numvargbm,]
+varimp.gbm.df1$Feature <- factor(varimp.gbm.df1$Feature,levels=varimp.gbm.df1$Feature)
+gbmp1 <- ggplot(varimp.gbm.df1, aes(x=Feature, 
+                                  y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="blue") +
+  coord_flip()
+
+grid.arrange(gbmp1,gbmp2,gbmp3,gbmp4,gbmp5,gbmp6,gbmp7,gbmp8,ncol=4,top="GBM")
+
