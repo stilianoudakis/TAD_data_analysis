@@ -20,8 +20,8 @@ setwd("/home/stilianoudakisc/TAD_data_analysis/comparing_normalization/")
 chr1_gm12878_f <- readRDS("chr1_gm12878_f.rds")
 
 #randomly sample to reduce dataset
-#set.seed(123)
-#chr1_gm12878_f <- chr1_gm12878_f[sample(nrow(chr1_gm12878_f),10000),c(1,sample(2:66,10))]
+set.seed(123)
+chr1_gm12878_f <- chr1_gm12878_f[sample(nrow(chr1_gm12878_f),10000),c(1,sample(2:66,20))]
 
 #Full data
 #gm12878_f <- readRDS("gm12878_f.rds")
@@ -40,7 +40,7 @@ chr1_gm12878_f[,cols] <- scale(chr1_gm12878_f[,cols], center = TRUE, scale = TRU
 k = 10
 set.seed(789)
 folds = sample(1:k,nrow(chr1_gm12878_f), replace=TRUE)
-cv.preds.fwd=matrix(NA, k, ncol(chr1_gm12878_f)-1)
+cv.preds.fwd=matrix(NA, nrow=ncol(chr1_gm12878_f)-1,ncol=k)
 auc.model.fwd <- numeric(k)
 
 for(j in 1:k){
