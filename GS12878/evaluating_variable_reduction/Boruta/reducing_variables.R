@@ -21,8 +21,8 @@ setwd("/home/stilianoudakisc/TAD_data_analysis/comparing_normalization/")
 chr1_gm12878_f <- readRDS("chr1_gm12878_f.rds")
 
 #randomly sample to reduce dataset
-set.seed(123)
-chr1_gm12878_f <- chr1_gm12878_f[sample(nrow(chr1_gm12878_f),10000),c(1,sample(2:66,20))]
+#set.seed(123)
+#chr1_gm12878_f <- chr1_gm12878_f[sample(nrow(chr1_gm12878_f),10000),c(1,sample(2:66,20))]
 
 
 #Full data
@@ -38,6 +38,8 @@ boruta_chr1 <- Boruta(y ~ ., data=chr1_gm12878_f,
                       getImp=getImpFerns)
 print(boruta_chr1)
 
+saveRDS(boruta_chr1, "boruta_chr1.rds")
+
 plot(boruta_chr1, xlab = "", xaxt = "n")
 
 lz<-lapply(1:ncol(boruta_chr1$ImpHistory),function(i)
@@ -51,6 +53,8 @@ axis(side = 1,las=2,labels = names(Labels),
 #final.boruta <- TentativeRoughFix(boruta_chr1)
 #print(final.boruta)
 
-feats <- getSelectedAttributes(boruta_chr1, withTentative = F)
+feats <- getSelectedAttributes(boruta_chr1, withTentative = T)
 
 boruta_chr1_gm12878 <- chr1_gm12878_f[,c("y",feats)]
+
+saveRDS(boruta_chr1_gm12878, "boruta_chr1_gm12878.rds")
