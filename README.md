@@ -1,6 +1,10 @@
 # TAD_data_analysis
 Analysis of Topologically Associated Domain data and their respective boundaries
 
+- `Papers.md` - paper notes
+
+- `Project.md` - project draft
+
 ## data
 
 * arrowhead_data(2).txt: The TAD boundary data used for analyses cleaned from the GSE63525_GM12878_primary+replicate_Arrowhead_domainlist.txt file. (2) refers to the same data with quotations removed around the Chromosome column
