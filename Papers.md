@@ -27,5 +27,11 @@ Many other in my `Zotero/Genome/Sequencing/Epigenomics/machine learning` collect
 
 - Schuster-Böckler, Benjamin, and Ben Lehner. “Chromatin Organization Is a Major Influence on Regional Mutation Rates in Human Cancer Cells.” Nature 488, no. 7412 (August 23, 2012): 504–7. https://doi.org/10.1038/nature11273. - Cancer SNP density correlates with H3K9me3. 46 features, including Hi-C PCs, were tested for pairwise Pearson correlations.
 
+## Prediction, general
+
+- Wong, Kin Yau, Cheng Fan, Maki Tanioka, Joe S. Parker, Andrew B. Nobel, Donglin Zeng, Dan-Yu Lin, and Charles M. Perou. “An Integrative Boosting Approach for Predicting Survival Time With Multiple Genomics Platforms,” June 4, 2018. https://doi.org/10.1101/338145. - Survival analysis using integrative approach - multiple data types (clinical, gene/protein expression, gene signatures) and methods (LASSO, elastic net, boosting using cross-validation and permutation). Good example of presenting comparison of methods on a biological problem.
+
+- Mayr, A., H. Binder, O. Gefeller, and M. Schmid. “The Evolution of Boosting Algorithms. From Machine Learning to Statistical Modelling.” Methods of Information in Medicine 53, no. 6 (2014): 419–27. https://doi.org/10.3414/ME13-01-0122. - Boosting, part 1. AdaBoost, algorithm, overfitting and resistance to it, connection to generalized additive model (GAM). Likelihood-based boosting. Early stopping as a way to prevent overfitting. R packages mboost, gbm, GAMBoost, CoxBoost
+
 
 
