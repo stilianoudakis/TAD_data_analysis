@@ -33,5 +33,7 @@ Many other in my `Zotero/Genome/Sequencing/Epigenomics/machine learning` collect
 
 - Mayr, A., H. Binder, O. Gefeller, and M. Schmid. “The Evolution of Boosting Algorithms. From Machine Learning to Statistical Modelling.” Methods of Information in Medicine 53, no. 6 (2014): 419–27. https://doi.org/10.3414/ME13-01-0122. - Boosting, part 1. AdaBoost, algorithm, overfitting and resistance to it, connection to generalized additive model (GAM). Likelihood-based boosting. Early stopping as a way to prevent overfitting. R packages mboost, gbm, GAMBoost, CoxBoost
 
+- Haibo He, Yang Bai, Edwardo A. Garcia, and Shutao Li. “ADASYN: Adaptive Synthetic Sampling Approach for Imbalanced Learning,” 1322–28. IEEE, 2008. https://doi.org/10.1109/IJCNN.2008.4633969. - ADASYN - adaptive synthetic sampling approach. Overview of current methodologies - sampling strategies, synthetic data generation (SMOTE), others. Comparison with others. Open question - how much imbalance hurt learning? Important - categorical variables are excluded. https://cran.r-project.org/web/packages/smotefamily/
+
 
 
