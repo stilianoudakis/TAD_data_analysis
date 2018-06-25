@@ -43,6 +43,7 @@ nzv <- nearZeroVar(gm12878_f[,-1], saveMetrics= TRUE)
 nzvar <- rownames(nzv[nzv$nzv,])
 gm12878_f <- gm12878_f[, -which(colnames(gm12878_f) %in% nzvar)]
 
+#Variables that were removed:
 
 [1] "A_dist"                     "B_dist"
 [3] "complex"                    "mobile_element_insertion"
@@ -97,6 +98,29 @@ nzv <- nearZeroVar(chr1_gm12878[,-1], saveMetrics= TRUE)
 nzvar <- rownames(nzv[nzv$nzv,])
 chr1_gm12878_f <- chr1_gm12878[, -which(colnames(chr1_gm12878) %in% nzvar)]
 
+#Variables that were removed:
+
+[1] "A_dist"                   "B_dist"                  
+[3] "complex"                  "inversion"               
+[5] "mobile_element_insertion" "novel_sequence_insertion"
+[7] "sequence_alteration"      "tandem_duplication"      
+[9] "gerp_score"               "DNA"                     
+[11] "low_complexity"           "other"                   
+[13] "RC"                       "RNA"                     
+[15] "rRNA"                     "satellite"               
+[17] "scRNA"                    "simple_repeat"           
+[19] "snRNA"                    "srpRNA"                  
+[21] "tRNA"                     "unknown"                 
+[23] "se_GM12878"               "UCNE"                    
+[25] "UCNE_score"               "Gm12878_RepetitiveCNV14" 
+[27] "Gm12878_RepetitiveCNV15"  "Gm12878_ActivePromoter"  
+[29] "Gm12878_WeakPromoter"     "Gm12878_PoisedPromoter"  
+[31] "Gm12878_StrongEnhancer4"  "Gm12878_StrongEnhancer5" 
+[33] "Gm12878_WeakEnhancer6"    "Gm12878_Insulator"       
+[35] "Gm12878_TxnTransition"    "Gm12878_CTCF"            
+[37] "Gm12878_E"                "Gm12878_PF"              
+[39] "Gm12878_TSS"              "Gm12878_WE"              
+[41] "CHR"                     
 
 saveRDS(chr1_gm12878_f, "chr1_gm12878_f.rds")
 
