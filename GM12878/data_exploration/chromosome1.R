@@ -31,11 +31,11 @@ chr1_gm12878_f_d_r <- rbind.data.frame(chr1_gm12878_f_d[sampids,],
 
 
 for(i in 2:dim(chr1_gm12878_f_d_r)[2]){
-p <- ggplot(chr1_gm12878_f_d_r,aes(x=chr1_gm12878_f_d_r[,i],group=y,fill=y))+
-  xlab(colnames(chr1_gm12878_f_d_r)[i])+
-  geom_histogram(position="identity",alpha=0.5,binwidth=0.25)+
-  theme_bw()
-print(p)
+  p <- ggplot(chr1_gm12878_f_d_r,aes(x=chr1_gm12878_f_d_r[,i],group=y,fill=y))+
+    xlab(colnames(chr1_gm12878_f_d_r)[i])+
+    geom_histogram(position="identity",alpha=0.5,binwidth=0.25)+
+    theme_bw()
+  print(p)
 }
 
 #summaries
@@ -45,11 +45,11 @@ rangemat <- matrix(nrow=dim(chr1_gm12878_f_d_r)[2]-1,ncol = 2)
 pvalmat <- matrix(nrow=dim(chr1_gm12878_f_d_r)[2]-1,ncol = 1)
 
 for(i in 1:(dim(chr1_gm12878_f_d_r)[2]-1)){
-meanmat[i,] <- round(tapply(chr1_gm12878_f_d_r[,i+1],chr1_gm12878_f_d_r$y,mean),2)
-medianmat[i,] <- round(tapply(chr1_gm12878_f_d_r[,i+1],chr1_gm12878_f_d_r$y,median),2)
-rangemat[i,] <- round(tapply(chr1_gm12878_f_d_r[,i+1],chr1_gm12878_f_d_r$y,function(x) max(x)-min(x)),2)
-pvalmat[i,] <- wilcox.test(chr1_gm12878_f_d_r[which(chr1_gm12878_f_d_r$y=="Yes"),i+1],
-                  chr1_gm12878_f_d_r[which(chr1_gm12878_f_d_r$y=="No"),i+1])$p.value
+  meanmat[i,] <- round(tapply(chr1_gm12878_f_d_r[,i+1],chr1_gm12878_f_d_r$y,mean),2)
+  medianmat[i,] <- round(tapply(chr1_gm12878_f_d_r[,i+1],chr1_gm12878_f_d_r$y,median),2)
+  rangemat[i,] <- round(tapply(chr1_gm12878_f_d_r[,i+1],chr1_gm12878_f_d_r$y,function(x) max(x)-min(x)),2)
+  pvalmat[i,] <- wilcox.test(chr1_gm12878_f_d_r[which(chr1_gm12878_f_d_r$y=="Yes"),i+1],
+                             chr1_gm12878_f_d_r[which(chr1_gm12878_f_d_r$y=="No"),i+1])$p.value
 }
 
 summarydf <- cbind.data.frame(Feature=colnames(chr1_gm12878_f_d_r)[-1],
@@ -81,16 +81,16 @@ chr1_gm12878_f_b_r <- rbind.data.frame(chr1_gm12878_f_b[sampids,],
 
 for(i in 2:dim(chr1_gm12878_f_d_r)[2]){
   p <- ggplot(chr1_gm12878_f_b_r,aes(x=chr1_gm12878_f_b_r[,i],group=y,fill=y))+
-         xlab(colnames(chr1_gm12878_f_b_r)[i])+
-         geom_bar(position="fill")+
-         theme_bw()
+    xlab(colnames(chr1_gm12878_f_b_r)[i])+
+    geom_bar(position="fill")+
+    theme_bw()
   print(p)
 }
 
 tab <- list()
 
 for(i in 1:(dim(chr1_gm12878_f_b_r)[2]-1)){
-tab[[i]] <- round(prop.table(table(chr1_gm12878_f_b_r[,i+1],chr1_gm12878_f_b_r$y),margin = 2),2)
+  tab[[i]] <- round(prop.table(table(chr1_gm12878_f_b_r[,i+1],chr1_gm12878_f_b_r$y),margin = 2),2)
 }
 tab 
 
@@ -98,7 +98,7 @@ tab <- rbind(tab[[1]],tab[[2]],tab[[3]],tab[[4]],tab[[5]],tab[[6]],tab[[7]],tab[
 
 pval = numeric()
 for(i in 1:(dim(chr1_gm12878_f_b_r)[2]-1)){
-pval[i] <- chisq.test(table(chr1_gm12878_f_b_r[,i+1],chr1_gm12878_f_b_r$y))$p.value
+  pval[i] <- chisq.test(table(chr1_gm12878_f_b_r[,i+1],chr1_gm12878_f_b_r$y))$p.value
 }
 pvaldf <- data.frame(Feature = colnames(chr1_gm12878_f_b_r)[-1], Pvalue=pval)
 pvaldf <- pvaldf[order(pvaldf$Pvalue, decreasing = FALSE),]
