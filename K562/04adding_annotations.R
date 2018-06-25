@@ -4,7 +4,7 @@
 
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
 
-tad_subcomp_full_k562 <- readRDS("tad_subcomp_fullk562.rds")
+tad_subcomp_full_k562 <- readRDS("tad_subcomp_full_k562.rds")
 k562 <- readRDS("k562.rds")
 
 tad_subcomp_dist <- GRanges(seqnames = seqnames(tad_subcomp_full_k562),
@@ -309,7 +309,7 @@ k562$k562_TSS <- ifelse(countOverlaps(tad_subcomp_full,k562_TSS_gr)>=1,1,0)
 k562$k562_WE <- ifelse(countOverlaps(tad_subcomp_full,k562_WE_gr)>=1,1,0)
 
 k562$k562_CTCF_dist <- mcols(distanceToNearest(tad_subcomp_dist, k562_CTCF_gr))$distance
-k562$k562_E_dist <- mcols(distanceToNearest(tad_subcomp_dist, k562_CTCF_gr))$distance
+k562$k562_E_dist <- mcols(distanceToNearest(tad_subcomp_dist, k562_E_gr))$distance
 k562$k562_PF_dist <- mcols(distanceToNearest(tad_subcomp_dist, k562_PF_gr))$distance
 k562$k562_R_dist <- mcols(distanceToNearest(tad_subcomp_dist, k562_R_gr))$distance
 k562$k562_T_dist <- mcols(distanceToNearest(tad_subcomp_dist, k562_T_gr))$distance
