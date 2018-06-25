@@ -34,8 +34,6 @@ chr1_gm12878_f_smote <- SMOTE(y ~ .,
                               perc.over = 100, 
                               perc.under = 200)
 
-#Full data
-#gm12878_f <- readRDS("gm12878_f.rds")
 
 # Performing stepwise selection
 
