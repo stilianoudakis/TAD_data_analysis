@@ -1,6 +1,5 @@
 #Evaluating Variable Reduction Techniques using Boruta
 
-#Elastic Net
 
 library(caret)
 #library(data.table)

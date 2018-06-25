@@ -341,7 +341,7 @@ Gm12878_WE_gr <- GRanges(seqnames=Gm12878_WE$V1,IRanges(start=Gm12878_WE$V2,end=
   gm12878$Gm12878_WE <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_WE_gr)>=1,1,0)
 
   gm12878$Gm12878_CTCF_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_CTCF_gr))$distance
-  gm12878$Gm12878_E_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_CTCF_gr))$distance
+  gm12878$Gm12878_E_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_E_gr))$distance
   gm12878$Gm12878_PF_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_PF_gr))$distance
   gm12878$Gm12878_R_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_R_gr))$distance
   gm12878$Gm12878_T_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_T_gr))$distance

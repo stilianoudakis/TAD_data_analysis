@@ -44,6 +44,34 @@ nzvar <- rownames(nzv[nzv$nzv,])
 gm12878_f <- gm12878_f[, -which(colnames(gm12878_f) %in% nzvar)]
 
 
+[1] "A_dist"                     "B_dist"
+[3] "complex"                    "mobile_element_insertion"
+[5] "novel_sequence_insertion"   "sequence_alteration"
+[7] "tandem_duplication"         "deletion_dist"
+[9] "gerp_dist"                  "gerp_score"
+[11] "DNA"                        "low_complexity"
+[13] "other"                      "RC"
+[15] "RNA"                        "rRNA"
+[17] "satellite"                  "scRNA"
+[19] "simple_repeat"              "SINE"
+[21] "snRNA"                      "srpRNA"
+[23] "tRNA"                       "unknown"
+[25] "line_dist"                  "LTR_dist"
+[27] "se_GM12878"                 "UCNE"
+[29] "UCNE_score"                 "VMR_dist"
+[31] "Gm12878_Repressed"          "Gm12878_RepetitiveCNV14"
+[33] "Gm12878_RepetitiveCNV15"    "Gm12878_ActivePromoter"
+[35] "Gm12878_WeakPromoter"       "Gm12878_PoisedPromoter"
+[37] "Gm12878_StrongEnhancer4"    "Gm12878_StrongEnhancer5"
+[39] "Gm12878_WeakEnhancer6"      "Gm12878_Insulator"
+[41] "Gm12878_TxnTransition"      "Gm12878_Heterochromlo_dist"
+[43] "Gm12878_CTCF"               "Gm12878_E"
+[45] "Gm12878_PF"                 "Gm12878_TSS"
+[47] "Gm12878_WE"                 "Gm12878_R_dist"
+[49] "Gm12878_T_dist"
+
+
+
 saveRDS(gm12878_f, "gm12878_f.rds")
 
 ##
@@ -71,5 +99,6 @@ chr1_gm12878_f <- chr1_gm12878[, -which(colnames(chr1_gm12878) %in% nzvar)]
 
 
 saveRDS(chr1_gm12878_f, "chr1_gm12878_f.rds")
+
 
 
