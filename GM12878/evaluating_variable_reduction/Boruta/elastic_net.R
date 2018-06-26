@@ -96,11 +96,13 @@ for(i in 1:bootsamps){
   
 }
 
+enetlst <- readRDS("enetlst.boruta.rds")
+
 #Model performance
 
 auc <- mean(enetlst[[3]])
 auc
-#0.7993238
+#0.8036025
 
 plot(rowMeans(enetlst[[2]]),rowMeans(enetlst[[1]]), 
      type="l", 
@@ -124,7 +126,7 @@ enetp <- ggplot(varimp.enet.df, aes(x=Feature,
   geom_bar(stat="identity", 
            width=.5, 
            position="dodge",
-           fill="green") +
+           fill="red") +
   coord_flip()
 
 #########################################################################
@@ -214,12 +216,13 @@ for(i in 1:bootsamps){
   
 }
 
+enetlst <- readRDS("enetlst.boruta_r.rds")
 
 #Model performance
 
 auc <- mean(enetlst[[3]])
 auc
-#0.7993238
+#0.8033327
 
 plot(rowMeans(enetlst[[2]]),rowMeans(enetlst[[1]]), 
      type="l", 
@@ -228,13 +231,13 @@ plot(rowMeans(enetlst[[2]]),rowMeans(enetlst[[1]]),
      ylab="Sensitivity")
 
 
-varimp.enet <- as.vector(rowMeans(enetlst[[4]]))
-varimp.enet.df <- data.frame(Feature=rownames(enetlst[[4]]),
-                             Importance=varimp.enet)
-varimp.enet.df <- varimp.enet.df[order(varimp.enet.df$Importance),]
-numvarenet <- dim(varimp.enet.df)[1]
-varimp.enet.df <- varimp.enet.df[(numvarenet-19):numvarenet,]
-varimp.enet.df$Feature <- factor(varimp.enet.df$Feature,levels=varimp.enet.df$Feature)
+varimp.enet_r <- as.vector(rowMeans(enetlst[[4]]))
+varimp.enet.df_r <- data.frame(Feature=rownames(enetlst[[4]]),
+                             Importance=varimp.enet_r)
+varimp.enet.df_r <- varimp.enet.df_r[order(varimp.enet.df_r$Importance),]
+numvarenet <- dim(varimp.enet.df_r)[1]
+varimp.enet.df_r <- varimp.enet.df_r[(numvarenet-19):numvarenet,]
+varimp.enet.df_r$Feature <- factor(varimp.enet.df_r$Feature,levels=varimp.enet.df$Feature)
 enetp <- ggplot(varimp.enet.df, aes(x=Feature, 
                                     y=Importance)) +
   xlab("Predictors") +
@@ -243,6 +246,6 @@ enetp <- ggplot(varimp.enet.df, aes(x=Feature,
   geom_bar(stat="identity", 
            width=.5, 
            position="dodge",
-           fill="green") +
+           fill="blue") +
   coord_flip()
 
