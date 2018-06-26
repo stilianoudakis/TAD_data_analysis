@@ -19,6 +19,9 @@ setwd("/home/stilianoudakisc/TAD_data_analysis/evaluating_variable_reduction/var
 #Chromosome 1
 chr1_gm12878_f <- readRDS("chr1_gm12878_f.rds")
 
+chr1_gm12878_f$A <- as.numeric(chr1_gm12878_f$A)
+chr1_gm12878_f$B <- as.numeric(chr1_gm12878_f$B)
+
 #randomly sample to reduce dataset
 set.seed(123)
 zclass <- which(chr1_gm12878_f$y=="No")
@@ -69,4 +72,17 @@ for(j in 1:k){
 
 saveRDS(cv.preds.both, "cv.preds.both.rds")
 saveRDS(auc.model.both, "auc.model.both.rds")
+
+
+auc.model.both <- readRDS("auc.model.both.rds")
+cv.preds.both <- readRDS("cv.preds.both.rds")
+
+vars.both <- na.omit(cv.preds.both[,which(order(auc.model.both)==1)])
+
+chr1_gm12878_both <- chr1_gm12878_f[,which((names(chr1_gm12878_f) %in% vars.both) | 
+                                            names(chr1_gm12878_f)=="y" | 
+                                            names(chr1_gm12878_f)=="A" |
+                                            names(chr1_gm12878_f)=="B")]
+
+saveRDS(chr1_gm12878_both, "chr1_gm12878_both.rds")
 
