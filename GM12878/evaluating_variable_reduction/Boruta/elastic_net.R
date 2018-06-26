@@ -16,6 +16,9 @@ setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
 #From full data
 boruta_chr1_gm12878 <- readRDS("boruta_chr1_gm12878.rds")
 
+boruta_chr1_gm12878$A <- as.numeric(boruta_chr1_gm12878$A)
+boruta_chr1_gm12878$B <- as.numeric(boruta_chr1_gm12878$B)
+
 #set number of bootstrap samples
 bootsamps = 50
 
@@ -93,7 +96,6 @@ for(i in 1:bootsamps){
   
 }
 
-
 #Model performance
 
 auc <- mean(enetlst[[3]])
@@ -129,6 +131,10 @@ enetp <- ggplot(varimp.enet.df, aes(x=Feature,
 
 #From reduced data
 boruta_chr1_gm12878_r <- readRDS("boruta_chr1_gm12878_r.rds")
+
+boruta_chr1_gm12878_r$A <- as.numeric(boruta_chr1_gm12878_r$A)
+boruta_chr1_gm12878_r$B <- as.numeric(boruta_chr1_gm12878_r$B)
+
 
 #set number of bootstrap samples
 bootsamps = 50
@@ -177,6 +183,7 @@ enetlst <- list(tpr <- matrix(nrow=ceiling((length(which(boruta_chr1_gm12878_r$y
                 varimp <- matrix(nrow=dim(boruta_chr1_gm12878_r)[2]-1,
                                  ncol=bootsamps))
 rownames(enetlst[[4]]) <- colnames(boruta_chr1_gm12878_r)[-1]
+
 
 
 for(i in 1:bootsamps){
