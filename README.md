@@ -1,65 +1,49 @@
 # TAD_data_analysis
 Analysis of Topologically Associated Domain data and their respective boundaries
 
-- `Papers.md` - paper notes
 
-- `Project.md` - project draft
+## Folders & Files
 
-## data
+* `data`  
+   + arrowhead_data.txt - The TAD boundary data that was retrieved from from the paper by Rao, Huntley, et. al titled, "A three-dimensional map of the human genome at kilobase resolution reveals prinicples of chromatin looping" for the GM12878 cell line (GEO accession: GSE63525). 
+   + arrowhead_k562_data.txt - Same data as `arrowhead_data.txt` except for the K562 cell line.
+   + GSE63525_GM12878_subcompartments.bed - subcompartment data classifying genomic coordinates as being in specific subcompartments A and B.
 
-* arrowhead_data(2).txt: The TAD boundary data used for analyses cleaned from the GSE63525_GM12878_primary+replicate_Arrowhead_domainlist.txt file. (2) refers to the same data with quotations removed around the Chromosome column
+* `GM12878` 
+   + 01arrowhead_data - cleaning and saving the TAD boundary data for downstream analysis
+   + 02TAD_boundary_analysis - creating 1kb TAD boundary bins and creating variables for whether or not the bin overlaped a particular subcompartment
+   + 03incorporating_distance - adding distance variables for each of the two subcompartment variables (A and B)
+   + 04adding_annotations - creating features from genomic annotations in the form of a binary variables and continuous distance variables for each annotation
+   + 05model_filtering - filtering the data by removing features with near zero variances and turning binary variables to factors
+   + 06model_building - code for various maching learning algorithms
+   + 07model_performance - code for evaluating the performance of each algorithm
+   + `data_exploration` - folder with files that explore the distribution of each feature in the data
+   + `evaluation_normalization` - folder with files exploring how normalizing the data (with and without log2 transformation) affects each model
+   + `evaluating_SMOTE` - folder with files exploring the SMOTE function from the `DMwR` package, including which combination of perc.over and perc.under performs best with the data
+   + `evaluating_variable_reduction` - 
+      + `Boruta` - using the boruta package to reduce the features of the data (applied to both the full data and a balanced dataset from randomly sampling and comparing)
+      + `variable_selection` - using stepwise selection to filter the feature space (forward, backward, and both) on a balanced dataset using both random sampling and SMOTE and comparing
 
-* subcompartments.bed: subcompartment data classifying genomic coordinates as being in specific subcompartments A and B.
+* `K562`  
+   + 01arrowhead_data
+   + 02TAD_boundary_analysis
+   + 03incorporating_distance
+   + 04adding_annotations
+   + 05model_filtering
 
-## `01arrowhead_data.Rmd`
+* `reports`  
+   + chr1_report
+   + data_exploration
+   + investigating_tad_boundaries
+   + normalization_report
+   + smote_report
 
-The TAD boundary data was retrieved from from the paper by Rao, Huntley, et. al titled,
-"A three-dimensional map of the human genome at kilobase resolution reveals prinicples of chromatin looping"
+* Papers - Important and relevant papers to read
 
-GEO accession: GSE63525
+* Project - Overview and objectives of the current project
 
-The contact domain annoation file is named: GSE63525_GM12878_primary+replicate_Arrowhead_domainlist.txt
+* ToDo - list of objectives to complete accompanied by dates
 
-The columns are defined as follows: 
-chromosome1, x1, x2, chromosome2, y1, y2, color, corner_score, Uvar, Lvar, Usign, Lsign
-
-Explanations of the fields are as follows:
-
-* chromosome = the chromosome that the domain is located on
-
-* x1,x2/y1,y2 = the interval spanned by the domain (contact domains manifest as squares on the diagonal of a Hi-C matrix and as such: x1=y1, x2=y2)
-
-* color = the color that the feature will be rendered as if loaded in Juicebox 
-
-## `02investigating_tad_boundaries.Rmd`
-
-Investigating the different type of boundaries that occur in the domain data.
-
-* Purpose: To investigate the different ways TAD boundaries share coordinates
-* The Data: arrowhead_data.txt (GSE63525_GM12878_primary+replicate_Arrowhead_domainlist)
-* Methods: Various data manipulation techniques
-* Take Home Message: The are 4 possible was TAD boundaries can share a coordinate:
-   1. Same Start site
-   2. Same End site
-   3. Consecutive End and Start sites
-   4. Duplicate intervals (none of these)
-
-## `03TAD_boundary_analysis.Rmd`
-
-* Purpose: To create flanked TAD boundary regions of size 1kb (500 bases on each side of TAD boundary) and identify where on the 1 kb binned genome they appear. Likewise, identifying what compartment each of these bins correspond to.
-* The Data: arrowhead_data.txt, GSE63525_GM12878_subcompartments.BED
-* Methods: 
-   1. A vector of TAD boundaries was created by concatenating the start and end coordinates of the arrowhead data.
-   2. The vector was sorted and duplicates corresponding to shared coordinates were removed.
-   3. The genome was binned at 1kb starting from the (minimum coordinate - 500) to the (maximum coordinate + 500) for each chromosome. Therefore, a TAD boundary will either appear in the middle of a bin or it will not.
-   4. A vector Y was created that identified whether or not a TAD boundary was located in the bin or not
-   5. Genomic annotation data was used in the form of subcompartments (A or B). A vector X was created which labled which subcompartment each 1kb bin fell into (A, B, or N for none). 
-   6. A data frame containing the class Y and predictor X was created for the logistic regression model.
-* Notes: Only overlaps fully contained in the subcompartment intervals were used. Therefore, some bins that partially overlapped a subcompartment will be labled N. Going further, these need to be labeled with the percentage of there overlap. Also, chromosome X was associated with no subcompartment (all bins were labeled N).
-
-
-## chr1_logistic_regression.R
-
-R code for running a logistic regression model using subcompartment coordinates as predictors
+* misc - Miscellaneous code saved for later use
 
 
