@@ -59,6 +59,8 @@ arrowhead_data <- rbind.data.frame(arrowheadnum2,arrowheadx2)
 # Writing the data to a file named "arrowhead.txt"
 
 ```{r}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data_analysis/data")
+
 write.table(arrowhead_data, file = "arrowhead_data.txt",sep="\t",row.names=FALSE)
 
 ```
