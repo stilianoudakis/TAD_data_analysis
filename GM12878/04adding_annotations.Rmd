@@ -26,6 +26,25 @@ tad_subcomp_dist <- GRanges(seqnames = seqnames(tad_subcomp_full),
 
 #Adding other covariates of interest from Merlot folder
 
+#3D subcompartments
+```{r}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/3D_subcompartments")
+
+subcomp_A <- read.table("GSE63525_GM12878_subcompartments_A.BED",header = FALSE, sep="\t")
+subcomp_B <- read.table("GSE63525_GM12878_subcompartments_B.BED",header = FALSE, sep="\t")
+
+A_gr <- GRanges(seqnames=subcomp_A$V1,IRanges(start=subcomp_A$V2, end=subcomp_A$V3))
+B_gr <- GRanges(seqnames=subcomp_B$V1,IRanges(start=subcomp_B$V2, end=subcomp_B$V3))
+
+  gm12878$A <- ifelse(countOverlaps(tad_subcomp_full,A_gr)>=1,1,0)
+  gm12878$B <- ifelse(countOverlaps(tad_subcomp_full,B_gr)>=1,1,0)
+  
+  gm12878$A_dist <- mcols(distanceToNearest(tad_subcomp_dist, A_gr))$distance
+  gm12878$B_dist <- mcols(distanceToNearest(tad_subcomp_dist, B_gr))$distance
+
+```
+
+
 #DGV
 ```{r include=FALSE}
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/DGV/DGV_files")

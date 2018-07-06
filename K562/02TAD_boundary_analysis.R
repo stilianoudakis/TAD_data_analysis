@@ -242,9 +242,12 @@ saveRDS(twointerval_g, "partial2_k562.rds")
 
 # Creating the dataset for model development
 
-k562 <- data.frame(y = mcols(tad_subcomp_full)$y,
-                      A = mcols(tad_subcomp_full)$percentA,
-                      B = mcols(tad_subcomp_full)$percentB)
+#k562 <- data.frame(y = mcols(tad_subcomp_full)$y,
+#                      A = mcols(tad_subcomp_full)$percentA,
+#                      B = mcols(tad_subcomp_full)$percentB)
+
+#omit the A and B variables created manually and instead use the subcompartment data from merlot folder
+k562 <- data.frame(y = mcols(tad_subcomp_full)$y)
 
 
 saveRDS(k562, "k562.rds")

@@ -14,6 +14,10 @@ tad_subcomp_dist <- GRanges(seqnames = seqnames(tad_subcomp_full_k562),
 
 #Adding other covariates of interest from Merlot folder
 
+#3D subcompartments
+
+#There is no 3D subcompartment data for the k562 cell line
+
 #DGV
 
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/DGV/DGV_files")
