@@ -12,7 +12,7 @@ Analysis of Topologically Associated Domain data and their respective boundaries
 * `GM12878` 
    + 01arrowhead_data - cleaning and saving the TAD boundary data for downstream analysis
    + 02TAD_boundary_analysis - creating 1kb TAD boundary bins and creating variables for whether or not the bin overlaped a particular subcompartment
-   + 03incorporating_distance - adding distance variables for each of the two subcompartment variables (A and B)
+   + 03incorporating_subcomp_distance - adding distance variables for each of the two subcompartment variables (A and B)
    + 04adding_annotations - creating features from genomic annotations in the form of a binary variables and continuous distance variables for each annotation
    + 05model_filtering - filtering the data by removing features with near zero variances and turning binary variables to factors
    + 06model_building - code for various maching learning algorithms
