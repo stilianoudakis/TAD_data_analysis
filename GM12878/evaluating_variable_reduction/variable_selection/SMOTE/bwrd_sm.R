@@ -66,3 +66,15 @@ saveRDS(cv.preds.bwd, "cv.preds.bwd.sm.rds")
 saveRDS(auc.model.bwd, "auc.model.bwd.sm.rds")
 
 
+auc.model.bwd <- readRDS("auc.model.bwd.sm.rds")
+cv.preds.bwd <- readRDS("cv.preds.bwd.sm.rds")
+
+vars.bwd <- na.omit(cv.preds.bwd[,which.max(auc.model.bwd)])
+vars.bwd[grep("_dist",vars.bwd,invert = TRUE)] <- unlist(lapply(vars.bwd[grep("_dist",vars.bwd,invert = TRUE)], function(x){substr(x,1,nchar(x)-1)}))
+
+chr1_gm12878_bwd_sm <- chr1_gm12878_f[,which((names(chr1_gm12878_f) %in% vars.bwd) | names(chr1_gm12878_f)=="y")]
+
+dim(chr1_gm12878_bwd_sm)
+#247632     37
+
+saveRDS(chr1_gm12878_bwd_sm, "chr1_gm12878_bwd_sm.rds")

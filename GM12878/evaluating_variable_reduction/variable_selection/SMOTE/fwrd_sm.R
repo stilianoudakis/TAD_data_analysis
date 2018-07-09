@@ -68,4 +68,15 @@ for(j in 1:k){
 saveRDS(cv.preds.fwd, "cv.preds.fwd.sm.rds")
 saveRDS(auc.model.fwd, "auc.model.fwd.sm.rds")
 
+auc.model.fwd <- readRDS("auc.model.fwd.sm.rds")
+cv.preds.fwd <- readRDS("cv.preds.fwd.sm.rds")
 
+vars.fwd <- na.omit(cv.preds.fwd[,which.max(auc.model.fwd)])
+vars.fwd[grep("_dist",vars.fwd,invert = TRUE)] <- unlist(lapply(vars.fwd[grep("_dist",vars.fwd,invert = TRUE)], function(x){substr(x,1,nchar(x)-1)}))
+
+chr1_gm12878_fwd_sm <- chr1_gm12878_f[,which((names(chr1_gm12878_f) %in% vars.fwd) | names(chr1_gm12878_f)=="y")]
+
+dim(chr1_gm12878_fwd_sm)
+#247632     41
+
+saveRDS(chr1_gm12878_fwd_sm, "chr1_gm12878_fwd_sm.rds")
