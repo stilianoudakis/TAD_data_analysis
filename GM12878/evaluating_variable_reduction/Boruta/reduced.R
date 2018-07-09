@@ -39,6 +39,9 @@ feats_r <- getSelectedAttributes(boruta_chr1_r, withTentative = T)
 
 boruta_chr1_gm12878_r <- chr1_gm12878_f[,c("y",feats_r)]
 
+dim(boruta_chr1_gm12878_r)
+#247632     45
+
 saveRDS(boruta_chr1_gm12878_r, "boruta_chr1_gm12878_r.rds")
 
 
