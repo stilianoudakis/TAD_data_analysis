@@ -19,8 +19,8 @@ setwd("/home/stilianoudakisc/TAD_data_analysis/evaluating_variable_reduction/var
 #Chromosome 1
 chr1_gm12878_f <- readRDS("chr1_gm12878_f.rds")
 
-chr1_gm12878_f$A <- as.numeric(chr1_gm12878_f$A)
-chr1_gm12878_f$B <- as.numeric(chr1_gm12878_f$B)
+#chr1_gm12878_f$A <- as.numeric(chr1_gm12878_f$A)
+#chr1_gm12878_f$B <- as.numeric(chr1_gm12878_f$B)
 
 #randomly sample to reduce dataset
 set.seed(123)

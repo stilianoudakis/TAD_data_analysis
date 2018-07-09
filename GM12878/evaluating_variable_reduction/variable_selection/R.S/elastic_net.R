@@ -13,11 +13,11 @@ library(leaps)
 
 
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
-setwd("/home/stilianoudakisc/TAD_data_analysis/comparing_normalization/")
 
 #Forward Data
 
 chr1_gm12878_fwd <- readRDS("chr1_gm12878_fwd.rds")
+
 
 #set number of bootstrap samples
 bootsamps = 50
@@ -95,6 +95,8 @@ for(i in 1:bootsamps){
   
 }
 
+enetlst.fwd <- enetlst
+
 
 
 ########################################################################
@@ -102,6 +104,7 @@ for(i in 1:bootsamps){
 #Backward Data
 
 chr1_gm12878_bwd <- readRDS("chr1_gm12878_bwd.rds")
+
 
 #set number of bootstrap samples
 bootsamps = 50
@@ -179,4 +182,58 @@ for(i in 1:bootsamps){
   
 }
 
+enetlst.bwd <- enetlst
 
+
+############################################################################
+
+auc.fwd <- mean(enetlst.fwd[[3]])
+round(auc.fwd,3)
+
+auc.bwd <- mean(enetlst.bwd[[3]])
+round(auc.bwd,3)
+
+plot(rowMeans(enetlst.fwd[[2]]),
+     rowMeans(enetlst.fwd[[1]]), 
+     type="l", col="red",
+     xlab="1-Specificity",
+     ylab="Sensitivity")
+lines(rowMeans(enetlst.bwd[[2]]),
+      rowMeans(enetlst.bwd[[1]]),
+      type="l", col="blue")
+abline(a=0, b=1)
+
+varimp.enet.fwd <- as.vector(rowMeans(enetlst.fwd[[4]]))
+varimp.enet.df.fwd <- data.frame(Feature=rownames(enetlst.fwd[[4]]),
+                               Importance=varimp.enet.fwd)
+varimp.enet.df.fwd <- varimp.enet.df.fwd[order(varimp.enet.df.fwd$Importance),]
+varimp.enet.df.fwd$Feature <- factor(varimp.enet.df.fwd$Feature,
+                                     levels=varimp.enet.df.fwd$Feature)
+enetp.fwd <- ggplot(varimp.enet.df.fwd, aes(x=Feature, 
+                                       y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="red") +
+  coord_flip()
+
+
+varimp.enet.bwd <- as.vector(rowMeans(enetlst.bwd[[4]]))
+varimp.enet.df.bwd <- data.frame(Feature=rownames(enetlst.bwd[[4]]),
+                                 Importance=varimp.enet.bwd)
+varimp.enet.df.bwd <- varimp.enet.df.bwd[order(varimp.enet.df.bwd$Importance),]
+varimp.enet.df.bwd$Feature <- factor(varimp.enet.df.bwd$Feature,
+                                     levels=varimp.enet.df.bwd$Feature)
+enetp.bwd <- ggplot(varimp.enet.df.bwd, aes(x=Feature, 
+                                            y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="red") +
+  coord_flip()

@@ -19,8 +19,8 @@ setwd("/home/stilianoudakisc/TAD_data_analysis/evaluating_variable_reduction/var
 #Chromosome 1
 chr1_gm12878_f <- readRDS("chr1_gm12878_f.rds")
 
-chr1_gm12878_f$A <- as.numeric(chr1_gm12878_f$A)
-chr1_gm12878_f$B <- as.numeric(chr1_gm12878_f$B)
+#chr1_gm12878_f$A <- as.numeric(chr1_gm12878_f$A)
+#chr1_gm12878_f$B <- as.numeric(chr1_gm12878_f$B)
 
 #randomly sample to reduce dataset
 set.seed(123)
@@ -71,10 +71,12 @@ saveRDS(auc.model.bwd, "auc.model.bwd.rds")
 auc.model.bwd <- readRDS("auc.model.bwd.rds")
 cv.preds.bwd <- readRDS("cv.preds.bwd.rds")
 
-vars.bwd <- na.omit(cv.preds.bwd[,which(order(auc.model.bwd)==1)])
-vars.bwd <- vars.bwd[-which(vars.bwd=="A0.5" | vars.bwd=="B0.5")]
+vars.bwd <- na.omit(cv.preds.bwd[,which.max(auc.model.bwd)])
 vars.bwd[grep("_dist",vars.bwd,invert = TRUE)] <- unlist(lapply(vars.bwd[grep("_dist",vars.bwd,invert = TRUE)], function(x){substr(x,1,nchar(x)-1)}))
 
 chr1_gm12878_bwd <- chr1_gm12878_f[,which((names(chr1_gm12878_f) %in% vars.bwd) | names(chr1_gm12878_f)=="y")]
+
+dim(chr1_gm12878_bwd)
+#247632     23
 
 saveRDS(chr1_gm12878_bwd, "chr1_gm12878_bwd.rds")
