@@ -1,4 +1,4 @@
-#Elastic Net using Boruta data
+#Elastic Net using reduced data from Boruta Package
 
 library(caret)
 #library(data.table)
@@ -6,18 +6,19 @@ library(gbm)
 library(pROC)
 library(plyr)
 library(dplyr)
-#library(DMwR)
+library(DMwR)
 library(gridExtra)
 library(ggplot2)
+library(leaps)
+
 
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
 
 
-#From full data
+# Full Dataset
+
 boruta_chr1_gm12878 <- readRDS("boruta_chr1_gm12878.rds")
 
-boruta_chr1_gm12878$A <- as.numeric(boruta_chr1_gm12878$A)
-boruta_chr1_gm12878$B <- as.numeric(boruta_chr1_gm12878$B)
 
 #set number of bootstrap samples
 bootsamps = 50
@@ -67,7 +68,6 @@ enetlst <- list(tpr <- matrix(nrow=ceiling((length(which(boruta_chr1_gm12878$y==
                                  ncol=bootsamps))
 rownames(enetlst[[4]]) <- colnames(boruta_chr1_gm12878)[-1]
 
-
 for(i in 1:bootsamps){
   set.seed(7215)
   #combining the two classes to create balanced data
@@ -96,46 +96,15 @@ for(i in 1:bootsamps){
   
 }
 
-enetlst <- readRDS("enetlst.boruta.rds")
-
-#Model performance
-
-auc <- mean(enetlst[[3]])
-auc
-#0.8036025
-
-plot(rowMeans(enetlst[[2]]),rowMeans(enetlst[[1]]), 
-     type="l", 
-     col="red",
-     xlab="1-Specificity",
-     ylab="Sensitivity")
+enetlst.b <- enetlst
 
 
-varimp.enet <- as.vector(rowMeans(enetlst[[4]]))
-varimp.enet.df <- data.frame(Feature=rownames(enetlst[[4]]),
-                               Importance=varimp.enet)
-varimp.enet.df <- varimp.enet.df[order(varimp.enet.df$Importance),]
-numvarenet <- dim(varimp.enet.df)[1]
-varimp.enet.df <- varimp.enet.df[(numvarenet-19):numvarenet,]
-varimp.enet.df$Feature <- factor(varimp.enet.df$Feature,levels=varimp.enet.df$Feature)
-enetp <- ggplot(varimp.enet.df, aes(x=Feature, 
-                                       y=Importance)) +
-  xlab("Predictors") +
-  ylab("Importance") +
-  #ggtitle("Importance Plot for Gradient Boosting Machine") +
-  geom_bar(stat="identity", 
-           width=.5, 
-           position="dodge",
-           fill="red") +
-  coord_flip()
+##################################################################
 
-#########################################################################
+# Reduced Dataset
 
-#From reduced data
-boruta_chr1_gm12878_r <- readRDS("boruta_chr1_gm12878_r.rds")
 
-boruta_chr1_gm12878_r$A <- as.numeric(boruta_chr1_gm12878_r$A)
-boruta_chr1_gm12878_r$B <- as.numeric(boruta_chr1_gm12878_r$B)
+boruta_chr1_gm12878_r_r <- readRDS("boruta_chr1_gm12878_r.rds")
 
 
 #set number of bootstrap samples
@@ -186,8 +155,6 @@ enetlst <- list(tpr <- matrix(nrow=ceiling((length(which(boruta_chr1_gm12878_r$y
                                  ncol=bootsamps))
 rownames(enetlst[[4]]) <- colnames(boruta_chr1_gm12878_r)[-1]
 
-
-
 for(i in 1:bootsamps){
   set.seed(7215)
   #combining the two classes to create balanced data
@@ -216,61 +183,5 @@ for(i in 1:bootsamps){
   
 }
 
-enetlst_r <- readRDS("enetlst.boruta_r.rds")
-
-#Model performance
-
-auc <- mean(enetlst_r[[3]])
-auc
-#0.8033327
-
-plot(rowMeans(enetlst_r[[2]]),rowMeans(enetlst_r[[1]]), 
-     type="l", 
-     col="red",
-     xlab="1-Specificity",
-     ylab="Sensitivity")
-
-
-varimp.enet_r <- as.vector(rowMeans(enetlst_r[[4]]))
-varimp.enet.df_r <- data.frame(Feature=rownames(enetlst_r[[4]]),
-                             Importance=varimp.enet_r)
-varimp.enet.df_r <- varimp.enet.df_r[order(varimp.enet.df_r$Importance),]
-numvarenet <- dim(varimp.enet.df_r)[1]
-varimp.enet.df_r <- varimp.enet.df_r[(numvarenet-19):numvarenet,]
-varimp.enet.df_r$Feature <- factor(varimp.enet.df_r$Feature,levels=varimp.enet.df$Feature)
-enetp_r <- ggplot(varimp.enet.df, aes(x=Feature, 
-                                    y=Importance)) +
-  xlab("Predictors") +
-  ylab("Importance") +
-  #ggtitle("Importance Plot for Gradient Boosting Machine") +
-  geom_bar(stat="identity", 
-           width=.5, 
-           position="dodge",
-           fill="blue") +
-  coord_flip()
-
-
-#Comparing Results
-
-x <- intersect(varimp.enet.df$Feature,varimp.enet.df_r$Feature)
-
-varimp.enet.df$ranking <- rank(-varimp.enet.df$Importance)
-varimp.enet.df_r$ranking <- rank(-varimp.enet.df_r$Importance)
-
-#rankings between rf, gbm, svm, and elastic net
-commonfeatsdf <- data.frame(Features = x,
-                            "Full Data" = varimp.enet.df$ranking[varimp.enet.df$Feature %in% x],
-                            "FD Importance" = varimp.enet.df$Importance[varimp.enet.df$Feature %in% x],
-                            "Reduced Data" = varimp.enet.df_r[order(match(varimp.enet.df_r$Feature, x)),]$ranking[varimp.enet.df_r[order(match(varimp.enet.df_r$Feature, x)),]$Feature %in% x],
-                            "FD Importance" = varimp.enet.df_r[order(match(varimp.enet.df_r$Feature, x)),]$Importance[varimp.enet.df_r[order(match(varimp.enet.df_r$Feature, x)),]$Feature %in% x]
-)
-
-commonfeatsdf
-
-#saveRDS(commonfeatsdf, "/home/stilianoudakisc/TAD_data_analysis/output/commonfeats_nosmote")
-
-#jpeg("/home/stilianoudakisc/TAD_data_analysis/output/common_feats_nosmote")
-datatable(commonfeatsdf)
-#dev.off()
-
+enetlst.b.r <- enetlst
 
