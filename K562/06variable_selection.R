@@ -124,7 +124,7 @@ vars.bwd[grep("_dist",vars.bwd,invert = TRUE)] <- unlist(lapply(vars.bwd[grep("_
 chr1_k562_bwd <- chr1_k562_f[,which((names(chr1_k562_f) %in% vars.bwd) | names(chr1_k562_f)=="y")]
 
 dim(chr1_k562_bwd)
-#247672     15
+#247672     20
 
 saveRDS(chr1_k562_bwd, "chr1_k562_bwd.rds")
 
@@ -146,7 +146,7 @@ feats_r <- getSelectedAttributes(boruta_chr1_r, withTentative = T)
 boruta_chr1_k562_r <- chr1_k562_f[,c("y",feats_r)]
 
 dim(boruta_chr1_k562_r)
-#247632     45
+#247672     39
 
 saveRDS(boruta_chr1_k562_r, "boruta_chr1_k562_r.rds")
 
@@ -162,7 +162,7 @@ lz<-lapply(1:ncol(boruta_chr1_r$ImpHistory),function(i)
 names(lz) <- colnames(boruta_chr1_r$ImpHistory)
 Labels <- sort(sapply(lz,median))
 Labels <- names(Labels)
-Labels[grep("K562_", Labels)] <- gsub("K562_","",Labels[grep("K562_", Labels)])
+Labels[grep("k562_", Labels)] <- gsub("k562_","",Labels[grep("k562_", Labels)])
 Labels[which(Labels=="novel_sequence_insertion_dist")] <- "NSI_dist"
 Labels[which(Labels=="sequence_alteration_dist")] <- "SA_dist"
 Labels[which(Labels=="tandem_duplication_dist")] <- "TD_dist"
@@ -170,3 +170,214 @@ Labels[which(Labels=="mobile_element_insertion_dist")] <- "MEI_dist"
 axis(side = 1,las=2,labels = Labels,
      at = 1:ncol(boruta_chr1_r$ImpHistory), cex.axis = 0.7)
 par(mar=c(4,4,2,2))
+
+#######################################################################
+
+#comparing variable selection techniques
+
+#set number of bootstrap samples
+bootsamps = 50
+
+#set tuning parameters
+fitControl <- trainControl(method = "repeatedcv",
+                           number = 10,
+                           repeats = 5,
+                           ## Estimate class probabilities
+                           classProbs = TRUE,
+                           ## Evaluate performance using 
+                           ## the following function
+                           summaryFunction = twoClassSummary)
+
+#function for roc curves
+simple_roc <- function(labels, scores){
+  labels <- labels[order(scores, decreasing=TRUE)]
+  data.frame(TPR=cumsum(labels)/sum(labels), FPR=cumsum(!labels)/sum(!labels), labels)
+}
+
+
+# Forward
+
+#create a matrix of row ids that represent the zero class
+#the number of rows will match the one class
+#the number of columns match the number of bootstrap samples
+sampids <- matrix(ncol=bootsamps, 
+                  nrow=length(chr1_k562_fwd$y[which(chr1_k562_fwd$y=="Yes")]))
+
+
+#filling in the sample ids matrix
+set.seed(123)
+for(j in 1:bootsamps){
+  sampids[,j] <- sample(which(chr1_k562_fwd$y=="No"),
+                        length(which(chr1_k562_fwd$y=="Yes")),
+                        replace = TRUE)
+}
+
+
+#set length of list objects that will be filled in with specificities
+#and sensitivities and aucs and variable importance
+enetlst <- list(tpr <- matrix(nrow=ceiling((length(which(chr1_k562_fwd$y=="Yes"))*2)*.3), 
+                              ncol=bootsamps),
+                fpr <- matrix(nrow=ceiling((length(which(chr1_k562_fwd$y=="Yes"))*2)*.3), 
+                              ncol=bootsamps),
+                auc <- numeric(bootsamps),
+                varimp <- matrix(nrow=dim(chr1_k562_fwd)[2]-1,
+                                 ncol=bootsamps))
+rownames(enetlst[[4]]) <- colnames(chr1_k562_fwd)[-1]
+
+
+for(i in 1:bootsamps){
+  set.seed(7215)
+  #combining the two classes to create balanced data
+  data <- rbind.data.frame(chr1_k562_fwd[which(chr1_k562_fwd$y=="Yes"),],
+                           chr1_k562_fwd[sampids[,i],])
+  
+  
+  inTrainingSet <- sample(length(data$y),floor(length(data$y)*.7))
+  #inTrainingSet <- createDataPartition(data$y,p=.7,list=FALSE)
+  train <- data[inTrainingSet,]
+  test <- data[-inTrainingSet,]
+  
+  #ENET Model
+  eNetModel <- train(y ~ ., data=train, 
+                     method = "glmnet", 
+                     metric="ROC", 
+                     trControl = fitControl, 
+                     family="binomial", 
+                     tuneLength=5,
+                     standardize=FALSE)
+  pred.eNetModel <- as.vector(predict(eNetModel, 
+                                      newdata=test, 
+                                      type="prob")[,"Yes"])
+  enetlst[[1]][,i] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.eNetModel)[,1]
+  enetlst[[2]][,i] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.eNetModel)[,2]
+  enetlst[[3]][i] <- pROC::auc(pROC::roc(test$y, pred.eNetModel))
+  enetlst[[4]][,i] <- varImp(eNetModel)$importance[,1]
+  
+}
+
+enet.fwd <- enetlst
+
+# Backward
+
+#create a matrix of row ids that represent the zero class
+#the number of rows will match the one class
+#the number of columns match the number of bootstrap samples
+sampids <- matrix(ncol=bootsamps, 
+                  nrow=length(chr1_k562_bwd$y[which(chr1_k562_bwd$y=="Yes")]))
+
+
+#filling in the sample ids matrix
+set.seed(123)
+for(j in 1:bootsamps){
+  sampids[,j] <- sample(which(chr1_k562_bwd$y=="No"),
+                        length(which(chr1_k562_bwd$y=="Yes")),
+                        replace = TRUE)
+}
+
+
+#set length of list objects that will be filled in with specificities
+#and sensitivities and aucs and variable importance
+enetlst <- list(tpr <- matrix(nrow=ceiling((length(which(chr1_k562_bwd$y=="Yes"))*2)*.3), 
+                              ncol=bootsamps),
+                fpr <- matrix(nrow=ceiling((length(which(chr1_k562_bwd$y=="Yes"))*2)*.3), 
+                              ncol=bootsamps),
+                auc <- numeric(bootsamps),
+                varimp <- matrix(nrow=dim(chr1_k562_bwd)[2]-1,
+                                 ncol=bootsamps))
+rownames(enetlst[[4]]) <- colnames(chr1_k562_bwd)[-1]
+
+
+for(i in 1:bootsamps){
+  set.seed(7215)
+  #combining the two classes to create balanced data
+  data <- rbind.data.frame(chr1_k562_bwd[which(chr1_k562_bwd$y=="Yes"),],
+                           chr1_k562_bwd[sampids[,i],])
+  
+  
+  inTrainingSet <- sample(length(data$y),floor(length(data$y)*.7))
+  #inTrainingSet <- createDataPartition(data$y,p=.7,list=FALSE)
+  train <- data[inTrainingSet,]
+  test <- data[-inTrainingSet,]
+  
+  #ENET Model
+  eNetModel <- train(y ~ ., data=train, 
+                     method = "glmnet", 
+                     metric="ROC", 
+                     trControl = fitControl, 
+                     family="binomial", 
+                     tuneLength=5,
+                     standardize=FALSE)
+  pred.eNetModel <- as.vector(predict(eNetModel, 
+                                      newdata=test, 
+                                      type="prob")[,"Yes"])
+  enetlst[[1]][,i] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.eNetModel)[,1]
+  enetlst[[2]][,i] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.eNetModel)[,2]
+  enetlst[[3]][i] <- pROC::auc(pROC::roc(test$y, pred.eNetModel))
+  enetlst[[4]][,i] <- varImp(eNetModel)$importance[,1]
+  
+}
+
+enet.bwd <- enetlst
+
+
+# Boruta
+
+#create a matrix of row ids that represent the zero class
+#the number of rows will match the one class
+#the number of columns match the number of bootstrap samples
+sampids <- matrix(ncol=bootsamps, 
+                  nrow=length(boruta_chr1_k562_r$y[which(boruta_chr1_k562_r$y=="Yes")]))
+
+
+#filling in the sample ids matrix
+set.seed(123)
+for(j in 1:bootsamps){
+  sampids[,j] <- sample(which(boruta_chr1_k562_r$y=="No"),
+                        length(which(boruta_chr1_k562_r$y=="Yes")),
+                        replace = TRUE)
+}
+
+
+#set length of list objects that will be filled in with specificities
+#and sensitivities and aucs and variable importance
+enetlst <- list(tpr <- matrix(nrow=ceiling((length(which(boruta_chr1_k562_r$y=="Yes"))*2)*.3), 
+                              ncol=bootsamps),
+                fpr <- matrix(nrow=ceiling((length(which(boruta_chr1_k562_r$y=="Yes"))*2)*.3), 
+                              ncol=bootsamps),
+                auc <- numeric(bootsamps),
+                varimp <- matrix(nrow=dim(boruta_chr1_k562_r)[2]-1,
+                                 ncol=bootsamps))
+rownames(enetlst[[4]]) <- colnames(boruta_chr1_k562_r)[-1]
+
+
+for(i in 1:bootsamps){
+  set.seed(7215)
+  #combining the two classes to create balanced data
+  data <- rbind.data.frame(boruta_chr1_k562_r[which(boruta_chr1_k562_r$y=="Yes"),],
+                           boruta_chr1_k562_r[sampids[,i],])
+  
+  
+  inTrainingSet <- sample(length(data$y),floor(length(data$y)*.7))
+  #inTrainingSet <- createDataPartition(data$y,p=.7,list=FALSE)
+  train <- data[inTrainingSet,]
+  test <- data[-inTrainingSet,]
+  
+  #ENET Model
+  eNetModel <- train(y ~ ., data=train, 
+                     method = "glmnet", 
+                     metric="ROC", 
+                     trControl = fitControl, 
+                     family="binomial", 
+                     tuneLength=5,
+                     standardize=FALSE)
+  pred.eNetModel <- as.vector(predict(eNetModel, 
+                                      newdata=test, 
+                                      type="prob")[,"Yes"])
+  enetlst[[1]][,i] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.eNetModel)[,1]
+  enetlst[[2]][,i] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.eNetModel)[,2]
+  enetlst[[3]][i] <- pROC::auc(pROC::roc(test$y, pred.eNetModel))
+  enetlst[[4]][,i] <- varImp(eNetModel)$importance[,1]
+  
+}
+
+enet.b.r <- enetlst
