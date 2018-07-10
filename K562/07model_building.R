@@ -50,7 +50,11 @@ roc.glmModel <- roc(testglm$y, pred.glmModel)
 auc.glmModel <- pROC::auc(roc.glmModel)
 #Area under the curve: 0.7724
 
-plot(roc.glmModel)
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/K562")
+
+saveRDS(roc.glmModel,"roc.glmModel.rds")
+
+
 
 
 #######################################################################
