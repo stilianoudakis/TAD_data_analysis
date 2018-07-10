@@ -1,3 +1,23 @@
+#Variables selected
+
+#Full
+full.vars <- rownames(enetlst.full[[4]])
+length(full.vars)
+fwd.vars <- rownames(enetlst.fwd[[4]])
+length(fwd.vars)
+bwd.vars <- rownames(enetlst.bwd[[4]])
+length(bwd.vars)
+fwd.sm.vars <- rownames(enetlst.fwd.sm[[4]])
+length(fwd.sm.vars)
+bwd.sm.vars <- rownames(enetlst.bwd.sm[[4]])
+length(bwd.sm.vars)
+b.vars <- rownames(enetlst.b[[4]])
+length(b.vars)
+b.r.vars <- rownames(enetlst.b.r[[4]])
+length(b.r.vars)
+
+
+
 #Model performance
 
 
@@ -86,6 +106,7 @@ legend("bottomright", legend = c("Forward R.S.",
 
 #comparing results
 
+#foward
 varimp.enet.fwd <- as.vector(rowMeans(enetlst.fwd[[4]]))
 Labels <- rownames(enetlst.fwd[[4]])
 Labels[grep("Gm12878_", Labels)] <- gsub("Gm12878_","",Labels[grep("Gm12878_", Labels)])
@@ -106,6 +127,7 @@ enetp.fwd <- ggplot(varimp.enet.df.fwd, aes(x=Feature,
   coord_flip()
 
 
+#backward
 varimp.enet.bwd <- as.vector(rowMeans(enetlst.bwd[[4]]))
 Labels <- rownames(enetlst.bwd[[4]])
 Labels[grep("Gm12878_", Labels)] <- gsub("Gm12878_","",Labels[grep("Gm12878_", Labels)])
@@ -125,10 +147,126 @@ enetp.bwd <- ggplot(varimp.enet.df.bwd, aes(x=Feature,
            fill="blue") +
   coord_flip()
 
+#forward smote
+varimp.enet.fwd.sm <- as.vector(rowMeans(enetlst.fwd.sm[[4]]))
+Labels <- rownames(enetlst.fwd.sm[[4]])
+Labels[grep("Gm12878_", Labels)] <- gsub("Gm12878_","",Labels[grep("Gm12878_", Labels)])
+varimp.enet.df.fwd.sm <- data.frame(Feature=Labels,
+                                 Importance=varimp.enet.fwd.sm)
+varimp.enet.df.fwd.sm <- varimp.enet.df.fwd.sm[order(varimp.enet.df.fwd.sm$Importance),]
+varimp.enet.df.fwd.sm$Feature <- factor(varimp.enet.df.fwd.sm$Feature,
+                                     levels=varimp.enet.df.fwd.sm$Feature)
+numvarenet <- dim(varimp.enet.df.fwd.sm)[1]
+varimp.enet.df.fwd.sm <- varimp.enet.df.fwd.sm[(numvarenet-19):numvarenet,]
+enetp.fwd.sm <- ggplot(varimp.enet.df.fwd.sm, aes(x=Feature, 
+                                            y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="green") +
+  coord_flip()
 
 
+#backward smote
+varimp.enet.bwd.sm <- as.vector(rowMeans(enetlst.bwd.sm[[4]]))
+Labels <- rownames(enetlst.bwd.sm[[4]])
+Labels[grep("Gm12878_", Labels)] <- gsub("Gm12878_","",Labels[grep("Gm12878_", Labels)])
+varimp.enet.df.bwd.sm <- data.frame(Feature=Labels,
+                                    Importance=varimp.enet.bwd.sm)
+varimp.enet.df.bwd.sm <- varimp.enet.df.bwd.sm[order(varimp.enet.df.bwd.sm$Importance),]
+varimp.enet.df.bwd.sm$Feature <- factor(varimp.enet.df.bwd.sm$Feature,
+                                        levels=varimp.enet.df.bwd.sm$Feature)
+numvarenet <- dim(varimp.enet.df.bwd.sm)[1]
+varimp.enet.df.bwd.sm <- varimp.enet.df.bwd.sm[(numvarenet-19):numvarenet,]
+enetp.bwd.sm <- ggplot(varimp.enet.df.bwd.sm, aes(x=Feature, 
+                                                  y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="orange") +
+  coord_flip()
 
-grid.arrange(enetp.fwd,enetp.bwd,ncol=2)
+
+#boruta full
+varimp.enet.b <- as.vector(rowMeans(enetlst.b[[4]]))
+Labels <- rownames(enetlst.b[[4]])
+Labels[grep("Gm12878_", Labels)] <- gsub("Gm12878_","",Labels[grep("Gm12878_", Labels)])
+varimp.enet.df.b <- data.frame(Feature=Labels,
+                                    Importance=varimp.enet.b)
+varimp.enet.df.b <- varimp.enet.df.b[order(varimp.enet.df.b$Importance),]
+varimp.enet.df.b$Feature <- factor(varimp.enet.df.b$Feature,
+                                        levels=varimp.enet.df.b$Feature)
+numvarenet <- dim(varimp.enet.df.b)[1]
+varimp.enet.df.b <- varimp.enet.df.b[(numvarenet-19):numvarenet,]
+enetp.b <- ggplot(varimp.enet.df.b, aes(x=Feature, 
+                                                  y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="yellow") +
+  coord_flip()
+
+#boruta reduced
+varimp.enet.b.r <- as.vector(rowMeans(enetlst.b.r[[4]]))
+Labels <- rownames(enetlst.b.r[[4]])
+Labels[grep("Gm12878_", Labels)] <- gsub("Gm12878_","",Labels[grep("Gm12878_", Labels)])
+varimp.enet.df.b.r <- data.frame(Feature=Labels,
+                               Importance=varimp.enet.b.r)
+varimp.enet.df.b.r <- varimp.enet.df.b.r[order(varimp.enet.df.b.r$Importance),]
+varimp.enet.df.b.r$Feature <- factor(varimp.enet.df.b.r$Feature,
+                                   levels=varimp.enet.df.b.r$Feature)
+numvarenet <- dim(varimp.enet.df.b.r)[1]
+varimp.enet.df.b.r <- varimp.enet.df.b.r[(numvarenet-19):numvarenet,]
+enetp.b.r <- ggplot(varimp.enet.df.b.r, aes(x=Feature, 
+                                        y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="pink") +
+  coord_flip()
+
+
+#no variable reduction
+varimp.enet.full <- as.vector(rowMeans(enetlst.full[[4]]))
+Labels <- rownames(enetlst.full[[4]])
+Labels[grep("Gm12878_", Labels)] <- gsub("Gm12878_","",Labels[grep("Gm12878_", Labels)])
+varimp.enet.df.full <- data.frame(Feature=Labels,
+                                 Importance=varimp.enet.full)
+varimp.enet.df.full <- varimp.enet.df.full[order(varimp.enet.df.full$Importance),]
+varimp.enet.df.full$Feature <- factor(varimp.enet.df.full$Feature,
+                                     levels=varimp.enet.df.full$Feature)
+numvarenet <- dim(varimp.enet.df.full)[1]
+varimp.enet.df.full <- varimp.enet.df.full[(numvarenet-19):numvarenet,]
+enetp.full <- ggplot(varimp.enet.df.full, aes(x=Feature, 
+                                            y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="black") +
+  coord_flip()
+
+
+grid.arrange(enetp.fwd,enetp.bwd,
+             enetp.fwd.sm,enetp.bwd.sm,
+             enetp.b,enetp.b.r,
+             enetp.full,ncol=2)
+
+
 
 
 
