@@ -47,14 +47,12 @@ test.auc <- data.frame("Variable Reduction"=c("Forward R.S.",
                                        "Forward SMOTE",
                                        "Backward SMOTE",
                                        "Boruta Full",
-                                       "Boruta Reduced",
                                        "None"),
                        auc=c(auc.fwd,
                              auc.bwd,
                              auc.fwd.sm,
                              auc.bwd.sm,
                              auc.b,
-                             auc.b.r,
                              auc.full))
 
 test.auc <- test.auc[order(test.auc$auc, decreasing=TRUE),]
@@ -65,7 +63,8 @@ test.auc$Variable.Reduction <-factor(test.auc$Variable.Reduction,
 p<-ggplot(data=test.auc, aes(x=Variable.Reduction, y=auc)) + 
   xlab("Variable Reduction") + ylab("AUC") +
   geom_bar(stat="identity", fill="steelblue") + ylim(0,1) +
-  theme_minimal()
+  geom_text(aes(label=c(21,22,40,20,65,36)), position=position_dodge(width=0.9), vjust=-0.25) +
+  theme_minimal() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 p
 
 
@@ -83,24 +82,20 @@ lines(rowMeans(enetlst.fwd.sm[[2]]),
 lines(rowMeans(enetlst.bwd.sm[[2]]),
       rowMeans(enetlst.bwd.sm[[1]]),
       type="l", col="orange")
-lines(rowMeans(enetlst.bwd[[2]]),
-      rowMeans(enetlst.bwd[[1]]),
-      type="l", col="yellow")
 lines(rowMeans(enetlst.b[[2]]),
       rowMeans(enetlst.b[[1]]),
       type="l", col="pink")
-lines(rowMeans(enetlst.b.r[[2]]),
-      rowMeans(enetlst.b.r[[1]]),
+lines(rowMeans(enetlst.full[[2]]),
+      rowMeans(enetlst.full[[1]]),
       type="l", col="black")
 abline(a=0, b=1)
 legend("bottomright", legend = c("Forward R.S.", 
                                  "Backward R.S.",
                                  "Forward SMOTE",
                                  "Backward SMOTE",
-                                 "Boruta Full",
-                                 "Boruta Reduced",
+                                 "Boruta",
                                  "None"),
-       fill=c("red","blue","green","orange","yellow","pink","black"),
+       fill=c("red","blue","green","orange","yellow","black"),
        cex=.75)
 
 
@@ -216,26 +211,26 @@ enetp.b <- ggplot(varimp.enet.df.b, aes(x=Feature,
   coord_flip()
 
 #boruta reduced
-varimp.enet.b.r <- as.vector(rowMeans(enetlst.b.r[[4]]))
-Labels <- rownames(enetlst.b.r[[4]])
-Labels[grep("Gm12878_", Labels)] <- gsub("Gm12878_","",Labels[grep("Gm12878_", Labels)])
-varimp.enet.df.b.r <- data.frame(Feature=Labels,
-                               Importance=varimp.enet.b.r)
-varimp.enet.df.b.r <- varimp.enet.df.b.r[order(varimp.enet.df.b.r$Importance),]
-varimp.enet.df.b.r$Feature <- factor(varimp.enet.df.b.r$Feature,
-                                   levels=varimp.enet.df.b.r$Feature)
-numvarenet <- dim(varimp.enet.df.b.r)[1]
-varimp.enet.df.b.r <- varimp.enet.df.b.r[(numvarenet-19):numvarenet,]
-enetp.b.r <- ggplot(varimp.enet.df.b.r, aes(x=Feature, 
-                                        y=Importance)) +
-  xlab("Predictors") +
-  ylab("Importance") +
-  #ggtitle("Importance Plot for Gradient Boosting Machine") +
-  geom_bar(stat="identity", 
-           width=.5, 
-           position="dodge",
-           fill="pink") +
-  coord_flip()
+#varimp.enet.b.r <- as.vector(rowMeans(enetlst.b.r[[4]]))
+#Labels <- rownames(enetlst.b.r[[4]])
+#Labels[grep("Gm12878_", Labels)] <- gsub("Gm12878_","",Labels[grep("Gm12878_", Labels)])
+#varimp.enet.df.b.r <- data.frame(Feature=Labels,
+#                               Importance=varimp.enet.b.r)
+#varimp.enet.df.b.r <- varimp.enet.df.b.r[order(varimp.enet.df.b.r$Importance),]
+#varimp.enet.df.b.r$Feature <- factor(varimp.enet.df.b.r$Feature,
+#                                   levels=varimp.enet.df.b.r$Feature)
+#numvarenet <- dim(varimp.enet.df.b.r)[1]
+#varimp.enet.df.b.r <- varimp.enet.df.b.r[(numvarenet-19):numvarenet,]
+#enetp.b.r <- ggplot(varimp.enet.df.b.r, aes(x=Feature, 
+#                                        y=Importance)) +
+#  xlab("Predictors") +
+#  ylab("Importance") +
+#  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+#  geom_bar(stat="identity", 
+#           width=.5, 
+#           position="dodge",
+#           fill="pink") +
+#  coord_flip()
 
 
 #no variable reduction
@@ -263,8 +258,7 @@ enetp.full <- ggplot(varimp.enet.df.full, aes(x=Feature,
 
 grid.arrange(enetp.fwd,enetp.bwd,
              enetp.fwd.sm,enetp.bwd.sm,
-             enetp.b,enetp.b.r,
-             enetp.full,ncol=2)
+             enetp.b,enetp.full,ncol=2)
 
 
 
