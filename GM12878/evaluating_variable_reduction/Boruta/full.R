@@ -39,7 +39,7 @@ saveRDS(boruta_chr1_gm12878, "boruta_chr1_gm12878.rds")
 dim(boruta_chr1_gm12878)
 #247632     21
 
-setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878")
 
 boruta_chr1 <- readRDS("boruta_chr1.rds")
 
