@@ -381,3 +381,76 @@ for(i in 1:bootsamps){
 }
 
 enet.b.r <- enetlst
+
+
+
+# Full
+
+#create a matrix of row ids that represent the zero class
+#the number of rows will match the one class
+#the number of columns match the number of bootstrap samples
+sampids <- matrix(ncol=bootsamps, 
+                  nrow=length(chr1_k562_f$y[which(chr1_k562_f$y=="Yes")]))
+
+
+#filling in the sample ids matrix
+set.seed(123)
+for(j in 1:bootsamps){
+  sampids[,j] <- sample(which(chr1_k562_f$y=="No"),
+                        length(which(chr1_k562_f$y=="Yes")),
+                        replace = TRUE)
+}
+
+
+#set length of list objects that will be filled in with specificities
+#and sensitivities and aucs and variable importance
+enetlst <- list(tpr <- matrix(nrow=ceiling((length(which(chr1_k562_f$y=="Yes"))*2)*.3), 
+                              ncol=bootsamps),
+                fpr <- matrix(nrow=ceiling((length(which(chr1_k562_f$y=="Yes"))*2)*.3), 
+                              ncol=bootsamps),
+                auc <- numeric(bootsamps),
+                varimp <- matrix(nrow=dim(chr1_k562_f)[2]-1,
+                                 ncol=bootsamps))
+rownames(enetlst[[4]]) <- colnames(chr1_k562_f)[-1]
+
+
+for(i in 1:bootsamps){
+  set.seed(7215)
+  #combining the two classes to create balanced data
+  data <- rbind.data.frame(chr1_k562_f[which(chr1_k562_f$y=="Yes"),],
+                           chr1_k562_f[sampids[,i],])
+  
+  
+  inTrainingSet <- sample(length(data$y),floor(length(data$y)*.7))
+  #inTrainingSet <- createDataPartition(data$y,p=.7,list=FALSE)
+  train <- data[inTrainingSet,]
+  test <- data[-inTrainingSet,]
+  
+  #ENET Model
+  eNetModel <- train(y ~ ., data=train, 
+                     method = "glmnet", 
+                     metric="ROC", 
+                     trControl = fitControl, 
+                     family="binomial", 
+                     tuneLength=5,
+                     standardize=FALSE)
+  pred.eNetModel <- as.vector(predict(eNetModel, 
+                                      newdata=test, 
+                                      type="prob")[,"Yes"])
+  enetlst[[1]][,i] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.eNetModel)[,1]
+  enetlst[[2]][,i] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.eNetModel)[,2]
+  enetlst[[3]][i] <- pROC::auc(pROC::roc(test$y, pred.eNetModel))
+  enetlst[[4]][,i] <- varImp(eNetModel)$importance[,1]
+  
+}
+
+enet.full <- enetlst
+
+
+
+mean(enet.fwd[[3]])  #0.7686359
+mean(enet.bwd[[3]])  #0.7670766
+mean(enet.b.r[[3]])  #0.7663008
+mean(enet.full[[3]]) #0.7639172
+
+
