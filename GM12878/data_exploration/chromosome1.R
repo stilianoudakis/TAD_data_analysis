@@ -79,7 +79,7 @@ chr1_gm12878_f_b_r <- rbind.data.frame(chr1_gm12878_f_b[sampids,],
 
 
 
-for(i in 2:dim(chr1_gm12878_f_d_r)[2]){
+for(i in 2:dim(chr1_gm12878_f_b_r)[2]){
   p <- ggplot(chr1_gm12878_f_b_r,aes(x=chr1_gm12878_f_b_r[,i],group=y,fill=y))+
     xlab(colnames(chr1_gm12878_f_b_r)[i])+
     geom_bar(position="fill")+
