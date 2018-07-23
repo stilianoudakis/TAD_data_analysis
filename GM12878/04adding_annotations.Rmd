@@ -15,6 +15,9 @@ knitr::opts_chunk$set(echo = TRUE)
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
 
 tad_subcomp_full <- readRDS("tad_subcomp_full.rds")
+
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878")
+
 gm12878 <- readRDS("gm12878.rds")
 
 tad_subcomp_dist <- GRanges(seqnames = seqnames(tad_subcomp_full),
@@ -370,6 +373,80 @@ Gm12878_WE_gr <- GRanges(seqnames=Gm12878_WE$V1,IRanges(start=Gm12878_WE$V2,end=
 
 ```
 
+# DNase I
+
+```{r}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/DNaseI")
+
+temp <- list.files()
+
+Gm12878_DNaseI <- read.table(temp[1],header=FALSE,sep="\t") 
+
+Gm12878_DNaseI_gr <- GRanges(seqnames=Gm12878_DNaseI$V1,IRanges(start=Gm12878_DNaseI$V2,end=Gm12878_DNaseI$V3))
+
+gm12878$Gm12878_DNaseI <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_DNaseI_gr)>=1,1,0)
+
+gm12878$Gm12878_DNaseI_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_DNaseI_gr))$distance
+```
+
+# Histone Modifications
+
+```{r}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/HistoneModifications")
+
+temp <- list.files()
+
+Gm12878_H2az <- read.table(temp[1],header=FALSE,sep="\t") 
+Gm12878_H3k27ac <- read.table(temp[2],header=FALSE,sep="\t")
+Gm12878_H3k27me3 <- read.table(temp[3],header=FALSE,sep="\t")
+Gm12878_H3k36me3 <- read.table(temp[4],header=FALSE,sep="\t")
+Gm12878_H3k4me1 <- read.table(temp[5],header=FALSE,sep="\t")
+Gm12878_H3k4me2 <- read.table(temp[6],header=FALSE,sep="\t")
+Gm12878_H3k4me3 <- read.table(temp[7],header=FALSE,sep="\t")
+Gm12878_H3k79me2 <- read.table(temp[8],header=FALSE,sep="\t")
+Gm12878_H3k9ac <- read.table(temp[9],header=FALSE,sep="\t")
+Gm12878_H3k9me3 <- read.table(temp[10],header=FALSE,sep="\t")
+Gm12878_H4k20me1 <- read.table(temp[11],header=FALSE,sep="\t")
+
+Gm12878_H2az_gr <- GRanges(seqnames=Gm12878_H2az$V1,IRanges(start=Gm12878_H2az$V2,end=Gm12878_H2az$V3))
+Gm12878_H3k27ac_gr <- GRanges(seqnames=Gm12878_H3k27ac$V1,IRanges(start=Gm12878_H3k27ac$V2,end=Gm12878_H3k27ac$V3))
+Gm12878_H3k27me3_gr <- GRanges(seqnames=Gm12878_H3k27me3$V1,IRanges(start=Gm12878_H3k27me3$V2,end=Gm12878_H3k27me3$V3))
+Gm12878_H3k36me3_gr <- GRanges(seqnames=Gm12878_H3k36me3$V1,IRanges(start=Gm12878_H3k36me3$V2,end=Gm12878_H3k36me3$V3))
+Gm12878_H3k4me1_gr <- GRanges(seqnames=Gm12878_H3k4me1$V1,IRanges(start=Gm12878_H3k4me1$V2,end=Gm12878_H3k4me1$V3))
+Gm12878_H3k4me2_gr <- GRanges(seqnames=Gm12878_H3k4me2$V1,IRanges(start=Gm12878_H3k4me2$V2,end=Gm12878_H3k4me2$V3))
+Gm12878_H3k4me3_gr <- GRanges(seqnames=Gm12878_H3k4me3$V1,IRanges(start=Gm12878_H3k4me3$V2,end=Gm12878_H3k4me3$V3))
+Gm12878_H3k79me2_gr <- GRanges(seqnames=Gm12878_H3k79me2$V1,IRanges(start=Gm12878_H3k79me2$V2,end=Gm12878_H3k79me2$V3))
+Gm12878_H3k9ac_gr <- GRanges(seqnames=Gm12878_H3k9ac$V1,IRanges(start=Gm12878_H3k9ac$V2,end=Gm12878_H3k9ac$V3))
+Gm12878_H3k9me3_gr <- GRanges(seqnames=Gm12878_H3k9me3$V1,IRanges(start=Gm12878_H3k9me3$V2,end=Gm12878_H3k9me3$V3))
+Gm12878_H4k20me1_gr <- GRanges(seqnames=Gm12878_H4k20me1$V1,IRanges(start=Gm12878_H4k20me1$V2,end=Gm12878_H4k20me1$V3))
+
+  gm12878$Gm12878_H2az <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_H2az_gr)>=1,1,0) 
+  gm12878$Gm12878_H3k27ac <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_H3k27ac_gr)>=1,1,0)
+  gm12878$Gm12878_H3k27me3 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_H3k27me3_gr)>=1,1,0)
+  gm12878$Gm12878_H3k36me3 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_H3k36me3_gr)>=1,1,0)
+  gm12878$Gm12878_H3k4me1 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_H3k4me1_gr)>=1,1,0)
+  gm12878$Gm12878_H3k4me2 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_H3k4me2_gr)>=1,1,0)
+  gm12878$Gm12878_H3k4me3 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_H3k4me3_gr)>=1,1,0)
+  gm12878$Gm12878_H3k79me2 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_H3k79me2_gr)>=1,1,0)
+  gm12878$Gm12878_H3k9ac <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_H3k9ac_gr)>=1,1,0)
+  gm12878$Gm12878_H3k9me3 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_H3k9me3_gr)>=1,1,0)
+  gm12878$Gm12878_H4k20me1 <- ifelse(countOverlaps(tad_subcomp_full,Gm12878_H4k20me1_gr)>=1,1,0)
+
+  gm12878$Gm12878_H2az_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_H2az_gr))$distance
+  gm12878$Gm12878_H3k27ac_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_H3k27ac_gr))$distance
+  gm12878$Gm12878_H3k27me3_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_H3k27me3_gr))$distance
+  gm12878$Gm12878_H3k36me3_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_H3k36me3_gr))$distance
+  gm12878$Gm12878_H3k4me1_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_H3k4me1_gr))$distance
+  gm12878$Gm12878_H3k4me2_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_H3k4me2_gr))$distance
+  gm12878$Gm12878_H3k4me3_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_H3k4me3_gr))$distance
+  gm12878$Gm12878_H3k79me2_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_H3k79me2_gr))$distance
+  gm12878$Gm12878_H3k9ac_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_H3k9ac_gr))$distance
+  gm12878$Gm12878_H3k9me3_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_H3k9me3_gr))$distance
+  gm12878$Gm12878_H4k20me1_dist <- mcols(distanceToNearest(tad_subcomp_dist, Gm12878_H4k20me1_gr))$distance
+
+```
+
+
 # Adding Chromosome information to the data
 
 ```{r}
@@ -383,7 +460,7 @@ gm12878$CHR <- as.character(gm12878$CHR)
 
 ```{r}
 
-setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878")
 
 saveRDS(gm12878, "gm12878.rds")
 
