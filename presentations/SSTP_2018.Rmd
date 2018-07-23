@@ -1,0 +1,45 @@
+---
+title: "TAD Data Analysis"
+#subtitle: ""
+author: | 
+ | Spiro Stilianoudakis
+ | VCU Department of Biostatistics 
+ | Biostatistics Student Research Symposium 2018
+#institute: |
+# | Advisor: Dr. Dozmorov
+#date: August 00, 2017
+output: #ioslides_presentation
+  beamer_presentation:
+    #slide_level: 3
+    #toc: TRUE
+    theme: "Berkeley"
+    colortheme: "crane"
+    fonttheme: "structurebold"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Table of Contents
+
+1. Introducing TADs
+    * The Data
+    
+2. The Project & Goal
+    * Class Imbalance
+    * Normalization
+    * Variable Reduction
+    
+3. The Analysis
+    * Model Building
+    * Model Performance
+    * Model Comparisons
+    
+4. Conclusions
+    * Furture Work
+    
+## Introducing TADs
+
+
+    
