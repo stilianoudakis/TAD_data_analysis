@@ -16,6 +16,7 @@ Analysis of Topologically Associated Domain data and their respective boundaries
    + 04adding_annotations - creating features from genomic annotations in the form of a binary variables and continuous distance variables for each annotation
    + 05model_filtering - filtering the data by removing features with near zero variances and turning binary variables to factors
    + 06model_building - code for various maching learning algorithms
+   + 06.1mourad_model.Rmd - code for running the multiple logistic regression model proposed by Mourad et al.
    + 07model_performance - code for evaluating the performance of each algorithm
    + `data_exploration` - folder with files that explore the distribution of each feature in the data
    + `evaluation_normalization` - folder with files exploring how normalizing the data (with and without log2 transformation) affects each model
@@ -23,6 +24,7 @@ Analysis of Topologically Associated Domain data and their respective boundaries
    + `evaluating_variable_reduction` - 
       + `Boruta` - using the boruta package to reduce the features of the data (applied to both the full data and a balanced dataset from randomly sampling and comparing)
       + `variable_selection` - using stepwise selection to filter the feature space (forward, backward, and both) on a balanced dataset using both random sampling and SMOTE and comparing
+      + `RFE` - variable selection using recursive feature elimination
 
 * `K562`  
    + 01arrowhead_data
@@ -30,6 +32,11 @@ Analysis of Topologically Associated Domain data and their respective boundaries
    + 03incorporating_distance
    + 04adding_annotations
    + 05model_filtering
+   + variable_selection.R
+   + 06.1mourad_model.Rmd 
+   + 07model_building
+   + 08model_performance
+   + `data_exploration`
 
 * `reports`  
    + chr1_report
@@ -37,6 +44,9 @@ Analysis of Topologically Associated Domain data and their respective boundaries
    + investigating_tad_boundaries
    + normalization_report
    + smote_report
+  
+* `presentations`
+   + SSTP_2018.Rmd
 
 * Papers - Important and relevant papers to read
 
