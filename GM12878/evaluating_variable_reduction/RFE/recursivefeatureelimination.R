@@ -28,12 +28,34 @@ chr1_gm12878_f <- rbind.data.frame(chr1_gm12878_f[samps,],
 
 
 #setting rfe parameters
-control <- rfeControl(functions=rfFuncs, method="cv", number=10, repeats=5)
+control <- rfeControl(functions=rfFuncs, method="cv", number=10)#, repeats=5)
 
-rfeModel <- rfe(chr1_gm12878_f[,-1], 
-                chr1_gm12878_f[,1], 
-                sizes=c(2:25, 30, 35, 40, 45, 50, 55, 60, 65), 
+trainctrl <- trainControl(classProbs= TRUE,
+                          summaryFunction = twoClassSummary)
+
+#splitting data
+set.seed(7215)
+inTrainingSet <- sample(length(chr1_gm12878_f$y),floor(length(chr1_gm12878_f$y)*.7))
+#inTrainingSet <- createDataPartition(data$y,p=.7,list=FALSE)
+train <- chr1_gm12878_f[inTrainingSet,]
+test <- chr1_gm12878_f[-inTrainingSet,]
+
+rfeModel <- rfe(train[,-1], 
+                train[,1], 
+                sizes=c(2:20), 
                 metric="Accuracy",
-                rfeControl=control)
+                rfeControl=control,
+                trControl = trainctrl)
+
+
+
+
+pred.rfeModel <- as.vector(predict(rfeModel, newdata=test, type="prob")[,"Yes"])
+
+roc.rfeModel <- pROC::roc(test$y, pred.rfeModel)
+
+
 
 saveRDS(rfeModel, "rfeModel.rds")
+saveRDS(roc.rfeModel, "roc.rfeModel.rds")
+
