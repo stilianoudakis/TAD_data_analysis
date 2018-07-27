@@ -32,14 +32,18 @@ setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/data")
 #4. A Seqinfo object that provides information regarding the genome being used
 
 
+# Coordinate Data
+
 #1 Creating a list of GRanges for each annotation
 
 ## 3D subcompartments
 ```{r}
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/3D_subcompartments")
 
-subcomp_A <- read.table("GSE63525_GM12878_subcompartments_A.BED",header = FALSE, sep="\t")
-subcomp_B <- read.table("GSE63525_GM12878_subcompartments_B.BED",header = FALSE, sep="\t")
+subcomp_A <- read.table("GSE63525_GM12878_subcompartments_A.BED",header = FALSE, sep="\t",stringsAsFactors = FALSE)
+#subcomp_A <- subcomp_A[-which(subcomp_A$V1=="chrX" | subcomp_A$V1=="chrY"),]
+subcomp_B <- read.table("GSE63525_GM12878_subcompartments_B.BED",header = FALSE, sep="\t",stringsAsFactors = FALSE)
+#subcomp_B <- subcomp_B[-which(subcomp_B$V1=="chrX" | subcomp_B$V1=="chrY"),]
 
 A_gr <- GRanges(seqnames=subcomp_A$V1,IRanges(start=subcomp_A$V2, end=subcomp_A$V3))
 B_gr <- GRanges(seqnames=subcomp_B$V1,IRanges(start=subcomp_B$V2, end=subcomp_B$V3))
@@ -53,16 +57,26 @@ setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/DGV/DGV_file
 
 temp = list.files()
 
-complex <- read.table(temp[1],header=FALSE,sep="\t")
-deletion <- read.table(temp[2],header=FALSE,sep="\t")
-duplication <- read.table(temp[3],header=FALSE,sep="\t")
-gain_loss <- read.table(temp[4],header=FALSE,sep="\t")
-insertion <- read.table(temp[5],header=FALSE,sep="\t")
-inversion <- read.table(temp[6],header=FALSE,sep="\t")
-mobile_element_insertion <- read.table(temp[7],header=FALSE,sep="\t")
-novel_sequence_insertion <- read.table(temp[8],header=FALSE,sep="\t")
-sequence_alteration <- read.table(temp[9],header=FALSE,sep="\t")
-tandem_duplication <- read.table(temp[10],header=FALSE,sep="\t")
+complex <- read.table(temp[1],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+complex <- complex[-which(complex$V1=="chrX" | complex$V1=="chrY"),]
+deletion <- read.table(temp[2],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+deletion <- deletion[-which(deletion$V1=="chrX" | deletion$V1=="chrY"),]
+duplication <- read.table(temp[3],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+duplication <- duplication[-which(duplication$V1=="chrX" | duplication$V1=="chrY"),]
+gain_loss <- read.table(temp[4],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+gain_loss <- gain_loss[-which(gain_loss$V1=="chrX" | gain_loss$V1=="chrY"),]
+insertion <- read.table(temp[5],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+insertion <- insertion[-which(insertion$V1=="chrX" | insertion$V1=="chrY"),]
+inversion <- read.table(temp[6],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+inversion <- inversion[-which(inversion$V1=="chrX" | inversion$V1=="chrY"),]
+mobile_element_insertion <- read.table(temp[7],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+mobile_element_insertion <- mobile_element_insertion[-which(mobile_element_insertion$V1=="chrX" | mobile_element_insertion$V1=="chrY"),]
+novel_sequence_insertion <- read.table(temp[8],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+novel_sequence_insertion <- novel_sequence_insertion[-which(novel_sequence_insertion$V1=="chrX" | novel_sequence_insertion$V1=="chrY"),]
+sequence_alteration <- read.table(temp[9],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+sequence_alteration <- sequence_alteration[-which(sequence_alteration$V1=="chrX" | sequence_alteration$V1=="chrY"),]
+tandem_duplication <- read.table(temp[10],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+tandem_duplication <- tandem_duplication[-which(tandem_duplication$V1=="chrX" | tandem_duplication$V1=="chrY"),]
 
 complex_gr <- GRanges(seqnames=complex$V1,IRanges(start=complex$V2,end=complex$V3))
 deletion_gr <- GRanges(seqnames=deletion$V1,IRanges(start=deletion$V2,end=deletion$V3))
@@ -83,7 +97,10 @@ tandem_duplication_gr <- GRanges(seqnames=tandem_duplication$V1,IRanges(start=ta
 
 ```{r include=FALSE}
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/GERP/GERP_hg19.bed")
-gerp <- read.table("GERP_hg19.BED",header=FALSE,sep="\t")
+
+gerp <- read.table("GERP_hg19.BED",header=FALSE,sep="\t",stringsAsFactors = FALSE)
+gerp <- gerp[-which(gerp$V1=="chrX" | gerp$V1=="chrY"),]
+
 gerp_gr <- GRanges(seqnames=gerp$V1,IRanges(start=gerp$V2,end=gerp$V3))
 
 
@@ -96,22 +113,38 @@ setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/nestedRepeat
 
 temp = list.files()
 
-DNA <- read.table(temp[1],header=FALSE,sep="\t")
-line <- read.table(temp[2],header=FALSE,sep="\t")
-low_complexity <- read.table(temp[3],header=FALSE,sep="\t")
-LTR  <- read.table(temp[4],header=FALSE,sep="\t")
-other <- read.table(temp[5],header=FALSE,sep="\t")
-RC <- read.table(temp[6],header=FALSE,sep="\t")
-RNA <- read.table(temp[7],header=FALSE,sep="\t")
-rRNA <- read.table(temp[8],header=FALSE,sep="\t")
-satellite <- read.table(temp[9],header=FALSE,sep="\t")
-scRNA <- read.table(temp[10],header=FALSE,sep="\t")
-simple_repeat <- read.table(temp[11],header=FALSE,sep="\t")
-SINE <- read.table(temp[12],header=FALSE,sep="\t")
-snRNA <- read.table(temp[13],header=FALSE,sep="\t")
-srpRNA <- read.table(temp[14],header=FALSE,sep="\t")
-tRNA <- read.table(temp[15],header=FALSE,sep="\t")
-unknown <- read.table(temp[16],header=FALSE,sep="\t")
+DNA <- read.table(temp[1],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+DNA <- DNA[-which(DNA$V1=="chrX" | DNA$V1=="chrY"),]
+line <- read.table(temp[2],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+line <- line[-which(line$V1=="chrX" | line$V1=="chrY"),]
+low_complexity <- read.table(temp[3],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+low_complexity <- low_complexity[-which(low_complexity$V1=="chrX" | low_complexity$V1=="chrY"),]
+LTR <- read.table(temp[4],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+LTR <- LTR[-which(LTR$V1=="chrX" | LTR$V1=="chrY"),]
+other <- read.table(temp[5],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+other <- other[-which(other$V1=="chrX" | other$V1=="chrY"),]
+RC <- read.table(temp[6],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+RC <- RC[-which(RC$V1=="chrX" | RC$V1=="chrY"),]
+RNA <- read.table(temp[7],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+RNA <- RNA[-which(RNA$V1=="chrX" | RNA$V1=="chrY"),]
+rRNA <- read.table(temp[8],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+rRNA <- rRNA[-which(rRNA$V1=="chrX" | rRNA$V1=="chrY"),]
+satellite <- read.table(temp[9],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+satellite <- satellite[-which(satellite$V1=="chrX" | satellite$V1=="chrY"),]
+scRNA <- read.table(temp[10],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+scRNA <- scRNA[-which(scRNA$V1=="chrX" | scRNA$V1=="chrY"),]
+simple_repeat <- read.table(temp[11],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+simple_repeat <- simple_repeat[-which(simple_repeat$V1=="chrX" | simple_repeat$V1=="chrY"),]
+SINE <- read.table(temp[12],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+SINE <- SINE[-which(SINE$V1=="chrX" | SINE$V1=="chrY"),]
+snRNA <- read.table(temp[13],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+snRNA <- snRNA[-which(snRNA$V1=="chrX" | snRNA$V1=="chrY"),]
+srpRNA <- read.table(temp[14],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+srpRNA <- srpRNA[-which(srpRNA$V1=="chrX" | srpRNA$V1=="chrY"),]
+tRNA <- read.table(temp[15],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+tRNA <- tRNA[-which(tRNA$V1=="chrX" | tRNA$V1=="chrY"),]
+unknown <- read.table(temp[16],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+unknown <- unknown[-which(unknown$V1=="chrX" | unknown$V1=="chrY"),]
 
 DNA_gr <- GRanges(seqnames=DNA$V1,IRanges(start=DNA$V2,end=DNA$V3))
 line_gr <- GRanges(seqnames=line$V1,IRanges(start=line$V2,end=line$V3))
@@ -139,7 +172,8 @@ setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/super_enhanc
 
 temp = list.files()
 
-se_GM12878 <- read.table(temp[1],header=FALSE,sep="\t")
+se_GM12878 <- read.table(temp[1],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+se_GM12878 <- se_GM12878[-which(se_GM12878$V1=="chrX" | se_GM12878$V1=="chrY"),]
 
 se_GM12878_gr <- GRanges(seqnames=se_GM12878$V1,IRanges(start=se_GM12878$V2,end=se_GM12878$V3))
 
@@ -150,7 +184,9 @@ se_GM12878_gr <- GRanges(seqnames=se_GM12878$V1,IRanges(start=se_GM12878$V2,end=
 ```{r include=FALSE}
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/UCNEs/UCNE.bed")
 
-UCNE <- read.table("UCNE.BED",header=FALSE,sep="\t")
+UCNE <- read.table("UCNE.BED",header=FALSE,sep="\t",stringsAsFactors = FALSE)
+UCNE <- UCNE[-which(UCNE$V1=="chrX" | UCNE$V1=="chrY"),]
+
 UCNE_gr <- GRanges(seqnames=UCNE$V1,IRanges(start=UCNE$V2,end=UCNE$V3))
 
 
@@ -160,7 +196,9 @@ UCNE_gr <- GRanges(seqnames=UCNE$V1,IRanges(start=UCNE$V2,end=UCNE$V3))
 ```{r include=FALSE}
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/VMRs")
 
-VMR <- read.table("VMR_hg19.BED",header=FALSE,sep="\t")
+VMR <- read.table("VMR_hg19.BED",header=FALSE,sep="\t",stringsAsFactors = FALSE)
+VMR <- VMR[-which(VMR$V1=="chrX" | VMR$V1=="chrY"),]
+
 VMR_gr <- GRanges(seqnames=VMR$V1,IRanges(start=VMR$V2,end=VMR$V3))
 
 ```
@@ -172,21 +210,36 @@ setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/BroadHmm")
 temp <- list.files()
 
 #Gm12878
-Gm12878_TxnElongation <- read.table(temp[2],header=FALSE,sep="\t")
-Gm12878_WeakTxn <- read.table(temp[3],header=FALSE,sep="\t")
-Gm12878_Repressed <- read.table(temp[4],header=FALSE,sep="\t")
-Gm12878_Heterochromlo <- read.table(temp[5],header=FALSE,sep="\t")
-Gm12878_RepetitiveCNV14 <- read.table(temp[6],header=FALSE,sep="\t")
-Gm12878_RepetitiveCNV15 <- read.table(temp[7],header=FALSE,sep="\t")
-Gm12878_ActivePromoter <- read.table(temp[8],header=FALSE,sep="\t")
-Gm12878_WeakPromoter <- read.table(temp[9],header=FALSE,sep="\t")
-Gm12878_PoisedPromoter <- read.table(temp[10],header=FALSE,sep="\t")
-Gm12878_StrongEnhancer4 <- read.table(temp[11],header=FALSE,sep="\t")
-Gm12878_StrongEnhancer5 <- read.table(temp[12],header=FALSE,sep="\t") 
-Gm12878_WeakEnhancer6 <- read.table(temp[13],header=FALSE,sep="\t")
-Gm12878_WeakEnhancer7 <- read.table(temp[14],header=FALSE,sep="\t")
-Gm12878_Insulator <- read.table(temp[15],header=FALSE,sep="\t")
-Gm12878_TxnTransition <- read.table(temp[16],header=FALSE,sep="\t")
+Gm12878_TxnElongation <- read.table(temp[2],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_TxnElongation <- Gm12878_TxnElongation[-which(Gm12878_TxnElongation$V1=="chrX" | Gm12878_TxnElongation$V1=="chrY"),]
+Gm12878_WeakTxn <- read.table(temp[3],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_WeakTxn <- Gm12878_WeakTxn[-which(Gm12878_WeakTxn$V1=="chrX" | Gm12878_WeakTxn$V1=="chrY"),]
+Gm12878_Repressed <- read.table(temp[4],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_Repressed <- Gm12878_Repressed[-which(Gm12878_Repressed$V1=="chrX" | Gm12878_Repressed$V1=="chrY"),]
+Gm12878_Heterochromlo <- read.table(temp[5],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_Heterochromlo <- Gm12878_Heterochromlo[-which(Gm12878_Heterochromlo$V1=="chrX" | Gm12878_Heterochromlo$V1=="chrY"),]
+Gm12878_RepetitiveCNV14 <- read.table(temp[6],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_RepetitiveCNV14 <- Gm12878_RepetitiveCNV14[-which(Gm12878_RepetitiveCNV14$V1=="chrX" | Gm12878_RepetitiveCNV14$V1=="chrY"),]
+Gm12878_RepetitiveCNV15 <- read.table(temp[7],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_RepetitiveCNV15 <- Gm12878_RepetitiveCNV15[-which(Gm12878_RepetitiveCNV15$V1=="chrX" | Gm12878_RepetitiveCNV15$V1=="chrY"),]
+Gm12878_ActivePromoter <- read.table(temp[8],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_ActivePromoter <- Gm12878_ActivePromoter[-which(Gm12878_ActivePromoter$V1=="chrX" | Gm12878_ActivePromoter$V1=="chrY"),]
+Gm12878_WeakPromoter <- read.table(temp[9],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_WeakPromoter <- Gm12878_WeakPromoter[-which(Gm12878_WeakPromoter$V1=="chrX" | Gm12878_WeakPromoter$V1=="chrY"),]
+Gm12878_PoisedPromoter <- read.table(temp[10],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_PoisedPromoter <- Gm12878_PoisedPromoter[-which(Gm12878_PoisedPromoter$V1=="chrX" | Gm12878_PoisedPromoter$V1=="chrY"),]
+Gm12878_StrongEnhancer4 <- read.table(temp[11],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_StrongEnhancer4 <- Gm12878_StrongEnhancer4[-which(Gm12878_StrongEnhancer4$V1=="chrX" | Gm12878_StrongEnhancer4$V1=="chrY"),]
+Gm12878_StrongEnhancer5 <- read.table(temp[12],header=FALSE,sep="\t",stringsAsFactors = FALSE) 
+Gm12878_StrongEnhancer5 <- Gm12878_StrongEnhancer5[-which(Gm12878_StrongEnhancer5$V1=="chrX" | Gm12878_StrongEnhancer5$V1=="chrY"),]
+Gm12878_WeakEnhancer6 <- read.table(temp[13],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_WeakEnhancer6 <- Gm12878_WeakEnhancer6[-which(Gm12878_WeakEnhancer6$V1=="chrX" | Gm12878_WeakEnhancer6$V1=="chrY"),]
+Gm12878_WeakEnhancer7 <- read.table(temp[14],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_WeakEnhancer7 <- Gm12878_WeakEnhancer7[-which(Gm12878_WeakEnhancer7$V1=="chrX" | Gm12878_WeakEnhancer7$V1=="chrY"),]
+Gm12878_Insulator <- read.table(temp[15],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_Insulator <- Gm12878_Insulator[-which(Gm12878_Insulator$V1=="chrX" | Gm12878_Insulator$V1=="chrY"),]
+Gm12878_TxnTransition <- read.table(temp[16],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_TxnTransition <- Gm12878_TxnTransition[-which(Gm12878_TxnTransition$V1=="chrX" | Gm12878_TxnTransition$V1=="chrY"),]
 
 Gm12878_TxnElongation_gr <- GRanges(seqnames=Gm12878_TxnElongation$V1,IRanges(start=Gm12878_TxnElongation$V2,end=Gm12878_TxnElongation$V3))
 Gm12878_WeakTxn_gr <- GRanges(seqnames=Gm12878_WeakTxn$V1,IRanges(start=Gm12878_WeakTxn$V2,end=Gm12878_WeakTxn$V3))
@@ -214,13 +267,20 @@ setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/Combined")
 temp <- list.files()
 
 #Gm12878
-Gm12878_CTCF <- read.table(temp[2],header=FALSE,sep="\t") 
-Gm12878_E <- read.table(temp[3],header=FALSE,sep="\t")
-Gm12878_PF <- read.table(temp[4],header=FALSE,sep="\t")
-Gm12878_R <- read.table(temp[5],header=FALSE,sep="\t")
-Gm12878_T <- read.table(temp[6],header=FALSE,sep="\t")
-Gm12878_TSS <- read.table(temp[7],header=FALSE,sep="\t")
-Gm12878_WE <- read.table(temp[8],header=FALSE,sep="\t")
+Gm12878_CTCF <- read.table(temp[2],header=FALSE,sep="\t",stringsAsFactors = FALSE) 
+Gm12878_CTCF <- Gm12878_CTCF[-which(Gm12878_CTCF$V1=="chrX" | Gm12878_CTCF$V1=="chrY"),]
+Gm12878_E <- read.table(temp[3],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_E <- Gm12878_E[-which(Gm12878_E$V1=="chrX" | Gm12878_E$V1=="chrY"),]
+Gm12878_PF <- read.table(temp[4],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_PF <- Gm12878_PF[-which(Gm12878_PF$V1=="chrX" | Gm12878_PF$V1=="chrY"),]
+Gm12878_R <- read.table(temp[5],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_R <- Gm12878_R[-which(Gm12878_R$V1=="chrX" | Gm12878_R$V1=="chrY"),]
+Gm12878_T <- read.table(temp[6],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_T <- Gm12878_T[-which(Gm12878_T$V1=="chrX" | Gm12878_T$V1=="chrY"),]
+Gm12878_TSS <- read.table(temp[7],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_TSS <- Gm12878_TSS[-which(Gm12878_TSS$V1=="chrX" | Gm12878_TSS$V1=="chrY"),]
+Gm12878_WE <- read.table(temp[8],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_WE <- Gm12878_WE[-which(Gm12878_WE$V1=="chrX" | Gm12878_WE$V1=="chrY"),]
 
 Gm12878_CTCF_gr <- GRanges(seqnames=Gm12878_CTCF$V1,IRanges(start=Gm12878_CTCF$V2,end=Gm12878_CTCF$V3))
 Gm12878_E_gr <- GRanges(seqnames=Gm12878_E$V1,IRanges(start=Gm12878_E$V2,end=Gm12878_E$V3))
@@ -239,7 +299,8 @@ setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/DNaseI")
 
 temp <- list.files()
 
-Gm12878_DNaseI <- read.table(temp[1],header=FALSE,sep="\t") 
+Gm12878_DNaseI <- read.table(temp[1],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_DNaseI <- Gm12878_DNaseI[-which(Gm12878_DNaseI$V1=="chrX" | Gm12878_DNaseI$V1=="chrY"),]
 
 Gm12878_DNaseI_gr <- GRanges(seqnames=Gm12878_DNaseI$V1,IRanges(start=Gm12878_DNaseI$V2,end=Gm12878_DNaseI$V3))
 
@@ -253,17 +314,28 @@ setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/HistoneModif
 
 temp <- list.files()
 
-Gm12878_H2az <- read.table(temp[1],header=FALSE,sep="\t") 
-Gm12878_H3k27ac <- read.table(temp[2],header=FALSE,sep="\t")
-Gm12878_H3k27me3 <- read.table(temp[3],header=FALSE,sep="\t")
-Gm12878_H3k36me3 <- read.table(temp[4],header=FALSE,sep="\t")
-Gm12878_H3k4me1 <- read.table(temp[5],header=FALSE,sep="\t")
-Gm12878_H3k4me2 <- read.table(temp[6],header=FALSE,sep="\t")
-Gm12878_H3k4me3 <- read.table(temp[7],header=FALSE,sep="\t")
-Gm12878_H3k79me2 <- read.table(temp[8],header=FALSE,sep="\t")
-Gm12878_H3k9ac <- read.table(temp[9],header=FALSE,sep="\t")
-Gm12878_H3k9me3 <- read.table(temp[10],header=FALSE,sep="\t")
-Gm12878_H4k20me1 <- read.table(temp[11],header=FALSE,sep="\t")
+Gm12878_H2az <- read.table(temp[1],header=FALSE,sep="\t",stringsAsFactors = FALSE) 
+Gm12878_H2az <- Gm12878_H2az[-which(Gm12878_H2az$V1=="chrX" | Gm12878_H2az$V1=="chrY"),]
+Gm12878_H3k27ac <- read.table(temp[2],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_H3k27ac <- Gm12878_H3k27ac[-which(Gm12878_H3k27ac$V1=="chrX" | Gm12878_H3k27ac$V1=="chrY"),]
+Gm12878_H3k27me3 <- read.table(temp[3],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_H3k27me3 <- Gm12878_H3k27me3[-which(Gm12878_H3k27me3$V1=="chrX" | Gm12878_H3k27me3$V1=="chrY"),]
+Gm12878_H3k36me3 <- read.table(temp[4],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_H3k36me3 <- Gm12878_H3k36me3[-which(Gm12878_H3k36me3$V1=="chrX" | Gm12878_H3k36me3$V1=="chrY"),]
+Gm12878_H3k4me1 <- read.table(temp[5],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_H3k4me1 <- Gm12878_H3k4me1[-which(Gm12878_H3k4me1$V1=="chrX" | Gm12878_H3k4me1$V1=="chrY"),] 
+Gm12878_H3k4me2 <- read.table(temp[6],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_H3k4me2 <- Gm12878_H3k4me2[-which(Gm12878_H3k4me2$V1=="chrX" | Gm12878_H3k4me2$V1=="chrY"),]
+Gm12878_H3k4me3 <- read.table(temp[7],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_H3k4me3 <- Gm12878_H3k4me3[-which(Gm12878_H3k4me3$V1=="chrX" | Gm12878_H3k4me3$V1=="chrY"),]
+Gm12878_H3k79me2 <- read.table(temp[8],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_H3k79me2 <- Gm12878_H3k79me2[-which(Gm12878_H3k79me2$V1=="chrX" | Gm12878_H3k79me2$V1=="chrY"),]
+Gm12878_H3k9ac <- read.table(temp[9],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_H3k9ac <- Gm12878_H3k9ac[-which(Gm12878_H3k9ac$V1=="chrX" | Gm12878_H3k9ac$V1=="chrY"),]
+Gm12878_H3k9me3 <- read.table(temp[10],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_H3k9me3 <- Gm12878_H3k9me3[-which(Gm12878_H3k9me3$V1=="chrX" | Gm12878_H3k9me3$V1=="chrY"),]
+Gm12878_H4k20me1 <- read.table(temp[11],header=FALSE,sep="\t",stringsAsFactors = FALSE)
+Gm12878_H4k20me1 <- Gm12878_H4k20me1[-which(Gm12878_H4k20me1$V1=="chrX" | Gm12878_H4k20me1$V1=="chrY"),]
 
 Gm12878_H2az_gr <- GRanges(seqnames=Gm12878_H2az$V1,IRanges(start=Gm12878_H2az$V2,end=Gm12878_H2az$V3))
 Gm12878_H3k27ac_gr <- GRanges(seqnames=Gm12878_H3k27ac$V1,IRanges(start=Gm12878_H3k27ac$V2,end=Gm12878_H3k27ac$V3))
@@ -278,6 +350,7 @@ Gm12878_H3k9me3_gr <- GRanges(seqnames=Gm12878_H3k9me3$V1,IRanges(start=Gm12878_
 Gm12878_H4k20me1_gr <- GRanges(seqnames=Gm12878_H4k20me1$V1,IRanges(start=Gm12878_H4k20me1$V2,end=Gm12878_H4k20me1$V3))
 
 ```
+
 
 ## Concatinating all GRanges into a list
 ```{r}
@@ -352,21 +425,25 @@ H4k20me1=Gm12878_H4k20me1_gr)
 for(i in 1:length(names(genomicFeatureList.GR))){
    print(length(table(seqnames(genomicFeatureList.GR[[i]])))) 
  }
-genomicFeatureList.GR <- genomicFeatureList.GR[-c(20,21,23,26,28)]
+genomicFeatureList.GR <- genomicFeatureList.GR[-c(20,21,23,26,28,32)]
 
 #removing chromosome X and Y
-chrs <- paste("chr",c(1,10:19,2,20:22,3:9),sep = "")
-for(i in 1:length(names(genomicFeatureList.GR))){
-  if(length(table(seqnames(genomicFeatureList.GR[[i]]))) > 22){
-    genomicFeatureList.GR[[i]] <- genomicFeatureList.GR[[i]][which(as.character(seqnames(genomicFeatureList.GR[[i]])) %in% chrs)]
+#chrs <- paste("chr",c(1,10:19,2,20:22,3:9),sep = "")
+#for(i in 1:length(names(genomicFeatureList.GR))){
+#  if(length(table(seqnames(genomicFeatureList.GR[[i]]))) > 22){
+#    genomicFeatureList.GR[[i]] <- genomicFeatureList.GR[[i]][which(as.character(seqnames(genomicFeatureList.GR[[i]])) %in% chrs)]
     #levels(seqnames(genomicFeatureList.GR[[i]])) <- chrs
-  }
-}
+#  }
+#}
+
+
+
 ```
 
 #2. A character vector listing the annotation variable names
 ```{r}
 annotNames <- names(genomicFeatureList.GR)
+
 ```
 
 #3. A GRanges object of the TAD data
@@ -405,8 +482,20 @@ seqInfoChr <- Seqinfo(seqn, seqlengths=seql,
 for(i in 1:length(annotNames)){
   seqlengths(genomicFeatureList.GR[[i]]) <- seqlengths(seqInfoChr)
 }
+
+
 ```
 
+# Saving objects
+
+```{r}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878")
+
+saveRDS(genomicFeatureList.GR, "genomicFeatureList.GR.rds")
+saveRDS(annotNames, "annotNames.rds")
+saveRDS(domains.GR, "domains.GR.rds")
+saveRDS(seqInfoChr, "seqInfoChr.rds")
+```
 
 
 
@@ -420,5 +509,34 @@ BA_res=borderAnalysisFun(genomicFeatureList.GR=genomicFeatureList.GR,
                          binSize=1000,borderSize=1000,
                          LRT=FALSE,
                          interactionTerms="",
-                         #testBorderType=FALSE,
+                         testBorderType=FALSE,
                          verbose=FALSE)
+
+
+prob=predict(Analysisi,type=c("response"))
+binMat.mati$prob=prob
+g <- roc(Border ~ prob, data = binMat.mati)
+pROC::auc(g)
+
+simple_roc <- function(labels, scores){
+        labels <- labels[order(scores, decreasing=TRUE)]
+        data.frame(TPR=cumsum(labels)/sum(labels), FPR=cumsum(!labels)/sum(!labels), labels)
+      }
+prob=predict(Analysisi,type=c("response"))
+head(prob)
+roc <- simple_roc(binMat.mati$Border, binMat.mati$prob)
+head(roc)
+plot(roc$FPR,roc$TPR, type="l")
+abline(0,1)
+
+library(zoo)
+library(pracma)
+
+trapz(roc$FPR,roc$TPR)
+#0.7493966
+sum(diff(roc$FPR)*rollmean(roc$TPR,2))
+#0.7493966
+
+
+
+
