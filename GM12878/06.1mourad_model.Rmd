@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "Applying Mourad Model"
 author: "Spiro Stilianoudakis"
 date: "July 22, 2018"
 output: html_document
@@ -16,6 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(pROC)
 library(BSgenome.Hsapiens.UCSC.hg19)
 library(HiCfeat)
+library(Matrix)
 ```
 
 

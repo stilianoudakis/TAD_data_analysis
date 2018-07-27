@@ -100,3 +100,4 @@ for(i in 1:bootsamps){
 mean(enetlst[[3]])
 
 saveRDS(enetlst, "enetlst_bs.rds")
+
