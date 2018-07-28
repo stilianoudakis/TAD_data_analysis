@@ -1,0 +1,282 @@
+---
+title: "Measuring Performance"
+subtitle: "Normalization Techniques"
+author: "Spiro Stilianoudakis"
+date: "July 28, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Loading Packages
+
+```{r}
+library(caret)
+#library(data.table)
+library(gbm)
+library(pROC)
+library(plyr)
+library(dplyr)
+#library(DMwR)
+library(gridExtra)
+library(ggplot2)
+library(leaps)
+```
+
+# Setting Working directory
+
+```{r}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/comparing_normalization")
+```
+
+# Log tranformed and standardized
+
+```{r}
+enetlst_ls <- readRDS("enetlst_ls.rds")
+
+#Mean AUC across 100 bootstrap samples
+enetlst_ls[[3]]
+
+auc.ls <- round(mean(enetlst_ls[[3]]),3)
+auc.ls
+
+#roc curve
+fpr.ls <- rowMeans(enetlst_ls[[2]])
+tpr.ls <- rowMeans(enetlst_ls[[1]])
+rocdat.ls <- data.frame(fpr=fpr.ls, tpr=tpr.ls)
+ggplot(rocdat.ls, aes(x=fpr, y=tpr)) + 
+  geom_line(size=1, color="red") +
+  xlab("1-Specificity") + 
+  ylab("Sensitivity") + 
+  xlim(0, 1) +
+  ylim(0, 1) +
+  geom_abline(intercept=0, slope=1) +
+  theme_minimal() +
+  ggtitle("ROC Curve: Log Transformed & Standardized")
+
+varimp.ls <- as.vector(rowMeans(enetlst_ls[[4]]))
+Labels <- rownames(enetlst_ls[[4]])
+Labels[grep("Gm12878_", Labels)] <- gsub("Gm12878_","",Labels[grep("Gm12878_", Labels)])
+varimp.ls.df <- data.frame(Feature=Labels,
+                                 Importance=varimp.ls)
+varimp.ls.df <- varimp.ls.df[order(varimp.ls.df$Importance),]
+varimp.ls.df <- varimp.ls.df[(dim(varimp.ls.df)[1]-19):dim(varimp.ls.df)[1],]
+varimp.ls.df$Feature <- factor(varimp.ls.df$Feature,
+                                     levels=varimp.ls.df$Feature)
+p.ls <- ggplot(varimp.ls.df, aes(x=Feature, y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="red") +
+  coord_flip() +
+  theme_minimal() +
+  ggtitle("Variable Importance Plot: Log Transformed & Standardized")
+p.ls
+
+```
+
+# Log tranformed and un-standardized
+
+```{r}
+enetlst_lns <- readRDS("enetlst_lns.rds")
+
+#Mean AUC across 100 bootstrap samples
+enetlst_lns[[3]]
+
+auc.lns <- round(mean(enetlst_lns[[3]]),3)
+auc.lns
+
+#roc curve
+fpr.lns <- rowMeans(enetlst_lns[[2]])
+tpr.lns <- rowMeans(enetlst_lns[[1]])
+rocdat.lns <- data.frame(fpr=fpr.lns, tpr=tpr.lns)
+ggplot(rocdat.lns, aes(x=fpr.lns, y=tpr.lns)) + 
+  geom_line(size=1, color="blue") +
+  xlab("1-Specificity") + 
+  ylab("Sensitivity") + 
+  xlim(0, 1) +
+  ylim(0, 1) +
+  geom_abline(intercept=0, slope=1) +
+  theme_minimal() +
+  ggtitle("ROC Curve: Log Transformed & Un-Standardized")
+
+varimp.lns <- as.vector(rowMeans(enetlst_lns[[4]]))
+Labels <- rownames(enetlst_lns[[4]])
+Labels[grep("Gm12878_", Labels)] <- gsub("Gm12878_","",Labels[grep("Gm12878_", Labels)])
+varimp.lns.df <- data.frame(Feature=Labels,
+                                 Importance=varimp.lns)
+varimp.lns.df <- varimp.lns.df[order(varimp.lns.df$Importance),]
+varimp.lns.df <- varimp.lns.df[(dim(varimp.lns.df)[1]-19):dim(varimp.lns.df)[1],]
+varimp.lns.df$Feature <- factor(varimp.lns.df$Feature,
+                                     levels=varimp.lns.df$Feature)
+p.lns <- ggplot(varimp.lns.df, aes(x=Feature, y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="blue") +
+  coord_flip() +
+  theme_minimal() +
+  ggtitle("Variable Importance Plot: Log Transformed & Un-Standardized")
+p.lns
+
+```
+
+
+# Not Log tranformed and Standardized
+
+```{r}
+enetlst_nls <- readRDS("enetlst_nls.rds")
+
+#Mean AUC across 100 bootstrap samples
+enetlst_nls[[3]]
+
+auc.nls <- round(mean(enetlst_nls[[3]]),3)
+auc.nls
+
+#roc curve
+fpr.nls <- rowMeans(enetlst_nls[[2]])
+tpr.nls <- rowMeans(enetlst_nls[[1]])
+rocdat.nls <- data.frame(fpr=fpr.nls, tpr=tpr.nls)
+ggplot(rocdat.nls, aes(x=fpr.nls, y=tpr.nls)) + 
+  geom_line(size=1, color="green") +
+  xlab("1-Specificity") + 
+  ylab("Sensitivity") + 
+  xlim(0, 1) +
+  ylim(0, 1) +
+  geom_abline(intercept=0, slope=1) +
+  theme_minimal() +
+  ggtitle("ROC Curve: Not Log Transformed & Standardized")
+
+varimp.nls <- as.vector(rowMeans(enetlst_nls[[4]]))
+Labels <- rownames(enetlst_nls[[4]])
+Labels[grep("Gm12878_", Labels)] <- gsub("Gm12878_","",Labels[grep("Gm12878_", Labels)])
+varimp.nls.df <- data.frame(Feature=Labels,
+                                 Importance=varimp.nls)
+varimp.nls.df <- varimp.nls.df[order(varimp.nls.df$Importance),]
+varimp.nls.df <- varimp.nls.df[(dim(varimp.nls.df)[1]-19):dim(varimp.nls.df)[1],]
+varimp.nls.df$Feature <- factor(varimp.nls.df$Feature,
+                                     levels=varimp.nls.df$Feature)
+p.nls <- ggplot(varimp.nls.df, aes(x=Feature, y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="green") +
+  coord_flip() +
+  theme_minimal() +
+  ggtitle("Variable Importance Plot: Not Log Transformed & Standardized")
+p.nls
+
+```
+
+
+# Not Log tranformed and Un-Standardized
+
+```{r}
+enetlst_nlns <- readRDS("enetlst_nlns.rds")
+
+#Mean AUC across 100 bootstrap samples
+enetlst_nlns[[3]]
+
+auc.nlns <- round(mean(enetlst_nlns[[3]]),3)
+auc.nlns
+
+#roc curve
+fpr.nlns <- rowMeans(enetlst_nlns[[2]])
+tpr.nlns <- rowMeans(enetlst_nlns[[1]])
+rocdat.nlns <- data.frame(fpr=fpr.nlns, tpr=tpr.nlns)
+ggplot(rocdat.nlns, aes(x=fpr.nlns, y=tpr.nlns)) + 
+  geom_line(size=1, color="yellow") +
+  xlab("1-Specificity") + 
+  ylab("Sensitivity") + 
+  xlim(0, 1) +
+  ylim(0, 1) +
+  geom_abline(intercept=0, slope=1) +
+  theme_minimal() +
+  ggtitle("ROC Curve: Not Log Transformed & Un-Standardized")
+
+varimp.nlns <- as.vector(rowMeans(enetlst_nlns[[4]]))
+Labels <- rownames(enetlst_nlns[[4]])
+Labels[grep("Gm12878_", Labels)] <- gsub("Gm12878_","",Labels[grep("Gm12878_", Labels)])
+varimp.nlns.df <- data.frame(Feature=Labels,
+                                 Importance=varimp.nlns)
+varimp.nlns.df <- varimp.nlns.df[order(varimp.nlns.df$Importance),]
+varimp.nlns.df <- varimp.nlns.df[(dim(varimp.nlns.df)[1]-19):dim(varimp.nlns.df)[1],]
+varimp.nlns.df$Feature <- factor(varimp.nlns.df$Feature,
+                                     levels=varimp.nlns.df$Feature)
+p.nlns <- ggplot(varimp.nlns.df, aes(x=Feature, y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="yellow") +
+  coord_flip() +
+  theme_minimal() +
+  ggtitle("Variable Importance Plot: Not Log Transformed & Standardized")
+p.nlns
+
+```
+
+
+# Comparing Models
+
+```{r}
+auc.plot <- data.frame("Normalization Technique"=c("Log/Standardaized", 
+                                       "Log/Un-Standardaized",
+                                       "No Log/Standardaized",
+                                       "No Log/Un-Standardaized"),
+                       auc=c(auc.ls,
+                             auc.lns,
+                             auc.nls,
+                             auc.nlns))
+
+auc.plot <- auc.plot[order(auc.plot$auc, decreasing=TRUE),]
+
+auc.plot$Normalization.Technique <-factor(auc.plot$Normalization.Technique, 
+                                     levels=auc.plot$Normalization.Technique)
+
+p<-ggplot(data=auc.plot, aes(x=Normalization.Technique, y=auc, fill=Normalization.Technique)) + 
+  xlab("Normalization Technique") + ylab("AUC") +
+  geom_bar(stat="identity") + ylim(0,1) +
+  scale_fill_manual(values=c("blue", "red", "green", "yellow"), guide=FALSE) +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Model Performance for Different \n Normalization Techniques")
+p
+
+rocdat.ls$Technique <- "ls"
+rocdat.lns$Technique <- "lns"
+rocdat.nls$Technique <- "nls"
+rocdat.nlns$Technique <- "nlns"
+allrocdat <- rbind.data.frame(rocdat.ls, rocdat.lns, rocdat.nls, rocdat.nlns)
+
+ggplot(data=allrocdat, aes(x=fpr, y=tpr, color=Technique)) + 
+  geom_line(size=1) +
+  scale_colour_manual(name="Technique",
+    labels=c("Log/ \n Un-Standardaized", 
+             "Log/ \n Standardaized",
+             "No Log/ \n Un-Standardaized",
+              "No Log/ \n Standardaized"),
+    values=c("blue", "red", "yellow", "green")) + 
+  xlab("1-Specificity") + 
+  ylab("Sensitivity") + 
+  xlim(0, 1) +
+  ylim(0, 1) +
+  geom_abline(intercept=0, slope=1) +
+  theme_minimal() +
+  ggtitle("ROC Curves for Different \n Normalization Techniques")
+
+```
+

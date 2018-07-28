@@ -1,0 +1,202 @@
+---
+title: "Measuring Performance"
+subtitle: "Evaluating SMOTE"
+author: "Spiro Stilianoudakis"
+date: "July 28, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Loading Packages
+
+```{r}
+library(caret)
+#library(data.table)
+library(gbm)
+library(pROC)
+library(plyr)
+library(dplyr)
+#library(DMwR)
+library(gridExtra)
+library(ggplot2)
+library(leaps)
+```
+
+# Setting Working directory
+
+```{r}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/testing_SMOTE")
+```
+
+# Testing SMOTE 
+
+```{r}
+enetlst_sm <- readRDS("enetlst_sm.rds")
+
+#Plotting Performance
+auc.sm <- data.frame(Combination=c("100/200","200/200","300/200","400/200",
+                                     "100/300","200/300","300/300","400/300"),
+                       auc=c(enetlst_sm[[3]][1],enetlst_sm[[3]][2],enetlst_sm[[3]][3],
+                             enetlst_sm[[3]][4],enetlst_sm[[3]][5],enetlst_sm[[3]][6],
+                             enetlst_sm[[3]][7],enetlst_sm[[3]][8]))
+
+auc.sm <- auc.sm[order(auc.sm$auc, decreasing=TRUE),]
+
+auc.sm$Combination <- factor(auc.sm$Combination, levels=auc.sm$Combination)
+
+auc.sm
+
+
+p<-ggplot(data=auc.sm, aes(x=Combination, y=auc, fill=Combination)) + 
+  xlab("Sampling Combination") + ylab("AUC") +
+  geom_bar(stat="identity") + ylim(0,1) +
+  scale_fill_manual(values=rainbow(8), guide=FALSE) +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Model Performance for Different \n Sampling Combinations using SMOTE")
+p
+
+
+onetwo <- data.frame(fpr=enetlst_sm[[2]][,1],tpr=enetlst_sm[[1]][,1], Combo = "100/200");
+twotwo <- data.frame(fpr=enetlst_sm[[2]][,2],tpr=enetlst_sm[[1]][,2], Combo = "200/200");
+threetwo <- data.frame(fpr=enetlst_sm[[2]][,3],tpr=enetlst_sm[[1]][,3], Combo = "300/200");
+fourtwo <- data.frame(fpr=enetlst_sm[[2]][,4],tpr=enetlst_sm[[1]][,4], Combo = "400/200");
+onethree <- data.frame(fpr=enetlst_sm[[2]][,5],tpr=enetlst_sm[[1]][,5], Combo = "100/300");
+twothree <- data.frame(fpr=enetlst_sm[[2]][,6],tpr=enetlst_sm[[1]][,6], Combo = "200/300");
+threethree <- data.frame(fpr=enetlst_sm[[2]][,7],tpr=enetlst_sm[[1]][,7], Combo = "300/300");
+fourthree <- data.frame(fpr=enetlst_sm[[2]][,8],tpr=enetlst_sm[[1]][,8], Combo = "400/300")
+
+allrocdat <- rbind.data.frame(onetwo,
+                              twotwo,
+                              threetwo,
+                              fourtwo,
+                              onethree,
+                              twothree,
+                              threethree,
+                              fourthree)
+
+ggplot(data=allrocdat, aes(x=fpr, y=tpr, color=Combo)) + 
+  geom_line(size=1) +
+  scale_colour_manual(name="Combination",
+    labels=c("100/200", 
+             "200/200",
+             "300/200",
+             "400/200",
+             "100/300",
+             "200/300",
+             "300/300",
+             "400/300"),
+    values=rainbow(8)) + 
+  xlab("1-Specificity") + 
+  ylab("Sensitivity") + 
+  xlim(0, 1) +
+  ylim(0, 1) +
+  geom_abline(intercept=0, slope=1) +
+  theme_minimal() +
+  ggtitle("ROC Curves for Different \n Normalization Techniques")
+
+
+
+
+```
+
+
+# Bootstrap
+
+```{r}
+enetlst_bs <- readRDS("enetlst_bs.rds")
+
+#Mean AUC across 100 bootstrap samples
+enetlst_bs[[3]]
+
+auc.bs <- round(mean(enetlst_bs[[3]]),3)
+auc.bs
+
+#roc curve
+fpr.bs <- rowMeans(enetlst_bs[[2]])
+tpr.bs <- rowMeans(enetlst_bs[[1]])
+rocdat.bs <- data.frame(fpr=fpr.bs, tpr=tpr.bs)
+ggplot(rocdat.bs, aes(x=fpr, y=tpr)) + 
+  geom_line(size=1, color="black") +
+  xlab("1-Specificity") + 
+  ylab("Sensitivity") + 
+  xlim(0, 1) +
+  ylim(0, 1) +
+  geom_abline(intercept=0, slope=1) +
+  theme_minimal() +
+  ggtitle("ROC Curve for Balanced Classes \n Using 100 Bootstrap Samples")
+
+
+```
+
+
+# Comparing 100/200 SMOTE with Bootstrapped model
+
+```{r}
+
+ggplot() + 
+  geom_line(aes(fpr, tpr, colour="black"), rocdat.bs) +
+  geom_line(aes(fpr, tpr, colour=rainbow(8)[1]), onetwo) + 
+  scale_colour_manual(name="Sampling \n Technique",
+    labels=c("SMOTE: \n 100/200","Bootstrap"),
+    values=c(rainbow(8)[1],"black")) +
+  xlab("1-Specificity") + 
+  ylab("Sensitivity") + 
+  xlim(0, 1) +
+  ylim(0, 1) +
+  geom_abline(intercept=0, slope=1) +
+  theme_minimal() +
+  ggtitle("100 Bootstrap Samples vs 100/200 SMOTE")
+  
+
+
+varimp.bs <- as.vector(rowMeans(enetlst_bs[[4]]))
+Labels <- rownames(enetlst_bs[[4]])
+Labels[grep("Gm12878_", Labels)] <- gsub("Gm12878_","",Labels[grep("Gm12878_", Labels)])
+varimp.bs.df <- data.frame(Feature=Labels,
+                                 Importance=varimp.bs)
+varimp.bs.df <- varimp.bs.df[order(varimp.bs.df$Importance),]
+varimp.bs.df <- varimp.bs.df[(dim(varimp.bs.df)[1]-19):dim(varimp.bs.df)[1],]
+varimp.bs.df$Feature <- factor(varimp.bs.df$Feature,
+                                     levels=varimp.bs.df$Feature)
+p.bs <- ggplot(varimp.bs.df, aes(x=Feature, y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="black") +
+  coord_flip() +
+  theme_minimal() +
+  ggtitle("Variable Importance Plot: \n 100 Bootstrap Samples")
+p.bs
+
+
+varimp.sm <- as.vector(enetlst_sm[[4]][,1])
+Labels <- names(enetlst_sm[[4]][,1])
+Labels[grep("Gm12878_", Labels)] <- gsub("Gm12878_","",Labels[grep("Gm12878_", Labels)])
+varimp.sm.df <- data.frame(Feature=Labels,
+                                 Importance=varimp.sm)
+varimp.sm.df <- varimp.sm.df[order(varimp.sm.df$Importance),]
+varimp.sm.df <- varimp.sm.df[(dim(varimp.sm.df)[1]-19):dim(varimp.sm.df)[1],]
+varimp.sm.df$Feature <- factor(varimp.sm.df$Feature,
+                                     levels=varimp.sm.df$Feature)
+p.sm <- ggplot(varimp.sm.df, aes(x=Feature, y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="red") +
+  coord_flip() +
+  theme_minimal() +
+  ggtitle("Variable Importance Plot: \n 100/200 SMOTE")
+p.sm
+
+```
+
