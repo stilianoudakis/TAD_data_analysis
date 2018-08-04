@@ -23,6 +23,7 @@ library(dplyr)
 library(gridExtra)
 library(ggplot2)
 library(leaps)
+library(DT)
 ```
 
 # Setting Working directory
@@ -34,26 +35,28 @@ setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/testing_SM
 # Testing SMOTE 
 
 ```{r}
-enetlst_sm <- readRDS("enetlst_sm.rds")
+enetlst_sm <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/testing_SMOTE/enetlst_sm.rds")
 
 #Plotting Performance
 auc.sm <- data.frame(Combination=c("100/200","200/200","300/200","400/200",
                                      "100/300","200/300","300/300","400/300"),
-                       auc=c(enetlst_sm[[3]][1],enetlst_sm[[3]][2],enetlst_sm[[3]][3],
+                       AUC=c(enetlst_sm[[3]][1],enetlst_sm[[3]][2],enetlst_sm[[3]][3],
                              enetlst_sm[[3]][4],enetlst_sm[[3]][5],enetlst_sm[[3]][6],
                              enetlst_sm[[3]][7],enetlst_sm[[3]][8]))
 
-auc.sm <- auc.sm[order(auc.sm$auc, decreasing=TRUE),]
+auc.sm <- auc.sm[order(auc.sm$AUC, decreasing=TRUE),]
 
 auc.sm$Combination <- factor(auc.sm$Combination, levels=auc.sm$Combination)
 
 auc.sm
 
+datatable(auc.sm)
 
-p<-ggplot(data=auc.sm, aes(x=Combination, y=auc, fill=Combination)) + 
+
+p<-ggplot(data=auc.sm, aes(x=Combination, y=AUC, fill=Combination)) + 
   xlab("Sampling Combination") + ylab("AUC") +
   geom_bar(stat="identity") + ylim(0,1) +
-  scale_fill_manual(values=rainbow(8), guide=FALSE) +
+  scale_fill_manual(values=gray(seq(0,.7,.1)), guide=FALSE) +
   theme_minimal() + 
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   ggtitle("Model Performance for Different \n Sampling Combinations using SMOTE")
@@ -89,7 +92,7 @@ ggplot(data=allrocdat, aes(x=fpr, y=tpr, color=Combo)) +
              "200/300",
              "300/300",
              "400/300"),
-    values=rainbow(8)) + 
+    values=gray(seq(0,.7,.1))) + 
   xlab("1-Specificity") + 
   ylab("Sensitivity") + 
   xlim(0, 1) +
@@ -107,7 +110,7 @@ ggplot(data=allrocdat, aes(x=fpr, y=tpr, color=Combo)) +
 # Bootstrap
 
 ```{r}
-enetlst_bs <- readRDS("enetlst_bs.rds")
+enetlst_bs <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/testing_SMOTE/enetlst_bs_lns.rds")
 
 #Mean AUC across 100 bootstrap samples
 enetlst_bs[[3]]
@@ -138,11 +141,11 @@ ggplot(rocdat.bs, aes(x=fpr, y=tpr)) +
 ```{r}
 
 ggplot() + 
-  geom_line(aes(fpr, tpr, colour="black"), rocdat.bs) +
-  geom_line(aes(fpr, tpr, colour=rainbow(8)[1]), onetwo) + 
+  geom_line(aes(fpr, tpr, colour=gray(.7)[1]), rocdat.bs) +
+  geom_line(aes(fpr, tpr, colour="black"), onetwo) + 
   scale_colour_manual(name="Sampling \n Technique",
-    labels=c("SMOTE: \n 100/200","Bootstrap"),
-    values=c(rainbow(8)[1],"black")) +
+    labels=c("Bootstrap","SMOTE: \n 100/200"),
+    values=c("black",gray(.7))) +
   xlab("1-Specificity") + 
   ylab("Sensitivity") + 
   xlim(0, 1) +
@@ -192,7 +195,7 @@ p.sm <- ggplot(varimp.sm.df, aes(x=Feature, y=Importance)) +
   geom_bar(stat="identity", 
            width=.5, 
            position="dodge",
-           fill="red") +
+           fill=gray(.7)) +
   coord_flip() +
   theme_minimal() +
   ggtitle("Variable Importance Plot: \n 100/200 SMOTE")
