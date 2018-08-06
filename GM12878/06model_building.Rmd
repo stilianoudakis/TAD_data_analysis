@@ -195,104 +195,57 @@ for(i in 1:bootsamps){
 # GBM
 
 ```{r}
-set.seed(2014)
 
-grid <- expand.grid(n.trees=c(50,200,500,1000),shrinkage=c(0.01,0.05,0.1,0.5),n.minobsinnode = c(3,5,10),interaction.depth=c(1,5,10))
-
-#grid <- expand.grid(interaction.depth = seq(6,16, by = 2),
-#                    n.trees = seq(500,1500,by=200),
-#                    shrinkage = .01, #c(0.01,0.1),
-#                    n.minobsinnode = c(10))
-
-
-gbmModel <- train(y ~ ., data=train, method = "gbm", metric="ROC", trControl = fitControl, verbose=FALSE, tuneGrid=grid)
-
-gbmModel
-ggplot(gbmModel) + theme(legend.position = "top")
-
-pred.gbmModel <- as.vector(predict(gbmModel, newdata=test, type="prob")[,"Yes"])
-
-roc.gbmModel <- pROC::roc(test$y, pred.gbmModel)
-
-auc.gbmModel <- pROC::auc(roc.gbmModel)
-#0.7925
+#set length of list objects that will be filled in with specificities
+#and sensitivities and aucs and variable importance
+gbmlst <- list(tpr <- matrix(nrow=ceiling((length(which(chr1_gm12878_fwd$y=="Yes"))*2)*.3), 
+                            ncol=bootsamps),
+              fpr <- matrix(nrow=ceiling((length(which(chr1_gm12878_fwd$y=="Yes"))*2)*.3), 
+                            ncol=bootsamps),
+              auc <- numeric(bootsamps),
+              varimp <- matrix(nrow=dim(chr1_gm12878_fwd)[2]-1,
+                               ncol=bootsamps))
+rownames(gbmlst[[4]]) <- colnames(chr1_gm12878_fwd)[-1]
 
 
+#Running GBM Model
 
-varImp(gbmModel)
-gbm.data <- data.frame(varImp(gbmModel)[1])
-gbm.data2 <- cbind.data.frame(Predictors=rownames(gbm.data),Importance=gbm.data$Overall)
-gbm.data2 <- gbm.data2[order(gbm.data2$Importance),]
-gbm.data2 <- gbm.data2[42:61,]
-gbm.data2 <- gbm.data2[order(gbm.data2$Importance),]
-gbm.data2$Predictors <- factor(gbm.data2$Predictors,levels=gbm.data2$Predictors)
-(p <- ggplot(gbm.data2) + geom_point(aes(Importance,Predictors)) + ggtitle("Variable Importance Plot for GBM Model"))
+for(i in 1:bootsamps){
+  set.seed(2014)
+  #combining the two classes to create balanced data
+  data <- rbind.data.frame(gm12878_f[which(gm12878_f$y=="Yes"),],
+                           gm12878_f[sampids[,i],])
+  
+  # Splitting the data
+  inTrainingSet <- sample(length(data$y),floor(length(data$y)*.7))
+  #inTrainingSet <- createDataPartition(data$y,p=.7,list=FALSE)
+  train <- data[inTrainingSet,]
+  test <- data[-inTrainingSet,]
 
-ggplot(gbm.data2, aes(x=Predictors, 
-                        y=Importance)) +
-  xlab("Predictors") +
-  ylab("Importance") +
-  #ggtitle("Importance Plot for Gradient Boosting Machine") +
-  geom_bar(stat="identity", 
-           width=.5, 
-           position="dodge",
-           fill="red") +
-  coord_flip()
-  #theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  #setting up grid of values to tune
+  grid <- expand.grid(n.trees=c(50,200,500,1000),
+                      shrinkage=c(0.01,0.05,0.1,0.5),
+                      n.minobsinnode = c(3,5,10),
+                      interaction.depth=c(1,5,10))
+
+  set.seed(2018)
+  gbmModel <- train(y ~ ., data=train, 
+                    method = "gbm", 
+                    metric="ROC", 
+                    trControl = fitControl, 
+                    verbose=FALSE, 
+                    tuneGrid=grid)
+  
+  pred.gbmModel <- as.vector(predict(gbmModel, 
+                                     newdata=test, 
+                                     type="prob")[,"Yes"])
+  gbmlst[[1]][,i] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.gbmModel)[,1]
+  gbmlst[[2]][,i] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.gbmModel)[,2]
+  gbmlst[[3]][i] <- pROC::auc(pROC::roc(test$y, pred.gbmModel))
+  gbmlst[[4]][,i] <- varImp(gbmModel)$importance[,1]
+  
+}
+  
 
 ```
-
-# Elastic Net
-
-```{r}
-
-#creating a grid of values for alpha and lambda that minimizes cross validation error
-lambda.grid <- 10^seq(2,-2,length=100)
-alpha.grid <- seq(0,1,length=10)
-
-searchgrid <- expand.grid(alpha=alpha.grid, lambda=lambda.grid)
-
-set.seed(2014)
-
-eNetModel <- train(y ~ ., data=train, 
-                   method = "glmnet",
-                   tuneGrid=searchgrid,
-                   metric="ROC", 
-                   trControl = fitControl, 
-                   family="binomial", 
-                   standardize=FALSE)
-eNetModel$bestTune
-
-#eNetModel <- eNetModel$finalModel
-
-pred.eNetModel <- as.vector(predict(eNetModel, newdata=test, type="prob")[,"Yes"])
-
-roc.eNetModel <- pROC::roc(test$y, pred.eNetModel)
-
-auc.eNetModel <- pROC::auc(roc.eNetModel)
-#0.7876
-
-
-
-enetdata <- varImp(eNetModel)$importance
-enetdata2 <- data.frame(Feature=rownames(enetdata), Importance=enetdata$Overall)
-enetdata2$Feature <- as.character(enetdata2$Feature)
-enetdata2 <- enetdata2[order(enetdata2$Importance),]
-enetdata2 <- enetdata2[42:61,]
-enetdata2$Feature <- factor(enetdata2$Feature, levels=enetdata2$Feature[order(enetdata2$Importance)])
-
-enetp <- ggplot(enetdata2, aes(x=Feature, 
-                        y=Importance)) +
-  xlab("Predictors") +
-  ylab("Importance") +
-  #ggtitle("Importance Plot for Gradient Boosting Machine") +
-  geom_bar(stat="identity", 
-           width=.5, 
-           position="dodge",
-           fill="green") +
-  coord_flip()
-enetp
-  #theme(axis.text.x = element_text(angle = 90, hjust = 1))
-```
-
 
