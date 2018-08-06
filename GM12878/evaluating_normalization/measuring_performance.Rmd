@@ -34,7 +34,7 @@ setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/comparing_
 # Log tranformed and standardized
 
 ```{r}
-enetlst_ls <- readRDS("enetlst_ls.rds")
+enetlst_ls <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/comparing_normalization/enetlst_ls.rds")
 
 #Mean AUC across 100 bootstrap samples
 enetlst_ls[[3]]
@@ -47,7 +47,7 @@ fpr.ls <- rowMeans(enetlst_ls[[2]])
 tpr.ls <- rowMeans(enetlst_ls[[1]])
 rocdat.ls <- data.frame(fpr=fpr.ls, tpr=tpr.ls)
 ggplot(rocdat.ls, aes(x=fpr, y=tpr)) + 
-  geom_line(size=1, color="red") +
+  geom_line(size=1, color="#4D4D4D") +
   xlab("1-Specificity") + 
   ylab("Sensitivity") + 
   xlim(0, 1) +
@@ -72,10 +72,10 @@ p.ls <- ggplot(varimp.ls.df, aes(x=Feature, y=Importance)) +
   geom_bar(stat="identity", 
            width=.5, 
            position="dodge",
-           fill="red") +
+           fill="#4D4D4D") +
   coord_flip() +
   theme_minimal() +
-  ggtitle("Variable Importance Plot: Log Transformed & Standardized")
+  ggtitle("Log Transformed \n & Standardized")
 p.ls
 
 ```
@@ -83,7 +83,7 @@ p.ls
 # Log tranformed and un-standardized
 
 ```{r}
-enetlst_lns <- readRDS("enetlst_lns.rds")
+enetlst_lns <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/comparing_normalization/enetlst_lns.rds")
 
 #Mean AUC across 100 bootstrap samples
 enetlst_lns[[3]]
@@ -96,7 +96,7 @@ fpr.lns <- rowMeans(enetlst_lns[[2]])
 tpr.lns <- rowMeans(enetlst_lns[[1]])
 rocdat.lns <- data.frame(fpr=fpr.lns, tpr=tpr.lns)
 ggplot(rocdat.lns, aes(x=fpr.lns, y=tpr.lns)) + 
-  geom_line(size=1, color="blue") +
+  geom_line(size=1, color="#000000") +
   xlab("1-Specificity") + 
   ylab("Sensitivity") + 
   xlim(0, 1) +
@@ -121,10 +121,10 @@ p.lns <- ggplot(varimp.lns.df, aes(x=Feature, y=Importance)) +
   geom_bar(stat="identity", 
            width=.5, 
            position="dodge",
-           fill="blue") +
+           fill="#000000") +
   coord_flip() +
   theme_minimal() +
-  ggtitle("Variable Importance Plot: Log Transformed & Un-Standardized")
+  ggtitle("Log Transformed \n & Un-Standardized")
 p.lns
 
 ```
@@ -133,7 +133,7 @@ p.lns
 # Not Log tranformed and Standardized
 
 ```{r}
-enetlst_nls <- readRDS("enetlst_nls.rds")
+enetlst_nls <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/comparing_normalization/enetlst_nls.rds")
 
 #Mean AUC across 100 bootstrap samples
 enetlst_nls[[3]]
@@ -146,7 +146,7 @@ fpr.nls <- rowMeans(enetlst_nls[[2]])
 tpr.nls <- rowMeans(enetlst_nls[[1]])
 rocdat.nls <- data.frame(fpr=fpr.nls, tpr=tpr.nls)
 ggplot(rocdat.nls, aes(x=fpr.nls, y=tpr.nls)) + 
-  geom_line(size=1, color="green") +
+  geom_line(size=1, color="#E6E6E6") +
   xlab("1-Specificity") + 
   ylab("Sensitivity") + 
   xlim(0, 1) +
@@ -171,10 +171,10 @@ p.nls <- ggplot(varimp.nls.df, aes(x=Feature, y=Importance)) +
   geom_bar(stat="identity", 
            width=.5, 
            position="dodge",
-           fill="green") +
+           fill="#E6E6E6") +
   coord_flip() +
   theme_minimal() +
-  ggtitle("Variable Importance Plot: Not Log Transformed & Standardized")
+  ggtitle("Not Log Transformed \n & Standardized")
 p.nls
 
 ```
@@ -183,7 +183,7 @@ p.nls
 # Not Log tranformed and Un-Standardized
 
 ```{r}
-enetlst_nlns <- readRDS("enetlst_nlns.rds")
+enetlst_nlns <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/comparing_normalization/enetlst_nlns.rds")
 
 #Mean AUC across 100 bootstrap samples
 enetlst_nlns[[3]]
@@ -196,7 +196,7 @@ fpr.nlns <- rowMeans(enetlst_nlns[[2]])
 tpr.nlns <- rowMeans(enetlst_nlns[[1]])
 rocdat.nlns <- data.frame(fpr=fpr.nlns, tpr=tpr.nlns)
 ggplot(rocdat.nlns, aes(x=fpr.nlns, y=tpr.nlns)) + 
-  geom_line(size=1, color="yellow") +
+  geom_line(size=1, color="#999999") +
   xlab("1-Specificity") + 
   ylab("Sensitivity") + 
   xlim(0, 1) +
@@ -221,10 +221,10 @@ p.nlns <- ggplot(varimp.nlns.df, aes(x=Feature, y=Importance)) +
   geom_bar(stat="identity", 
            width=.5, 
            position="dodge",
-           fill="yellow") +
+           fill="#999999") +
   coord_flip() +
   theme_minimal() +
-  ggtitle("Variable Importance Plot: Not Log Transformed & Standardized")
+  ggtitle("Not Log Transformed \n & Standardized")
 p.nlns
 
 ```
@@ -250,11 +250,17 @@ auc.plot$Normalization.Technique <-factor(auc.plot$Normalization.Technique,
 p<-ggplot(data=auc.plot, aes(x=Normalization.Technique, y=auc, fill=Normalization.Technique)) + 
   xlab("Normalization Technique") + ylab("AUC") +
   geom_bar(stat="identity") + ylim(0,1) +
-  scale_fill_manual(values=c("blue", "red", "green", "yellow"), guide=FALSE) +
+  scale_fill_manual(values=grey(c(0,.3,.6,.9)), guide=FALSE) +
+  scale_x_discrete(labels= c("Log/ \n Un-Standardaized", 
+             "Log/ \n Standardaized",
+             "No Log/ \n Un-Standardaized",
+              "No Log/ \n Standardaized")) + 
   theme_minimal() + 
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   ggtitle("Model Performance for Different \n Normalization Techniques")
 p
+
+datatable(auc.plot)
 
 rocdat.ls$Technique <- "ls"
 rocdat.lns$Technique <- "lns"
@@ -269,7 +275,7 @@ ggplot(data=allrocdat, aes(x=fpr, y=tpr, color=Technique)) +
              "Log/ \n Standardaized",
              "No Log/ \n Un-Standardaized",
               "No Log/ \n Standardaized"),
-    values=c("blue", "red", "yellow", "green")) + 
+    values=grey(c(0,.3,.6,.9))) + 
   xlab("1-Specificity") + 
   ylab("Sensitivity") + 
   xlim(0, 1) +
@@ -277,6 +283,8 @@ ggplot(data=allrocdat, aes(x=fpr, y=tpr, color=Technique)) +
   geom_abline(intercept=0, slope=1) +
   theme_minimal() +
   ggtitle("ROC Curves for Different \n Normalization Techniques")
+
+grid.arrange(p.ls,p.lns,p.nls,p.nlns,ncol=2)
 
 ```
 

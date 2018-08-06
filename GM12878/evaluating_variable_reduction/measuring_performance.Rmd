@@ -24,6 +24,7 @@ library(gridExtra)
 library(ggplot2)
 library(leaps)
 library(limma)
+library(DT)
 ```
 
 # Setting Working directory
@@ -31,7 +32,7 @@ library(limma)
 ```{r}
 #reading in dataset
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878")
-chr1_gm12878_f <- readRDS("chr1_gm12878_f.rds")
+chr1_gm12878_f <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/chr1_gm12878_f.rds")
 
 #set directory for selection techinques
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction")
@@ -44,9 +45,9 @@ setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_r
 ## Forward Selection
 
 ```{r}
-auc.model.fwd <- readRDS("auc.model.fwd.rds")
-cv.preds.fwd <- readRDS("cv.preds.fwd.rds")
-roc.model.fwd <- readRDS("roc.model.fwd.rds")
+auc.model.fwd <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/auc.model.fwd.rds")
+cv.preds.fwd <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/cv.preds.fwd.rds")
+roc.model.fwd <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/roc.model.fwd.rds")
 
 auc.fwd <- round(max(auc.model.fwd),3)
 auc.fwd
@@ -61,17 +62,6 @@ dim(chr1_gm12878_fwd)
 #3258   29
  
 names(chr1_gm12878_fwd)
-
- [1] "y"                             "complex_dist"                  "inversion_dist"               
- [4] "mobile_element_insertion_dist" "low_complexity_dist"           "LTR_dist"                     
- [7] "RC_dist"                       "Gm12878_WeakTxn"               "Gm12878_Heterochromlo"        
-[10] "Gm12878_TxnElongation_dist"    "Gm12878_WeakTxn_dist"          "Gm12878_Heterochromlo_dist"   
-[13] "Gm12878_WeakPromoter_dist"     "Gm12878_Insulator_dist"        "Gm12878_T"                    
-[16] "Gm12878_CTCF_dist"             "Gm12878_PF_dist"               "Gm12878_T_dist"               
-[19] "Gm12878_TSS_dist"              "Gm12878_DNaseI"                "Gm12878_DNaseI_dist"          
-[22] "Gm12878_H3k27ac"               "Gm12878_H3k9ac"                "Gm12878_H4k20me1"             
-[25] "Gm12878_H2az_dist"             "Gm12878_H3k36me3_dist"         "Gm12878_H3k9ac_dist"          
-[28] "Gm12878_H3k9me3_dist"          "Gm12878_H4k20me1_dist" 
 
 rocdat.fwd <- data.frame(sensitivity=roc.model.fwd$sensitivities, specificity=1-roc.model.fwd$specificities)
 rocdat.fwd$Selection <- "fwd"
@@ -93,9 +83,9 @@ ggplot(rocdat.fwd, aes(x=specificity, y=sensitivity)) +
 ## Backward Selection
 
 ```{r}
-auc.model.bwd <- readRDS("auc.model.bwd.rds")
-cv.preds.bwd <- readRDS("cv.preds.bwd.rds")
-roc.model.bwd <- readRDS("roc.model.bwd.rds")
+auc.model.bwd <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/auc.model.bwd.rds")
+cv.preds.bwd <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/cv.preds.bwd.rds")
+roc.model.bwd <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/roc.model.bwd.rds")
 
 auc.bwd <- round(max(auc.model.bwd),3)
 auc.bwd
@@ -110,19 +100,6 @@ dim(chr1_gm12878_bwd)
 #247632     35 
  
 names(chr1_gm12878_bwd)
- [1] "y"                             "A"                             "B"                            
- [4] "complex_dist"                  "inversion_dist"                "mobile_element_insertion_dist"
- [7] "SINE"                          "low_complexity_dist"           "LTR_dist"                     
-[10] "RC_dist"                       "SINE_dist"                     "Gm12878_WeakTxn"              
-[13] "Gm12878_Repressed"             "Gm12878_Heterochromlo"         "Gm12878_TxnElongation_dist"   
-[16] "Gm12878_WeakTxn_dist"          "Gm12878_Repressed_dist"        "Gm12878_Heterochromlo_dist"   
-[19] "Gm12878_WeakPromoter_dist"     "Gm12878_Insulator_dist"        "Gm12878_T"                    
-[22] "Gm12878_CTCF_dist"             "Gm12878_T_dist"                "Gm12878_TSS_dist"             
-[25] "Gm12878_DNaseI"                "Gm12878_DNaseI_dist"           "Gm12878_H3k27ac"              
-[28] "Gm12878_H3k36me3"              "Gm12878_H3k9ac"                "Gm12878_H4k20me1"             
-[31] "Gm12878_H2az_dist"             "Gm12878_H3k4me2_dist"          "Gm12878_H3k9ac_dist"          
-[34] "Gm12878_H3k9me3_dist"          "Gm12878_H4k20me1_dist"
-
 
 rocdat.bwd <- data.frame(sensitivity=roc.model.bwd$sensitivities, specificity=1-roc.model.bwd$specificities)
 rocdat.bwd$Selection <- "bwd"
@@ -143,9 +120,9 @@ ggplot(rocdat.bwd, aes(x=specificity, y=sensitivity)) +
 ## Both
 
 ```{r}
-auc.model.both <- readRDS("auc.model.both.rds")
-cv.preds.both <- readRDS("cv.preds.both.rds")
-roc.model.both <- readRDS("roc.model.both.rds")
+auc.model.both <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/auc.model.both.rds")
+cv.preds.both <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/cv.preds.both.rds")
+roc.model.both <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/roc.model.both.rds")
 
 auc.both <- round(max(auc.model.both),3)
 auc.both
@@ -160,15 +137,6 @@ dim(chr1_gm12878_both)
 #247632     27
  
 names(chr1_gm12878_both)
- [1] "y"                             "complex_dist"                  "mobile_element_insertion_dist"
- [4] "low_complexity_dist"           "LTR_dist"                      "Gm12878_Heterochromlo"        
- [7] "Gm12878_TxnElongation_dist"    "Gm12878_WeakTxn_dist"          "Gm12878_Heterochromlo_dist"   
-[10] "Gm12878_Insulator_dist"        "Gm12878_R"                     "Gm12878_T"                    
-[13] "Gm12878_CTCF_dist"             "Gm12878_PF_dist"               "Gm12878_TSS_dist"             
-[16] "Gm12878_DNaseI"                "Gm12878_DNaseI_dist"           "Gm12878_H3k27ac"              
-[19] "Gm12878_H3k79me2"              "Gm12878_H3k9ac"                "Gm12878_H3k9me3"              
-[22] "Gm12878_H4k20me1"              "Gm12878_H2az_dist"             "Gm12878_H3k36me3_dist"        
-[25] "Gm12878_H3k4me2_dist"          "Gm12878_H3k9ac_dist"           "Gm12878_H4k20me1_dist"
 
 rocdat.both <- data.frame(sensitivity=roc.model.both$sensitivities, specificity=1-roc.model.both$specificities)
 rocdat.both$Selection <- "both"
@@ -189,10 +157,10 @@ ggplot(rocdat.both, aes(x=specificity, y=sensitivity)) +
 # RFE
 
 ```{r}
-rfeModel <- readRDS("rfeModel.rds")
-roc.rfeModel <- readRDS("roc.rfeModel.rds")
+rfeModel <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/rfeModel.rds")
+roc.rfeModel <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/roc.rfeModel.rds")
 
-auc. rfe <- round(pROC::auc(roc.rfeModel),3)
+auc.rfe <- round(pROC::auc(roc.rfeModel),3)
 #0.7986
 
 plot(rfeModel, type="b")
@@ -201,23 +169,6 @@ accdat <- rfeModel$results
 accdat <- accdat[order(accdat$Accuracy, decreasing = TRUE),]
 
 predictors(rfeModel)
- [1] "Gm12878_Insulator_dist"        "Gm12878_CTCF_dist"             "Gm12878_DNaseI_dist"          
- [4] "Gm12878_H2az_dist"             "Gm12878_TSS_dist"              "Gm12878_H3k9ac_dist"          
- [7] "Gm12878_PF_dist"               "Gm12878_WeakPromoter_dist"     "Gm12878_ActivePromoter_dist"  
-[10] "Gm12878_H3k79me2_dist"         "Gm12878_H3k4me2_dist"          "Gm12878_H3k27ac_dist"         
-[13] "Gm12878_WeakTxn_dist"          "Gm12878_H3k36me3_dist"         "Gm12878_TxnElongation_dist"   
-[16] "Gm12878_StrongEnhancer5_dist"  "Gm12878_StrongEnhancer4_dist"  "Gm12878_H3k4me1_dist"         
-[19] "se_GM12878_dist"               "Gm12878_WE_dist"               "Gm12878_H3k4me3_dist"         
-[22] "Gm12878_H4k20me1_dist"         "VMR_dist"                      "Gm12878_WeakEnhancer6_dist"   
-[25] "Gm12878_H3k27me3_dist"         "Gm12878_TxnTransition_dist"    "Gm12878_E_dist"               
-[28] "Gm12878_Repressed_dist"        "DNA_dist"                      "Gm12878_R_dist"               
-[31] "Gm12878_H3k9me3_dist"          "Gm12878_Heterochromlo_dist"    "A"                            
-[34] "Gm12878_PoisedPromoter_dist"   "UCNE_dist"                     "Gm12878_DNaseI"               
-[37] "Gm12878_T_dist"                "SINE_dist"                     "simple_repeat_dist"           
-[40] "sequence_alteration_dist"      "novel_sequence_insertion_dist" "Gm12878_WeakEnhancer7_dist"   
-[43] "Gm12878_H3k36me3"              "duplication_dist"              "Gm12878_H2az"                 
-[46] "Gm12878_RepetitiveCNV15_dist"  "LTR_dist"                      "tandem_duplication_dist"
-
 
 rocdat.rfe <- data.frame(sensitivity=roc.rfeModel$sensitivities, specificity=1-roc.rfeModel$specificities)
 rocdat.rfe$Selection <- "rfe"
@@ -252,10 +203,12 @@ auc.plot <- auc.plot[order(auc.plot$auc, decreasing=TRUE),]
 auc.plot$Selection <-factor(auc.plot$Selection, 
                                      levels=auc.plot$Selection)
 
+datatable(auc.plot)
+
 p<-ggplot(data=auc.plot, aes(x=Selection, y=auc, fill=Selection)) + 
   xlab("Variable Selection Technique") + ylab("AUC") +
   geom_bar(stat="identity") + ylim(0,1) +
-  scale_fill_manual(values=c("red", "blue", "green", "black"), guide=FALSE) +
+  scale_fill_manual(values=gray(c(0,.3,.6,.9)), guide=FALSE) +
   annotate("text", x=1, y=1, label= "29", size=6) +
   annotate("text", x=2, y=1, label= "35", size=6) +
   annotate("text", x=3, y=1, label= "27", size=6) +
@@ -275,7 +228,7 @@ ggplot(data=allrocdat, aes(x=specificity, y=sensitivity, color=Selection)) +
              "Backward",
              "Both",
               "RFE"),
-    values=c("green", "red", "blue", "black")) + 
+    values=c("#999999", "#000000", "#4D4D4D", "#E6E6E6")) + 
   xlab("1-Specificity") + 
   ylab("Sensitivity") + 
   xlim(0, 1) +
