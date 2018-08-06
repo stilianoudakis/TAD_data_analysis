@@ -45,13 +45,17 @@ setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_r
 ## Forward Selection
 
 ```{r}
+
+#rds objects for dataset
 auc.model.fwd <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/auc.model.fwd.rds")
 cv.preds.fwd <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/cv.preds.fwd.rds")
-roc.model.fwd <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/roc.model.fwd.rds")
 
-auc.fwd <- round(max(auc.model.fwd),3)
+#rds object for roc and aucs
+enetlst_fwd <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/enetlst_fwd.rds")
+
+auc.fwd <- round(mean(enetlst_fwd[[3]]),3)
 auc.fwd
-#0.862
+#0.810
 
 vars.fwd <- na.omit(cv.preds.fwd[,which.max(auc.model.fwd)])
 vars.fwd[grep("_dist",vars.fwd,invert = TRUE)] <- unlist(lapply(vars.fwd[grep("_dist",vars.fwd,invert = TRUE)], function(x){substr(x,1,nchar(x)-1)}))
@@ -59,11 +63,14 @@ vars.fwd[grep("_dist",vars.fwd,invert = TRUE)] <- unlist(lapply(vars.fwd[grep("_
 chr1_gm12878_fwd <- chr1_gm12878_f[,which((names(chr1_gm12878_f) %in% vars.fwd) | names(chr1_gm12878_f)=="y")]
  
 dim(chr1_gm12878_fwd)
-#3258   29
+#247632   29
  
 names(chr1_gm12878_fwd)
 
-rocdat.fwd <- data.frame(sensitivity=roc.model.fwd$sensitivities, specificity=1-roc.model.fwd$specificities)
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878")
+saveRDS(chr1_gm12878_fwd, "chr1_gm12878_fwd.rds")
+
+rocdat.fwd <- data.frame(sensitivity=rowMeans(enetlst_fwd[[1]]), specificity=rowMeans(enetlst_fwd[[2]]))
 rocdat.fwd$Selection <- "fwd"
 
 ggplot(rocdat.fwd, aes(x=specificity, y=sensitivity)) + 
@@ -83,13 +90,17 @@ ggplot(rocdat.fwd, aes(x=specificity, y=sensitivity)) +
 ## Backward Selection
 
 ```{r}
+
+#rds object for dataset
 auc.model.bwd <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/auc.model.bwd.rds")
 cv.preds.bwd <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/cv.preds.bwd.rds")
-roc.model.bwd <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/roc.model.bwd.rds")
 
-auc.bwd <- round(max(auc.model.bwd),3)
+#rds object for roc and aucs
+enetlst_bwd <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/enetlst_bwd.rds")
+
+auc.bwd <- round(mean(enetlst_bwd[[3]]),3)
 auc.bwd
-#0.87
+#0.81
 
 vars.bwd <- na.omit(cv.preds.bwd[,which.max(auc.model.bwd)])
 vars.bwd[grep("_dist",vars.bwd,invert = TRUE)] <- unlist(lapply(vars.bwd[grep("_dist",vars.bwd,invert = TRUE)], function(x){substr(x,1,nchar(x)-1)}))
@@ -101,7 +112,10 @@ dim(chr1_gm12878_bwd)
  
 names(chr1_gm12878_bwd)
 
-rocdat.bwd <- data.frame(sensitivity=roc.model.bwd$sensitivities, specificity=1-roc.model.bwd$specificities)
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878")
+saveRDS(chr1_gm12878_bwd, "chr1_gm12878_bwd.rds")
+
+rocdat.bwd <- data.frame(sensitivity=rowMeans(enetlst_bwd[[1]]), specificity=rowMeans(enetlst_bwd[[2]]))
 rocdat.bwd$Selection <- "bwd"
 
 ggplot(rocdat.bwd, aes(x=specificity, y=sensitivity)) + 
@@ -120,13 +134,17 @@ ggplot(rocdat.bwd, aes(x=specificity, y=sensitivity)) +
 ## Both
 
 ```{r}
+
+#rds objects for datasets
 auc.model.both <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/auc.model.both.rds")
 cv.preds.both <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/cv.preds.both.rds")
-roc.model.both <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/roc.model.both.rds")
 
-auc.both <- round(max(auc.model.both),3)
+#rds object for roc and aucs
+enetlst_both <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/enetlst_both.rds")
+
+auc.both <- round(mean(enetlst_both[[3]]),3)
 auc.both
-#0.866
+#0.809
 
 vars.both <- na.omit(cv.preds.both[,which.max(auc.model.both)])
 vars.both[grep("_dist",vars.both,invert = TRUE)] <- unlist(lapply(vars.both[grep("_dist",vars.both,invert = TRUE)], function(x){substr(x,1,nchar(x)-1)}))
@@ -138,7 +156,11 @@ dim(chr1_gm12878_both)
  
 names(chr1_gm12878_both)
 
-rocdat.both <- data.frame(sensitivity=roc.model.both$sensitivities, specificity=1-roc.model.both$specificities)
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878")
+saveRDS(chr1_gm12878_both, "chr1_gm12878_both.rds")
+
+
+rocdat.both <- data.frame(sensitivity=rowMeans(enetlst_both[[1]]), specificity=rowMeans(enetlst_both[[2]]))
 rocdat.both$Selection <- "both"
 
 ggplot(rocdat.both, aes(x=specificity, y=sensitivity)) + 
