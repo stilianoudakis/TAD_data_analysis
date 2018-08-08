@@ -17,7 +17,7 @@ Analysis of Topologically Associated Domain data and their respective boundaries
    + 05model_filtering - filtering the data by removing features with near zero variances and turning binary variables to factors
    + 06model_building - code for various maching learning algorithms
    + 06.1mourad_model.Rmd - code for running the multiple logistic regression model proposed by Mourad et al.
-   + 07model_performance - code for evaluating the performance of each algorithm
+   + 07_comparing_models - code for evaluating the performance of mourad model vs random forest and gbm using data ran through pipeline
    + `data_exploration` - folder with files that explore the distribution of each feature in the data
    + `evaluation_normalization` - folder with files exploring how normalizing the data (with and without log2 transformation) affects each model
    + `evaluating_SMOTE` - folder with files exploring the SMOTE function from the `DMwR` package, including which combination of perc.over and perc.under performs best with the data
@@ -39,11 +39,18 @@ Analysis of Topologically Associated Domain data and their respective boundaries
    + `data_exploration`
 
 * `reports`  
-   + chr1_report
-   + data_exploration
-   + investigating_tad_boundaries
-   + normalization_report
-   + smote_report
+   + chr1_report - report evaluating elastic net, random forest, gbm, and glm models on chr1 TAD boundary data
+   + data_exploration - univariate analyses on features for GM12878 cell line
+   + data_explotation_k562 - univariate analyses on features for k562 cell line
+   + investigating_tad_boundaries - 
+   + normalization_report - evaluating different normalization techniques
+   + smote_report - evaluating different class balancing techniques
+   + variable_selection_report - evaluating different variable selection techniques
+   + measuring_performance_normalization - tables and figures measuring performance of different normalization techniques
+   + measuring_performance_reduction - tables and figures measuring performance of different variable selection techniques
+   + measuring_performance_smote - tables and figures measuring performance of different class balancing techniques
+   + comparing models - comparing performances of the mourad models (with and without LASSO estimation) with random forest using data ran through pipeline
+   
   
 * `presentations`
    + SSTP_2018.Rmd
