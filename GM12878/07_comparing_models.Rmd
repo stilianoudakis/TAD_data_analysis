@@ -1,0 +1,253 @@
+---
+title: 'Measuring Performance: Ours vs Mourad'
+author: "Spiro Stilianoudakis"
+output:
+  pdf_document:
+    toc: yes
+  word_document:
+    fig_caption: yes
+    fig_height: 3
+    fig_width: 2
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Loading Libraries
+
+```{r}
+library(caret)
+library(data.table)
+library(ggplot2)
+library(gbm)
+library(pROC)
+library(plyr)
+library(dplyr)
+library(DMwR)
+library(gridExtra)
+library(knitr)
+library(ROCR)
+
+```
+
+
+# Reading in RDS objects
+
+```{r}
+
+#mourad model
+mourad.auc <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/mourad_model/mourad.auc.rds")
+
+mourad.roc <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/mourad_model/mourad.roc.rds")
+
+mourad.summary <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/mourad_model/mourad.summary.rds")
+
+
+#mourad model with lasso
+mourad.lasso.auc <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/mourad_model/mourad.auc.lasso.rds")
+
+mourad.lasso.roc <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/mourad_model/mourad.roc.lasso.rds")
+
+mourad.lasso.summary <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/mourad_model/mourad.lasso.summary.rds")
+
+
+#random forest
+rflst <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/our_pipeline/rflst.rds")
+
+#gbm
+gbmlst <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/our_pipeline/gbmlst.rds")
+
+
+```
+
+
+#Model Performance
+
+## AUCs
+
+```{r}
+
+m.auc <- performance(mourad.auc,"auc")
+m.auc <- m.auc@ y.values[[1]]
+
+m.l.auc <- performance(mourad.lasso.auc,"auc")
+m.l.auc <- m.l.auc@ y.values[[1]]
+
+#random forest
+rf.auc <- mean(rflst[[3]])
+
+#random forest
+gbm.auc <- mean(gbmlst[[3]])
+
+#Plotting AUCs
+auc.plot <- data.frame(Model=c("Mourad MLR", 
+                                       "Mourad MLR w/ LASSO",
+                                       "Random Forest"),
+                       auc=c(m.auc,
+                             m.l.auc,
+                             rf.auc))
+
+auc.plot <- auc.plot[order(auc.plot$auc, decreasing=TRUE),]
+
+auc.plot$Model <-factor(auc.plot$Model, 
+                                     levels=auc.plot$Model)
+
+p<-ggplot(data=auc.plot, aes(x=Model, y=auc, fill=Model)) + 
+  xlab("Model") + ylab("AUC") +
+  geom_bar(stat="identity") + ylim(0,1) +
+  scale_fill_manual(values=grey(c(0,.5,.9)), guide=FALSE) +
+  scale_x_discrete(labels= c("Random Forest",
+                             "Mourad MLR \n w/ LASSO",
+                             "Mourad MLR")) + 
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Model Performance for Different \n Normalization Models")
+p
+
+kable(auc.plot)
+
+```
+
+
+# ROC Curves
+
+```{r}
+
+#mourad model
+mourad.roc.fpr <- mourad.roc@ x.values[[1]]
+mourad.roc.tpr <- mourad.roc@ y.values[[1]]
+mourad.roc.df <- cbind.data.frame(fpr=mourad.roc.fpr, 
+                                  tpr=mourad.roc.tpr,
+                                  Model = rep("M", length(mourad.roc.tpr)))
+
+#mourad model w/ lasso
+mourad.lasso.roc.fpr <- mourad.roc@ x.values[[1]]
+mourad.lasso.roc.tpr <- mourad.roc@ y.values[[1]]
+mourad.lasso.roc.df <- cbind.data.frame(fpr=mourad.lasso.roc.fpr, 
+                                  tpr=mourad.lasso.roc.tpr,
+                                  Model = rep("MwL", length(mourad.lasso.roc.fpr)))
+
+#random forest
+rf.fpr <- rowMeans(rflst[[2]])
+rf.tpr <- rowMeans(rflst[[1]])
+rf.roc.df <- cbind.data.frame(fpr=rf.fpr, 
+                                  tpr=rf.tpr,
+                                  Model = rep("RF", length(rf.fpr)))
+
+#concatenating data frames
+allrocdat <- rbind.data.frame(mourad.roc.df, mourad.lasso.roc.df, rf.roc.df)
+
+ggplot(data=allrocdat, aes(x=fpr, y=tpr, color=Model)) + 
+  geom_line(size=1) +
+  scale_colour_manual(name="Model",
+    labels=c("Mourad MLR", 
+             "Mourad MLR \n w/ LASSO",
+             "Random Forest"),
+    values=grey(c(.9,.5,0))) + 
+  xlab("1-Specificity") + 
+  ylab("Sensitivity") + 
+  xlim(0, 1) +
+  ylim(0, 1) +
+  geom_abline(intercept=0, slope=1) +
+  theme_minimal() +
+  ggtitle("ROC Curves for Different \n Models")
+
+
+```
+
+#Variable Importance Plot
+
+```{r}
+#RF
+varimp.rf <- as.vector(rowMeans(rflst[[4]]))
+
+rownames(rflst[[4]])[grep("Gm12878_", rownames(rflst[[4]]))] <- gsub("Gm12878_", "", rownames(rflst[[4]])[grep("Gm12878_", rownames(rflst[[4]]))])
+
+#rownames(rflst[[4]])[grep("_dist", rownames(rflst[[4]]))] <- gsub("_dist", "", rownames(rflst[[4]])[grep("_dist", rownames(rflst[[4]]))])
+
+varimp.rf.df <- data.frame(Feature=rownames(rflst[[4]]),
+                           Importance=varimp.rf)
+varimp.rf.df <- varimp.rf.df[order(varimp.rf.df$Importance),]
+numvarrf <- dim(varimp.rf.df)[1]
+varimp.rf.df <- varimp.rf.df[(numvarrf-19):numvarrf,]
+varimp.rf.df$Feature <- factor(varimp.rf.df$Feature,levels=varimp.rf.df$Feature)
+
+rfp <- ggplot(varimp.rf.df, aes(x=Feature, 
+                                y=Importance)) +
+  xlab("Predictors") +
+  ylab("Importance") +
+  #ggtitle("Importance Plot for Gradient Boosting Machine") +
+  geom_bar(stat="identity", 
+           width=.5, 
+           position="dodge",
+           fill="black") +
+  coord_flip() +
+  theme_minimal() +
+  ggtitle("Variable Importance Plot \n for Random Forest")
+rfp
+
+
+
+```
+
+# Estimates from Mourad Models
+
+```{r}
+
+#mourad model
+dim(mourad.summary)
+
+sig.vars <- mourad.summary[mourad.summary$`Pr(>|z|)` < 0.05,]
+dim(sig.vars)
+
+sig.vars <- sig.vars[order(abs(sig.vars$Estimate), decreasing = TRUE),]
+rownames(sig.vars) <- NULL
+sig.vars <- sig.vars[1:20, which(colnames(sig.vars) %in% c("GenomicFeature","Estimate", "Pr(>|z|)"))]
+
+kable(sig.vars)
+
+
+#mourad model w/ lasso
+dim(mourad.lasso.summary)
+
+mourad.lasso.summary <- as.data.frame(mourad.lasso.summary)
+mourad.lasso.summary$Estimate <- as.numeric(mourad.lasso.summary$Estimate)
+
+sig.vars.lasso <- mourad.summary[order(abs(mourad.lasso.summary$Estimate), decreasing = TRUE),]
+rownames(sig.vars.lasso) <- NULL
+sig.vars.lasso <- sig.vars.lasso[1:20, which(colnames(sig.vars.lasso) %in% c("GenomicFeature","Estimate"))]
+
+kable(sig.vars.lasso)
+```
+
+
+
+#Comparing Results
+
+```{r}
+
+#finding common features between the models
+
+#remove "_dist" from feature list of random forest
+rffeat <- varimp.rf.df$Feature[order(varimp.rf.df$Importance, decreasing = TRUE)]
+rffeat <- gsub("_dist", "", rffeat)
+rffeat <- factor(rffeat)
+rfrank <- 1:20
+
+mrank <- match(rffeat, sig.vars$GenomicFeature)
+
+mwlrank <- match(rffeat, sig.vars.lasso$GenomicFeature)
+
+rankdf <- cbind.data.frame(Feature=rffeat, 
+                           "Random Forest" = rfrank <- 1:20, 
+                           "Mourad" = mrank,
+                           "Mourad w/ LASSO" = mwlrank)
+
+kable(rankdf)
+
+```
+
+
+
