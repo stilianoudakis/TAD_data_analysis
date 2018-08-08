@@ -1,10 +1,16 @@
 ---
-title: "Measuring Performance"
-subtitle: "Evaluating SMOTE"
+title: "Measuring Performance: Evaluating SMOTE"
 author: "Spiro Stilianoudakis"
-date: "July 28, 2018"
-output: html_document
+output:
+  pdf_document:
+    toc: yes
+  word_document:
+    fig_caption: yes
+    fig_height: 3
+    fig_width: 2
+    toc: yes
 ---
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -19,11 +25,12 @@ library(gbm)
 library(pROC)
 library(plyr)
 library(dplyr)
-#library(DMwR)
+library(DMwR)
 library(gridExtra)
 library(ggplot2)
 library(leaps)
-library(DT)
+#library(DT)
+library(knitr)
 ```
 
 # Setting Working directory
@@ -50,8 +57,8 @@ auc.sm$Combination <- factor(auc.sm$Combination, levels=auc.sm$Combination)
 
 auc.sm
 
-datatable(auc.sm)
-
+#datatable(auc.sm)
+kable(auc.sm)
 
 p<-ggplot(data=auc.sm, aes(x=Combination, y=AUC, fill=Combination)) + 
   xlab("Sampling Combination") + ylab("AUC") +

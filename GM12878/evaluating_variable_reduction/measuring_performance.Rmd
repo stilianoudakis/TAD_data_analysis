@@ -1,9 +1,14 @@
 ---
-title: "Measuring Performance"
-subtitle: "Dimension Reduction Techniques"
+title: 'Measuring Performance: Evaluating Variable Reduction Techniques'
 author: "Spiro Stilianoudakis"
-date: "July 28, 2018"
-output: html_document
+output:
+  pdf_document:
+    toc: yes
+  word_document:
+    fig_caption: yes
+    fig_height: 3
+    fig_width: 2
+    toc: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -24,7 +29,8 @@ library(gridExtra)
 library(ggplot2)
 library(leaps)
 library(limma)
-library(DT)
+#library(DT)
+library(knitr)
 ```
 
 # Setting Working directory
@@ -225,16 +231,17 @@ auc.plot <- auc.plot[order(auc.plot$auc, decreasing=TRUE),]
 auc.plot$Selection <-factor(auc.plot$Selection, 
                                      levels=auc.plot$Selection)
 
-datatable(auc.plot)
+#datatable(auc.plot)
+kable(auc.plot)
 
 p<-ggplot(data=auc.plot, aes(x=Selection, y=auc, fill=Selection)) + 
   xlab("Variable Selection Technique") + ylab("AUC") +
   geom_bar(stat="identity") + ylim(0,1) +
   scale_fill_manual(values=gray(c(0,.3,.6,.9)), guide=FALSE) +
-  annotate("text", x=1, y=1, label= "29", size=6) +
-  annotate("text", x=2, y=1, label= "35", size=6) +
-  annotate("text", x=3, y=1, label= "27", size=6) +
-  annotate("text", x=4, y=1, label= "48", size=6) +
+  annotate("text", x=1, y=1, label= "28", size=6) +
+  annotate("text", x=2, y=1, label= "34", size=6) +
+  annotate("text", x=3, y=1, label= "26", size=6) +
+  annotate("text", x=4, y=1, label= "47", size=6) +
   theme_minimal() + 
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   ggtitle("Model Performance for Different \n Variable Selection Techniques")

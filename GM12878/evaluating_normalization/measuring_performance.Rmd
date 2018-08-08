@@ -1,9 +1,14 @@
 ---
-title: "Measuring Performance"
-subtitle: "Normalization Techniques"
+title: 'Measuring Performance: Evaluating Normalization'
 author: "Spiro Stilianoudakis"
-date: "July 28, 2018"
-output: html_document
+output:
+  pdf_document:
+    toc: yes
+  word_document:
+    fig_caption: yes
+    fig_height: 3
+    fig_width: 2
+    toc: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -23,6 +28,7 @@ library(dplyr)
 library(gridExtra)
 library(ggplot2)
 library(leaps)
+library(knitr)
 ```
 
 # Setting Working directory
@@ -260,7 +266,8 @@ p<-ggplot(data=auc.plot, aes(x=Normalization.Technique, y=auc, fill=Normalizatio
   ggtitle("Model Performance for Different \n Normalization Techniques")
 p
 
-datatable(auc.plot)
+#datatable(auc.plot)
+kable(auc.plot)
 
 rocdat.ls$Technique <- "ls"
 rocdat.lns$Technique <- "lns"
