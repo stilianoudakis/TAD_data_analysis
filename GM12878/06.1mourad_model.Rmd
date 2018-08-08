@@ -17,6 +17,8 @@ library(pROC)
 library(BSgenome.Hsapiens.UCSC.hg19)
 library(HiCfeat)
 library(Matrix)
+library(zoo)
+library(pracma)
 ```
 
 
@@ -499,7 +501,11 @@ saveRDS(seqInfoChr, "seqInfoChr.rds")
 ```
 
 
+# Performing Model
 
+```{r}
+
+#multiple logistic regression
 
 BA_res=borderAnalysisFun(genomicFeatureList.GR=genomicFeatureList.GR,
                          GFDataType="bed",
@@ -513,6 +519,10 @@ BA_res=borderAnalysisFun(genomicFeatureList.GR=genomicFeatureList.GR,
                          testBorderType=FALSE,
                          verbose=FALSE)
 
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/mourad_model")
+
+binMat.mati <- readRDS("binMat.mati.rds")
+Analysisi <- readRDS("Analysisi.rds")
 
 prob=predict(Analysisi,type=c("response"))
 binMat.mati$prob=prob
@@ -530,13 +540,16 @@ head(roc)
 plot(roc$FPR,roc$TPR, type="l")
 abline(0,1)
 
-library(zoo)
-library(pracma)
-
 trapz(roc$FPR,roc$TPR)
 #0.7493966
 sum(diff(roc$FPR)*rollmean(roc$TPR,2))
 #0.7493966
+
+
+```
+
+
+
 
 
 

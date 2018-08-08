@@ -270,12 +270,22 @@ bwd <- (names(chr1_gm12878_f) %in% vars.bwd)
 both <- (names(chr1_gm12878_f) %in% vars.both)
 rfe <- (names(chr1_gm12878_f) %in% predictors(rfeModel))
 
+#fwd compared to bwd
+venndatfb <- cbind(fwd,bwd)
+fb <- vennCounts(venndatfb)
+vennDiagram(fb, include = "both", 
+  names = c("Forward", "Backward"), 
+  cex = 1, counts.col = "red")
+
+
 
 venndat1 <- cbind(fwd,bwd,both)
 venndat2 <- cbind(fwd,bwd,rfe)
+venndat3 <- cbind(fwd,bwd,both,rfe)
 
 a <- vennCounts(venndat1)
 b <- vennCounts(venndat2)
+c <- vennCounts(venndat3)
 
 vennDiagram(a)
 vennDiagram(b)
@@ -286,6 +296,10 @@ vennDiagram(a, include = "both",
 
 vennDiagram(b, include = "both", 
   names = c("Forward", "Backward", "RFE"), 
+  cex = 1, counts.col = "red")
+
+vennDiagram(c, include = "both", 
+  names = c("Forward", "Backward","Both", "RFE"), 
   cex = 1, counts.col = "red")
 ```
 

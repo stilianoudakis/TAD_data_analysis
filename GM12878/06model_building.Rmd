@@ -12,9 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # Loading Libraries
 
 ```{r }
-#library(MultiAssayExperiment)
-library(GenomicRanges)
-#library(IRanges)
+
 library(caret)
 library(data.table)
 library(gbm)
@@ -23,18 +21,8 @@ library(plyr)
 library(dplyr)
 library(DMwR)
 library(gridExtra)
-library(nortest)
-
-packages = c("MultiAssayExperiment", "GenomicRanges", "IRanges", "RaggedExperiment", "SummarizedExperiment", "caret", "data.table", "survival", "gbm", "pROC", "dplyr", "ggplot2", "e1071", "DMwR", "gridExtra", "randomForest", "rpart", "rpart.plot", "glmnet", "gridExtra", "qqman", "rms", "igraph", "ggraph", "RColorBrewer",
-"nortest")
 
 
-package.check <- lapply(packages, FUN = function(x) {
-    if (!require(x, character.only = TRUE)) {
-        install.packages(x, dependencies = TRUE)
-        library(x, character.only = TRUE)
-    }
-})
 ```
 
 # Reading in data
@@ -55,7 +43,7 @@ chr1_gm12878_fwd <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RD
 
 ```{r}
 
-bootsamps = 5
+bootsamps = 10
 
 ```
 
@@ -142,6 +130,7 @@ for(i in 1:bootsamps){
   #bestmtry$mtry[1]
 
   #splitting the data
+  set.seed(2244)
   inTrainingSet <- sample(length(data$y),floor(length(data$y)*.7))
   #inTrainingSet <- createDataPartition(data$y,p=.7,list=FALSE)
   train <- data[inTrainingSet,]
@@ -156,7 +145,6 @@ for(i in 1:bootsamps){
                    method="rf", 
                    metric="Accuracy",
                    tuneGrid=tunegrid, 
-                   trControl=control, 
                    ntree=ntree)
       key <- toString(ntree)
       modellist[[key]] <- fit
@@ -165,8 +153,7 @@ for(i in 1:bootsamps){
     results <- resamples(modellist)
     #summary(results)
     #dotplot(results)
-    results <- summary(results)[3]$statistics$Accuracy
-    results <- data.frame(results)
+    results <- data.frame(summary(results)[3]$statistics$Accuracy)
     results <- results[order(results$Mean, decreasing = TRUE),]
 
   set.seed(1006)
@@ -211,31 +198,25 @@ rownames(gbmlst[[4]]) <- colnames(chr1_gm12878_fwd)[-1]
 #Running GBM Model
 
 for(i in 1:bootsamps){
-  set.seed(2014)
-  #combining the two classes to create balanced data
-  data <- rbind.data.frame(gm12878_f[which(gm12878_f$y=="Yes"),],
-                           gm12878_f[sampids[,i],])
   
-  # Splitting the data
+  #combining the two classes to create balanced data
+  data <- rbind.data.frame(chr1_gm12878_fwd[which(chr1_gm12878_fwd$y=="Yes"),],
+                           chr1_gm12878_fwd[sampids[,i],])
+  
+  
+  set.seed(2244)
   inTrainingSet <- sample(length(data$y),floor(length(data$y)*.7))
   #inTrainingSet <- createDataPartition(data$y,p=.7,list=FALSE)
   train <- data[inTrainingSet,]
   test <- data[-inTrainingSet,]
-
-  #setting up grid of values to tune
-  grid <- expand.grid(n.trees=c(50,200,500,1000),
-                      shrinkage=c(0.01,0.05,0.1,0.5),
-                      n.minobsinnode = c(3,5,10),
-                      interaction.depth=c(1,5,10))
-
-  set.seed(2018)
+  
+  #GBM
   gbmModel <- train(y ~ ., data=train, 
                     method = "gbm", 
                     metric="ROC", 
                     trControl = fitControl, 
                     verbose=FALSE, 
-                    tuneGrid=grid)
-  
+                    tuneLength=5)
   pred.gbmModel <- as.vector(predict(gbmModel, 
                                      newdata=test, 
                                      type="prob")[,"Yes"])
@@ -245,7 +226,7 @@ for(i in 1:bootsamps){
   gbmlst[[4]][,i] <- varImp(gbmModel)$importance[,1]
   
 }
-  
+
 
 ```
 
