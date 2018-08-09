@@ -11,8 +11,16 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Tentative title: "Predictive modeling using genomic annotations: pitfalls and recommendations"
 
+- Do you have an Rmd of this writeup? Make a folder “manuscript”, put it there, make subfolders “figures”, “tables”, “supplementary”, start to compile figures there, it is possible to rename them with “git mv” as we work along
+- Make a bulletpoint outline of the results section (same for any section). Each point is a message, and should have a figure or a table that tells this message. See Mourad paper, and other papers, how headers tell the story.
+- AUROC numbers are very similar, so are the plots. See the attached, generate tables with the metrics there. We may have a better representation with MCC or F1 measures
+- Define distance in the Methods. Currently, it is unclear how distance for, say, A or B compartments, is defined. 
+    - For each feature with distance, what is the min-mean-median-max distance ranges? 
+    - It a feature-distance is significant, what is the mean-median distance to TAD boundary?
 
-# List of topics to review and methods to explore
+- Figure showing TAD prediction performance on different chromosomes, at different resolutions
+
+- Separate feature selection from chromosome-specific models, selecting consensus features, predicting new TAD boundaries using them. What is the minimum size of a predicted TAD boundary?
 
 ### 05/11/18
 
