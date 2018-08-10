@@ -213,9 +213,9 @@ kable(sig.vars)
 dim(mourad.lasso.summary)
 
 mourad.lasso.summary <- as.data.frame(mourad.lasso.summary)
-mourad.lasso.summary$Estimate <- as.numeric(mourad.lasso.summary$Estimate)
+mourad.lasso.summary$Estimate <- as.numeric(as.character(mourad.lasso.summary$Estimate))
 
-sig.vars.lasso <- mourad.summary[order(abs(mourad.lasso.summary$Estimate), decreasing = TRUE),]
+sig.vars.lasso <- mourad.lasso.summary[order(abs(mourad.lasso.summary$Estimate), decreasing = TRUE),]
 rownames(sig.vars.lasso) <- NULL
 sig.vars.lasso <- sig.vars.lasso[1:20, which(colnames(sig.vars.lasso) %in% c("GenomicFeature","Estimate"))]
 
