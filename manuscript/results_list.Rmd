@@ -1,0 +1,36 @@
+---
+title: "Bulleted List of Results"
+author: "Spiro Stilianoudakis"
+date: "August 10, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Describing the data
+
+* Distribution of size of TADs
+* Specifically how boundaries were considered (discuss situations of spaces between tad boundaries)
+* Total number of genomic bins (for each specific resolution and cell line; start with 1kb for GM12878)
+* Number and percent of TAD boundaries (link this to class imbalance)
+* List of complete features at start of analysis
+* List of features that were removed due to near-zero variance
+* Univariate analysis for distance
+* Min-mean-median-max distance ranges for features
+* Performance metrics from different SMOTE combinations
+* Performance metrics from bootstrap method
+* Performance metrics from different normalization techniques
+* Performance metrics from different variable reduction techniques
+* venn diagrams of common variables chosen by each variable reduction technique
+* Performance metrics for Mourad models
+* Performance metric for random forest
+* Table/figures of distance summaries for most important features compared to least important as recognized by random forest
+
+
+
+
+
+
+
