@@ -37,6 +37,7 @@ gm12878_f[,cols] <- lapply(gm12878_f[,cols], factor)
 
 #Changing levels of response (y) to yes no
 levels(gm12878_f$y) <- c("No", "Yes")
+#gm12878_f$y <- factor(gm12878_f$y,levels(gm12878_f$y)[c(2,1)])
 
 #Removing zero variance predictors
 nzv <- nearZeroVar(gm12878_f[,-1], saveMetrics= TRUE)
@@ -72,7 +73,28 @@ gm12878_f <- gm12878_f[, -which(colnames(gm12878_f) %in% nzvar)]
 [49] "Gm12878_T_dist"
 
 
+#with centered regions:
 
+[1] "complex"                  "mobile_element_insertion"
+[3] "novel_sequence_insertion" "sequence_alteration"     
+[5] "tandem_duplication"       "gerp_score"              
+[7] "DNA"                      "low_complexity"          
+[9] "other"                    "RC"                      
+[11] "RNA"                      "rRNA"                    
+[13] "satellite"                "scRNA"                   
+[15] "simple_repeat"            "SINE"                    
+[17] "snRNA"                    "srpRNA"                  
+[19] "tRNA"                     "unknown"                 
+[21] "se_GM12878"               "UCNE"                    
+[23] "UCNE_score"               "Gm12878_Repressed"       
+[25] "Gm12878_RepetitiveCNV14"  "Gm12878_RepetitiveCNV15" 
+[27] "Gm12878_ActivePromoter"   "Gm12878_WeakPromoter"    
+[29] "Gm12878_PoisedPromoter"   "Gm12878_StrongEnhancer4" 
+[31] "Gm12878_StrongEnhancer5"  "Gm12878_WeakEnhancer6"   
+[33] "Gm12878_Insulator"        "Gm12878_TxnTransition"   
+[35] "Gm12878_CTCF"             "Gm12878_E"               
+[37] "Gm12878_PF"               "Gm12878_TSS"             
+[39] "Gm12878_WE"  
 
 saveRDS(gm12878_f, "gm12878_f.rds")
 
@@ -93,6 +115,7 @@ chr1_gm12878[,cols] <- lapply(chr1_gm12878[,cols], factor)
 
 #Changing levels of response (y) to yes no
 levels(chr1_gm12878$y) <- c("No", "Yes")
+#chr1_gm12878$y <- factor(chr1_gm12878$y,levels(chr1_gm12878$y)[c(2,1)])
 
 #Removing zero variance predictors
 nzv <- nearZeroVar(chr1_gm12878[,-1], saveMetrics= TRUE)
@@ -123,6 +146,28 @@ chr1_gm12878_f <- chr1_gm12878[, -which(colnames(chr1_gm12878) %in% nzvar)]
 [39] "Gm12878_TSS"              "Gm12878_WE"              
 [41] "CHR"
 
+# with centered regions
+
+[1] "complex"                  "inversion"               
+[3] "mobile_element_insertion" "novel_sequence_insertion"
+[5] "sequence_alteration"      "tandem_duplication"      
+[7] "gerp_score"               "DNA"                     
+[9] "low_complexity"           "other"                   
+[11] "RC"                       "RNA"                     
+[13] "rRNA"                     "satellite"               
+[15] "scRNA"                    "simple_repeat"           
+[17] "snRNA"                    "srpRNA"                  
+[19] "tRNA"                     "unknown"                 
+[21] "se_GM12878"               "UCNE"                    
+[23] "UCNE_score"               "Gm12878_RepetitiveCNV14" 
+[25] "Gm12878_RepetitiveCNV15"  "Gm12878_ActivePromoter"  
+[27] "Gm12878_WeakPromoter"     "Gm12878_PoisedPromoter"  
+[29] "Gm12878_StrongEnhancer4"  "Gm12878_StrongEnhancer5" 
+[31] "Gm12878_WeakEnhancer6"    "Gm12878_Insulator"       
+[33] "Gm12878_TxnTransition"    "Gm12878_CTCF"            
+[35] "Gm12878_E"                "Gm12878_PF"              
+[37] "Gm12878_TSS"              "Gm12878_WE"              
+[39] "CHR"  
 
 saveRDS(chr1_gm12878_f, "chr1_gm12878_f.rds")
 
