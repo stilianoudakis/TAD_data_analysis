@@ -43,71 +43,144 @@ simple_roc <- function(labels, scores){
 
 #########################################################################################
 
-#Elastic Net
+#ENET
 
 #set length of list objects that will be filled in with specificities
 #and sensitivities and aucs and variable importance
 enetlst_sm <- list(tpr <- matrix(nrow=length(test$y), 
-                              ncol=8),
-                fpr <- matrix(nrow=length(test$y), 
-                              ncol=8),
-                auc <- numeric(8),
-                varimp <- matrix(nrow=dim(chr1data_f)[2]-1,
-                                 ncol=8))
-rownames(enetlst_sm[[4]]) <- colnames(chr1data_f)[-1]
+                                 ncol=8),
+                   fpr <- matrix(nrow=length(test$y), 
+                                 ncol=8),
+                   auc <- numeric(8),
+                   varimp <- matrix(nrow=dim(chr1_gm12878_f)[2]-1,
+                                    ncol=8))
+rownames(enetlst_sm[[4]]) <- colnames(chr1_gm12878_f)[-1]
+
+enetperf_sm <- matrix(nrow = 16, ncol=8)
+rownames(enetperf_sm) <- c("TN",
+                           "FN",
+                           "FP",
+                           "TP",
+                           "Total",
+                           "Sensitivity",
+                           "Specificity",
+                           "Kappa",
+                           "Accuracy",
+                           "Precision",
+                           "FPR",
+                           "FNR",
+                           "FOR",
+                           "NPV",
+                           "MCC",
+                           "F1")
+
 
 
 for(i in 1:4){
-      set.seed(111)
-      train_smote <- SMOTE(y ~ ., 
-                         data=train, 
-                         perc.over = i*100, 
-                         perc.under = 200)
-      
-      #ENET Model
-      eNetModel_sm <- train(y ~ ., data=train_smote, 
-                         method = "glmnet", 
-                         metric="ROC", 
-                         trControl = fitControl, 
-                         family="binomial", 
-                         tuneLength=5,
-                         standardize=TRUE)
-      pred.eNetModel <- as.vector(predict(eNetModel_sm, 
-                                          newdata=test, 
-                                          type="prob")[,"Yes"])
-      
-      
-      enetlst_sm[[1]][,i] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.eNetModel)[,1]
-      enetlst_sm[[2]][,i] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.eNetModel)[,2]
-      enetlst_sm[[3]][i] <- pROC::auc(pROC::roc(test$y, pred.eNetModel))
-      enetlst_sm[[4]][,i] <- varImp(eNetModel_sm)$importance[,1]
-        
-      set.seed(111)
-      train_smote <- SMOTE(y ~ ., 
-                             data=train, 
-                             perc.over = i*100, 
-                             perc.under = 300)
-        
-      #ENET Model
-      eNetModel_sm <- train(y ~ ., data=train_smote, 
-                              method = "glmnet", 
-                              metric="ROC", 
-                              trControl = fitControl, 
-                              family="binomial", 
-                              tuneLength=5,
-                              standardize=TRUE)
-      pred.eNetModel <- as.vector(predict(eNetModel_sm, 
-                                            newdata=test, 
-                                            type="prob")[,"Yes"])
-        
-        
-      enetlst_sm[[1]][,i+4] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.eNetModel)[,1]
-      enetlst_sm[[2]][,i+4] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.eNetModel)[,2]
-      enetlst_sm[[3]][i+4] <- pROC::auc(pROC::roc(test$y, pred.eNetModel))
-      enetlst_sm[[4]][,i+4] <- varImp(eNetModel_sm)$importance[,1]
-    
+  set.seed(111)
+  #100/200, 200/200, 300/200, 400/200
+  train_smote <- SMOTE(y ~ ., 
+                       data=train, 
+                       perc.over = i*100, 
+                       perc.under = 200)
+  
+  #ENET Model
+  enetModel_sm <- train(y ~ ., data=train_smote, 
+                        method = "glmnet", 
+                        metric="ROC", 
+                        trControl = fitControl,
+                        family="binomial",
+                        tuneLength=5,
+                        standardize=FALSE)
+  
+  #Prediction vector for ROC and AUC					  
+  pred.enetModel <- as.vector(predict(enetModel_sm, 
+                                      newdata=test, 
+                                      type="prob")[,"Yes"])
+  enetlst_sm[[1]][,i] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.enetModel)[,1]
+  enetlst_sm[[2]][,i] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.enetModel)[,2]
+  enetlst_sm[[3]][i] <- pROC::auc(pROC::roc(test$y, pred.enetModel))
+  enetlst_sm[[4]][,i] <- varImp(enetModel_sm)$importance[,1]
+  
+  #Prediction vector for other performance metrics
+  pred.enetModel2 <- predict(enetModel_sm,
+                             newdata=test,
+                             type="raw")
+  confMat <- confusionMatrix(data=pred.enetModel2, test$y, positive="Yes")
+  enetperf_sm[1,i] <- confMat$table[1,1]
+  enetperf_sm[2,i] <- confMat$table[1,2]
+  enetperf_sm[3,i] <- confMat$table[2,1]
+  enetperf_sm[4,i] <- confMat$table[2,2]
+  enetperf_sm[5,i] <- sum(confMat$table)
+  enetperf_sm[6,i] <- as.vector(confMat$byClass["Sensitivity"])
+  enetperf_sm[7,i] <- as.vector(confMat$byClass["Specificity"])
+  enetperf_sm[8,i] <- as.vector(confMat$overall["Kappa"])
+  enetperf_sm[9,i] <- as.vector(confMat$overall["Accuracy"])
+  enetperf_sm[10,i] <- confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])
+  enetperf_sm[11,i] <- confMat$table[2,1]/(confMat$table[2,1]+confMat$table[1,1])
+  enetperf_sm[12,i] <- confMat$table[1,2]/(confMat$table[1,2]+confMat$table[2,2])
+  enetperf_sm[13,i] <- confMat$table[1,2]/(confMat$table[1,2]+confMat$table[1,1])
+  enetperf_sm[14,i] <- confMat$table[1,1]/(confMat$table[1,1]+confMat$table[1,2])
+  enetperf_sm[15,i] <- mccr(ifelse(test$y=="Yes",1,0),ifelse(pred.enetModel2=="Yes",1,0))
+  #enetperf_sm[15,i] <- (confMat$table[2,2]*confMat$table[1,1] - confMat$table[1,2]*confMat$table[2,1])/(sqrt( (confMat$table[2,2]+confMat$table[2,1])*(confMat$table[2,2]+confMat$table[1,2])*(confMat$table[1,1]+confMat$table[2,1])*(confMat$table[1,1]+confMat$table[1,2])) )
+  enetperf_sm[16,i] <- (2*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[1,2]))*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])))/(((confMat$table[2,2]/(confMat$table[2,2]+confMat$table[1,2]))*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1]))) + (confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])))
+  
+  
+  #########################################################################################
+  
+  set.seed(111)
+  #100/300, 200/300, 300/300, 400/300
+  train_smote <- SMOTE(y ~ ., 
+                       data=train, 
+                       perc.over = i*100, 
+                       perc.under = 300)
+  
+  #ENET Model
+  enetModel_sm <- train(y ~ ., data=train_smote, 
+                        method = "glmnet", 
+                        metric="ROC", 
+                        trControl = fitControl,
+                        family="binomial",
+                        tuneLength=5,
+                        standardize=FALSE)
+  
+  #Prediction vector for ROC and AUC
+  pred.enetModel <- as.vector(predict(enetModel_sm, 
+                                      newdata=test, 
+                                      type="prob")[,"Yes"])
+  enetlst_sm[[1]][,i+4] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.enetModel)[,1]
+  enetlst_sm[[2]][,i+4] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.enetModel)[,2]
+  enetlst_sm[[3]][i+4] <- pROC::auc(pROC::roc(test$y, pred.enetModel))
+  enetlst_sm[[4]][,i+4] <- varImp(enetModel_sm)$importance[,1]
+  
+  #Prediction vector for other performance metrics
+  pred.enetModel2 <- predict(enetModel_sm,
+                             newdata=test,
+                             type="raw")
+  confMat <- confusionMatrix(data=pred.enetModel2, test$y, positive="Yes")
+  enetperf_sm[1,i+4] <- confMat$table[1,1]
+  enetperf_sm[2,i+4] <- confMat$table[1,2]
+  enetperf_sm[3,i+4] <- confMat$table[2,1]
+  enetperf_sm[4,i+4] <- confMat$table[2,2]
+  enetperf_sm[5,i+4] <- sum(confMat$table)
+  enetperf_sm[6,i+4] <- as.vector(confMat$byClass["Sensitivity"])
+  enetperf_sm[7,i+4] <- as.vector(confMat$byClass["Specificity"])
+  enetperf_sm[8,i+4] <- as.vector(confMat$overall["Kappa"])
+  enetperf_sm[9,i+4] <- as.vector(confMat$overall["Accuracy"])
+  enetperf_sm[10,i+4] <- confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])
+  enetperf_sm[11,i+4] <- confMat$table[2,1]/(confMat$table[2,1]+confMat$table[1,1])
+  enetperf_sm[12,i+4] <- confMat$table[1,2]/(confMat$table[1,2]+confMat$table[2,2])
+  enetperf_sm[13,i+4] <- confMat$table[1,2]/(confMat$table[1,2]+confMat$table[1,1])
+  enetperf_sm[14,i+4] <- confMat$table[1,1]/(confMat$table[1,1]+confMat$table[1,2])
+  enetperf_sm[15,i+4] <- mccr(ifelse(test$y=="Yes",1,0),ifelse(pred.enetModel2=="Yes",1,0))
+  #enetperf_sm[15,i] <- (confMat$table[2,2]*confMat$table[1,1] - confMat$table[1,2]*confMat$table[2,1])/(sqrt( (confMat$table[2,2]+confMat$table[2,1])*(confMat$table[2,2]+confMat$table[1,2])*(confMat$table[1,1]+confMat$table[2,1])*(confMat$table[1,1]+confMat$table[1,2])) )
+  enetperf_sm[16,i+4] <- (2*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[1,2]))*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])))/(((confMat$table[2,2]/(confMat$table[2,2]+confMat$table[1,2]))*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1]))) + (confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])))
+  
 }
 
+saveRDS(enetlst_sm, "enetlst_sm_lns.RDS")
+
+saveRDS(enetperf_sm, "enetperf_sm.rds")
 
 #########################################################################################
 
