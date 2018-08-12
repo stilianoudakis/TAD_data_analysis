@@ -520,11 +520,19 @@ gm12878_5kb <- data.frame(y = mcols(binslist5)$y)
 gm12878_10kb <- data.frame(y = mcols(binslist10)$y)
 gm12878_50kb <- data.frame(y = mcols(binslist50)$y)
 gm12878_100kb <- data.frame(y = mcols(binslist100)$y)
-                      
+         
+# saving data frame with response vector Y for each type of genomic bin             
 saveRDS(gm12878, "gm12878.rds")
 saveRDS(gm12878_5kb, "gm12878_5kb.rds")
 saveRDS(gm12878_10kb, "gm12878_10kb.rds")
 saveRDS(gm12878_50kb, "gm12878_50kb.rds")
 saveRDS(gm12878_100kb, "gm12878_100kb.rds")
+
+# saving genomic bins
+saveRDS(binslist1, "binslist1.rds")
+saveRDS(binslist5, "binslist5.rds")
+saveRDS(binslist10, "binslist10.rds")
+saveRDS(binslist50, "binslist50.rds")
+saveRDS(binslist100, "binslist100.rds")
 ```
 
