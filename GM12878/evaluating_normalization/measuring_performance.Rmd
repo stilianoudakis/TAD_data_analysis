@@ -257,6 +257,11 @@ lnstab <- round(as.matrix(rowMeans(enetperf_lns)),2)
 nlstab <- round(as.matrix(rowMeans(enetperf_nls)),2)
 nlnstab <- round(as.matrix(rowMeans(enetperf_nlns)),2)
 
+lstab[1:5,1] <- round(lstab[1:5,1],0)
+lnstab[1:5,1] <- round(lnstab[1:5,1],0)
+nlstab[1:5,1] <- round(nlstab[1:5,1],0)
+nlnstab[1:5,1] <- round(nlnstab[1:5,1],0)
+
 perfdat <- cbind.data.frame(rownames(enetperf_ls), 
                             lstab,
                             lnstab,

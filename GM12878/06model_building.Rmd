@@ -113,6 +113,38 @@ rflst <- list(tpr <- matrix(nrow=ceiling((length(which(chr1_gm12878_fwd$y=="Yes"
                                  ncol=bootsamps))
 rownames(rflst[[4]]) <- colnames(chr1_gm12878_fwd)[-1]
 
+# Random Forest
+
+
+#set length of list objects that will be filled in with specificities
+#and sensitivities and aucs and variable importance
+rflst <- list(tpr <- matrix(nrow=ceiling((length(which(chr1_gm12878_fwd$y=="Yes"))*2)*.3), 
+                              ncol=bootsamps),
+                fpr <- matrix(nrow=ceiling((length(which(chr1_gm12878_fwd$y=="Yes"))*2)*.3), 
+                              ncol=bootsamps),
+                auc <- numeric(bootsamps),
+                varimp <- matrix(nrow=dim(chr1_gm12878_fwd)[2]-1,
+                                 ncol=bootsamps))
+rownames(rflst[[4]]) <- colnames(chr1_gm12878_fwd)[-1]
+
+rfperf <- matrix(nrow = 16, ncol=bootsamps)
+rownames(rfperf) <- c("TN",
+ 							"FN",
+ 							"FP",
+ 							"TP",
+ 							"Total",
+							"Sensitivity",
+ 							"Specificity",
+ 							"Kappa",
+ 							"Accuracy",
+ 							"Precision",
+ 							"FPR",
+ 							"FNR",
+ 							"FOR",
+ 							"NPV",
+ 							"MCC",
+ 							"F1")
+
 #Performing Random Forest
 
 for(i in 1:bootsamps){
@@ -130,7 +162,6 @@ for(i in 1:bootsamps){
   #bestmtry$mtry[1]
 
   #splitting the data
-  set.seed(2244)
   inTrainingSet <- sample(length(data$y),floor(length(data$y)*.7))
   #inTrainingSet <- createDataPartition(data$y,p=.7,list=FALSE)
   train <- data[inTrainingSet,]
@@ -144,7 +175,7 @@ for(i in 1:bootsamps){
       fit <- train(y~., data=train, 
                    method="rf", 
                    metric="Accuracy",
-                   tuneGrid=tunegrid, 
+                   tuneGrid=tunegrid,  
                    ntree=ntree)
       key <- toString(ntree)
       modellist[[key]] <- fit
@@ -164,7 +195,7 @@ for(i in 1:bootsamps){
                     trControl=fitControl, 
                     ntree=as.numeric(rownames(results)[1]))
 
-
+  #Prediction vector for ROC and AUC
   pred.rfModel <- as.vector(predict(rfModel, 
                                     newdata=test, 
                                     type="prob")[,"Yes"])
@@ -172,8 +203,40 @@ for(i in 1:bootsamps){
   rflst[[2]][,i] <- simple_roc(ifelse(test$y=="Yes",1,0),pred.rfModel)[,2]
   rflst[[3]][i] <- pROC::auc(pROC::roc(test$y, pred.rfModel))
   rflst[[4]][,i] <- varImp(rfModel)$importance[,1]
+  
+  #Prediction vector for other performance metrics
+  pred.rfModel2 <- predict(rfModel,
+                                     newdata=test,
+                                     type="raw")
+  confMat <- confusionMatrix(data=pred.rfModel2, test$y, positive="Yes")
+  TN = as.numeric(confMat$table[1,1])
+  FN = as.numeric(confMat$table[1,2])
+  FP = as.numeric(confMat$table[2,1])
+  TP = as.numeric(confMat$table[2,2])
+  rfperf[1,i] <- confMat$table[1,1]
+  rfperf[2,i] <- confMat$table[1,2]
+  rfperf[3,i] <- confMat$table[2,1]
+  rfperf[4,i] <- confMat$table[2,2]
+  rfperf[5,i] <- sum(confMat$table)
+  rfperf[6,i] <- as.vector(confMat$byClass["Sensitivity"])
+  rfperf[7,i] <- as.vector(confMat$byClass["Specificity"])
+  rfperf[8,i] <- as.vector(confMat$overall["Kappa"])
+  rfperf[9,i] <- as.vector(confMat$overall["Accuracy"])
+  rfperf[10,i] <- confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])
+  rfperf[11,i] <- confMat$table[2,1]/(confMat$table[2,1]+confMat$table[1,1])
+  rfperf[12,i] <- confMat$table[1,2]/(confMat$table[1,2]+confMat$table[2,2])
+  rfperf[13,i] <- confMat$table[1,2]/(confMat$table[1,2]+confMat$table[1,1])
+  rfperf[14,i] <- confMat$table[1,1]/(confMat$table[1,1]+confMat$table[1,2])
+  #rfperf[15,i] <- mccr(ifelse(test$y=="Yes",1,0),ifelse(pred.enetModel2=="Yes",1,0))
+  rfperf[15,i] <- (TP*TN - FP*FN)/( sqrt( (TP+FP)*(TP+FN)*(TN+FP)*(TN+FN) ) )
+  rfperf[16,i] <- (2*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[1,2]))*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])))/(((confMat$table[2,2]/(confMat$table[2,2]+confMat$table[1,2]))*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1]))) + (confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])))
 
 }
+
+
+saveRDS(rflst, "rflst.rds")
+saveRDS(rfperf, "rfperf.rds")
+
 
 
 

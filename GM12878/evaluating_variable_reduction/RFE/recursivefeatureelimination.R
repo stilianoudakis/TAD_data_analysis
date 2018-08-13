@@ -34,23 +34,23 @@ trainctrl <- trainControl(classProbs= TRUE,
                           summaryFunction = twoClassSummary)
 
 #Setting performance	matrix						
-enetperf_rfe <- matrix(nrow = 16, ncol=1)
-rownames(enetperf_rfe) <- c("TN",
-                            "FN",
-                            "FP",
-                            "TP",
-                            "Total",
-                            "Sensitivity",
-                            "Specificity",
-                            "Kappa",
-                            "Accuracy",
-                            "Precision",
-                            "FPR",
-                            "FNR",
-                            "FOR",
-                            "NPV",
-                            "MCC",
-                            "F1")
+rfeperf <- matrix(nrow = 16, ncol=1)
+rownames(rfeperf) <- c("TN",
+                       "FN",
+                       "FP",
+                       "TP",
+                       "Total",
+                       "Sensitivity",
+                       "Specificity",
+                       "Kappa",
+                       "Accuracy",
+                       "Precision",
+                       "FPR",
+                       "FNR",
+                       "FOR",
+                       "NPV",
+                       "MCC",
+                       "F1")
 
 #splitting data
 set.seed(7215)
@@ -72,28 +72,28 @@ pred.rfeModel2 <- predict(rfeModel,
                           newdata=test,
                           type="raw")
 
-confMat <- confusionMatrix(data=pred.enetModel2, test$y, positive="Yes")
+confMat <- confusionMatrix(data=pred.rfeModel2$pred, test$y, positive="Yes")
 TN = as.numeric(confMat$table[1,1])
 FN = as.numeric(confMat$table[1,2])
 FP = as.numeric(confMat$table[2,1])
 TP = as.numeric(confMat$table[2,2])
-enetperf_nlns[1,1] <- confMat$table[1,1]
-enetperf_nlns[2,1] <- confMat$table[1,2]
-enetperf_nlns[3,1] <- confMat$table[2,1]
-enetperf_nlns[4,1] <- confMat$table[2,2]
-enetperf_nlns[5,1] <- sum(confMat$table)
-enetperf_nlns[6,1] <- as.vector(confMat$byClass["Sensitivity"])
-enetperf_nlns[7,1] <- as.vector(confMat$byClass["Specificity"])
-enetperf_nlns[8,1] <- as.vector(confMat$overall["Kappa"])
-enetperf_nlns[9,1] <- as.vector(confMat$overall["Accuracy"])
-enetperf_nlns[10,1] <- confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])
-enetperf_nlns[11,1] <- confMat$table[2,1]/(confMat$table[2,1]+confMat$table[1,1])
-enetperf_nlns[12,1] <- confMat$table[1,2]/(confMat$table[1,2]+confMat$table[2,2])
-enetperf_nlns[13,1] <- confMat$table[1,2]/(confMat$table[1,2]+confMat$table[1,1])
-enetperf_nlns[14,1] <- confMat$table[1,1]/(confMat$table[1,1]+confMat$table[1,2])
-#enetperf_nlns[15,1] <- mccr(ifelse(test$y=="Yes",1,0),ifelse(pred.enetModel2=="Yes",1,0))
-enetperf_nlns[15,1] <- (TP*TN - FP*FN)/( sqrt( (TP+FP)*(TP+FN)*(TN+FP)*(TN+FN) ) )
-enetperf_nlns[16,1] <- (2*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[1,2]))*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])))/(((confMat$table[2,2]/(confMat$table[2,2]+confMat$table[1,2]))*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1]))) + (confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])))									 
+rfeperf[1,1] <- confMat$table[1,1]
+rfeperf[2,1] <- confMat$table[1,2]
+rfeperf[3,1] <- confMat$table[2,1]
+rfeperf[4,1] <- confMat$table[2,2]
+rfeperf[5,1] <- sum(confMat$table)
+rfeperf[6,1] <- as.vector(confMat$byClass["Sensitivity"])
+rfeperf[7,1] <- as.vector(confMat$byClass["Specificity"])
+rfeperf[8,1] <- as.vector(confMat$overall["Kappa"])
+rfeperf[9,1] <- as.vector(confMat$overall["Accuracy"])
+rfeperf[10,1] <- confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])
+rfeperf[11,1] <- confMat$table[2,1]/(confMat$table[2,1]+confMat$table[1,1])
+rfeperf[12,1] <- confMat$table[1,2]/(confMat$table[1,2]+confMat$table[2,2])
+rfeperf[13,1] <- confMat$table[1,2]/(confMat$table[1,2]+confMat$table[1,1])
+rfeperf[14,1] <- confMat$table[1,1]/(confMat$table[1,1]+confMat$table[1,2])
+#rfeperf[15,1] <- mccr(ifelse(test$y=="Yes",1,0),ifelse(pred.rfeModel2=="Yes",1,0))
+rfeperf[15,1] <- (TP*TN - FP*FN)/( sqrt( (TP+FP)*(TP+FN)*(TN+FP)*(TN+FN) ) )
+rfeperf[16,1] <- (2*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[1,2]))*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])))/(((confMat$table[2,2]/(confMat$table[2,2]+confMat$table[1,2]))*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1]))) + (confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])))									 
 
 roc.rfeModel <- pROC::roc(test$y, pred.rfeModel)
 auc.rfeModel <- pROC::auc(pROC::roc(test$y, pred.rfeModel))
@@ -102,7 +102,7 @@ saveRDS(rfeModel, "rfeModel.rds")
 saveRDS(roc.rfeModel, "roc.rfeModel.rds")
 saveRDS(auc.rfeModel, "auc.rfeModel.rds")
 
-saveRDS(enetperf_rfe, "enetperf_rfe.rds")
+saveRDS(rfeperf, "rfeperf.rds")
 
 predictors(rfeModel)
 

@@ -154,12 +154,13 @@ options(scipen = 999)
 enetperf_sm <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/testing_SMOTE/enetperf_sm.rds")
 enetperf_b <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/testing_SMOTE/enetperf_b.rds")
 
-round(enetperf_sm,2)
-round(as.matrix(rowMeans(enetperf_b)),2)
+enetperf_sm <- round(enetperf_sm,2)
+enetperf_b <- round(as.matrix(rowMeans(enetperf_b)),2)
+enetperf_b[1:5,1] <- round(enetperf_b[1:5,1],0)
 
 perfdat <- cbind.data.frame(rownames(enetperf_b), 
-                            round(enetperf_sm,2),
-                            round(as.matrix(rowMeans(enetperf_b)),2))
+                            enetperf_sm,
+                            enetperf_b)
 rownames(perfdat) <- NULL
 colnames(perfdat) <- c("Metric","100/200", "200/200", "200/200", "200/200", 
                        "100/300", "200/300", "300/300", "400/300",
