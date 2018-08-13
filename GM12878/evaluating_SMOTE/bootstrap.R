@@ -53,7 +53,7 @@ simple_roc <- function(labels, scores){
 
 ########################################################################################
 
-#With log transform and standardization
+#With log transform and no standardization
 
 #set length of list objects that will be filled in with specificities
 #and sensitivities and aucs and variable importance
@@ -66,6 +66,24 @@ enetlst <- list(tpr <- matrix(nrow=ceiling((length(which(chr1_gm12878_f$y=="Yes"
                                     ncol=bootsamps))
 rownames(enetlst[[4]]) <- colnames(chr1_gm12878_f)[-1]
 
+
+enetperf_b <- matrix(nrow = 16, ncol=1)
+rownames(enetperf_b) <- c("TN",
+                          "FN",
+                          "FP",
+                          "TP",
+                          "Total",
+                          "Sensitivity",
+                          "Specificity",
+                          "Kappa",
+                          "Accuracy",
+                          "Precision",
+                          "FPR",
+                          "FNR",
+                          "FOR",
+                          "NPV",
+                          "MCC",
+                          "F1")
 
 for(i in 1:bootsamps){
   set.seed(7215)
@@ -86,7 +104,9 @@ for(i in 1:bootsamps){
                      trControl = fitControl, 
                      family="binomial", 
                      tuneLength=5,
-                     standardize=TRUE)
+                     standardize=FALSE)
+  
+  #Prediction vector for ROC and AUC
   pred.eNetModel <- as.vector(predict(eNetModel, 
                                       newdata=test, 
                                       type="prob")[,"Yes"])
@@ -95,9 +115,37 @@ for(i in 1:bootsamps){
   enetlst[[3]][i] <- pROC::auc(pROC::roc(test$y, pred.eNetModel))
   enetlst[[4]][,i] <- varImp(eNetModel)$importance[,1]
   
+  #Prediction vector for other performance metrics
+  pred.enetModel2 <- predict(eNetModel,
+                             newdata=test,
+                             type="raw")
+  confMat <- confusionMatrix(data=pred.enetModel2, test$y, positive="Yes")
+  TN = as.numeric(confMat$table[1,1])
+  FN = as.numeric(confMat$table[1,2])
+  FP = as.numeric(confMat$table[2,1])
+  TP = as.numeric(confMat$table[2,2])
+  enetperf_b[1,i] <- confMat$table[1,1]
+  enetperf_b[2,i] <- confMat$table[1,2]
+  enetperf_b[3,i] <- confMat$table[2,1]
+  enetperf_b[4,i] <- confMat$table[2,2]
+  enetperf_b[5,i] <- sum(confMat$table)
+  enetperf_b[6,i] <- as.vector(confMat$byClass["Sensitivity"])
+  enetperf_b[7,i] <- as.vector(confMat$byClass["Specificity"])
+  enetperf_b[8,i] <- as.vector(confMat$overall["Kappa"])
+  enetperf_b[9,i] <- as.vector(confMat$overall["Accuracy"])
+  enetperf_b[10,i] <- confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])
+  enetperf_b[11,i] <- confMat$table[2,1]/(confMat$table[2,1]+confMat$table[1,1])
+  enetperf_b[12,i] <- confMat$table[1,2]/(confMat$table[1,2]+confMat$table[2,2])
+  enetperf_b[13,i] <- confMat$table[1,2]/(confMat$table[1,2]+confMat$table[1,1])
+  enetperf_b[14,i] <- confMat$table[1,1]/(confMat$table[1,1]+confMat$table[1,2])
+  #enetperf_sm[15,i] <- mccr(ifelse(test$y=="Yes",1,0),ifelse(pred.enetModel2=="Yes",1,0))
+  enetperf_b[15,i] <- (TP*TN - FP*FN)/( sqrt( (TP+FP)*(TP+FN)*(TN+FP)*(TN+FN) ) )
+  enetperf_b[16,i] <- (2*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[1,2]))*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])))/(((confMat$table[2,2]/(confMat$table[2,2]+confMat$table[1,2]))*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1]))) + (confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])))
+  
 }
 
 mean(enetlst[[3]])
 
-saveRDS(enetlst, "enetlst_bs.rds")
+saveRDS(enetlst, "enetlst_bs_lns.rds")
 
+saveRDS(enetperf_b, "enetperf_b.rds")
