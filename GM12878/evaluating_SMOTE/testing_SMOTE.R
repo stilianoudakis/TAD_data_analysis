@@ -106,6 +106,10 @@ for(i in 1:4){
   pred.enetModel2 <- predict(enetModel_sm,
                              newdata=test,
                              type="raw")
+  TN = as.numeric(confMat$table[1,1])
+  FN = as.numeric(confMat$table[1,2])
+  FP = as.numeric(confMat$table[2,1])
+  TP = as.numeric(confMat$table[2,2])
   confMat <- confusionMatrix(data=pred.enetModel2, test$y, positive="Yes")
   enetperf_sm[1,i] <- confMat$table[1,1]
   enetperf_sm[2,i] <- confMat$table[1,2]
@@ -121,8 +125,8 @@ for(i in 1:4){
   enetperf_sm[12,i] <- confMat$table[1,2]/(confMat$table[1,2]+confMat$table[2,2])
   enetperf_sm[13,i] <- confMat$table[1,2]/(confMat$table[1,2]+confMat$table[1,1])
   enetperf_sm[14,i] <- confMat$table[1,1]/(confMat$table[1,1]+confMat$table[1,2])
-  enetperf_sm[15,i] <- mccr(ifelse(test$y=="Yes",1,0),ifelse(pred.enetModel2=="Yes",1,0))
-  #enetperf_sm[15,i] <- (confMat$table[2,2]*confMat$table[1,1] - confMat$table[1,2]*confMat$table[2,1])/(sqrt( (confMat$table[2,2]+confMat$table[2,1])*(confMat$table[2,2]+confMat$table[1,2])*(confMat$table[1,1]+confMat$table[2,1])*(confMat$table[1,1]+confMat$table[1,2])) )
+  #enetperf_sm[15,i] <- mccr(ifelse(test$y=="Yes",1,0),ifelse(pred.enetModel2=="Yes",1,0))
+  enetperf_sm[15,i] <- (TP*TN - FP*FN)/( sqrt( (TP+FP)*(TP+FN)*(TN+FP)*(TN+FN) ) )
   enetperf_sm[16,i] <- (2*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[1,2]))*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])))/(((confMat$table[2,2]/(confMat$table[2,2]+confMat$table[1,2]))*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1]))) + (confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])))
   
   
@@ -158,6 +162,10 @@ for(i in 1:4){
                              newdata=test,
                              type="raw")
   confMat <- confusionMatrix(data=pred.enetModel2, test$y, positive="Yes")
+  TN = as.numeric(confMat$table[1,1])
+  FN = as.numeric(confMat$table[1,2])
+  FP = as.numeric(confMat$table[2,1])
+  TP = as.numeric(confMat$table[2,2])
   enetperf_sm[1,i+4] <- confMat$table[1,1]
   enetperf_sm[2,i+4] <- confMat$table[1,2]
   enetperf_sm[3,i+4] <- confMat$table[2,1]
@@ -172,8 +180,8 @@ for(i in 1:4){
   enetperf_sm[12,i+4] <- confMat$table[1,2]/(confMat$table[1,2]+confMat$table[2,2])
   enetperf_sm[13,i+4] <- confMat$table[1,2]/(confMat$table[1,2]+confMat$table[1,1])
   enetperf_sm[14,i+4] <- confMat$table[1,1]/(confMat$table[1,1]+confMat$table[1,2])
-  enetperf_sm[15,i+4] <- mccr(ifelse(test$y=="Yes",1,0),ifelse(pred.enetModel2=="Yes",1,0))
-  #enetperf_sm[15,i] <- (confMat$table[2,2]*confMat$table[1,1] - confMat$table[1,2]*confMat$table[2,1])/(sqrt( (confMat$table[2,2]+confMat$table[2,1])*(confMat$table[2,2]+confMat$table[1,2])*(confMat$table[1,1]+confMat$table[2,1])*(confMat$table[1,1]+confMat$table[1,2])) )
+  #enetperf_sm[15,i+4] <- mccr(ifelse(test$y=="Yes",1,0),ifelse(pred.enetModel2=="Yes",1,0))
+  enetperf_sm[15,i+4] <- (TP*TN - FP*FN)/( sqrt( (TP+FP)*(TP+FN)*(TN+FP)*(TN+FN) ) )
   enetperf_sm[16,i+4] <- (2*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[1,2]))*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])))/(((confMat$table[2,2]/(confMat$table[2,2]+confMat$table[1,2]))*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1]))) + (confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])))
   
 }
