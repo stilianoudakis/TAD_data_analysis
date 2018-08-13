@@ -1,8 +1,11 @@
 ---
-title: "Measuring Performance: Evaluating SMOTE"
+title: 'Measuring Performance: Evaluating SMOTE'
 author: "Spiro Stilianoudakis"
 output:
   pdf_document:
+    toc: yes
+  html_document:
+    df_print: paged
     toc: yes
   word_document:
     fig_caption: yes
@@ -139,6 +142,30 @@ ggplot(rocdat.bs, aes(x=fpr, y=tpr)) +
   theme_minimal() +
   ggtitle("ROC Curve for Balanced Classes \n Using 100 Bootstrap Samples")
 
+
+```
+
+# Comparing additional performance metrics across all methods
+
+```{r}
+
+options(scipen = 999)
+
+enetperf_sm <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/testing_SMOTE/enetperf_sm.rds")
+enetperf_b <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/testing_SMOTE/enetperf_b.rds")
+
+round(enetperf_sm,2)
+round(as.matrix(rowMeans(enetperf_b)),2)
+
+perfdat <- cbind.data.frame(rownames(enetperf_b), 
+                            round(enetperf_sm,2),
+                            round(as.matrix(rowMeans(enetperf_b)),2))
+rownames(perfdat) <- NULL
+colnames(perfdat) <- c("Metric","100/200", "200/200", "200/200", "200/200", 
+                       "100/300", "200/300", "300/300", "400/300",
+                       "Bootstraps")
+
+kable(perfdat)
 
 ```
 
