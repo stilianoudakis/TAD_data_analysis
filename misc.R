@@ -617,4 +617,53 @@ commonfeatsdf_sm <- data.frame(Features = commonfeats_sm,
 
 
 
+# Reading in TAD data that was overlapped within subcompartments
+
+```{r}
+
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData")
+
+within <- readRDS("within.rds")
+none <- readRDS("none.rds")
+partial1 <- readRDS("partial1.rds")
+partial2 <- readRDS("partial2.rds")
+subcompartgr <- readRDS("subcompartgr.rds")
+tad_subcomp_full <- readRDS("tad_subcomp_full.rds")
+
+gm12878 <- readRDS("gm12878.rds")
+```
+
+# Calculating various distances: Distance to A and Distance to B
+
+```{r}
+#Note: Distance will be assigned to 0 for partial overlaps
+Asubcompartgr <- subcompartgr[which(subcompartgr$compartment=="A")]
+Bsubcompartgr <- subcompartgr[which(subcompartgr$compartment=="B")]
+
+
+#A compartment
+A_dist <- distanceToNearest(tad_subcomp_full, Asubcompartgr)
+A_dist <- mcols(A_dist)$distance
+
+#B compartment
+B_dist <- distanceToNearest(tad_subcomp_full, Bsubcompartgr)
+B_dist <- mcols(B_dist)$distance
+
+mcols(tad_subcomp_full)$A_dist <- A_dist
+mcols(tad_subcomp_full)$B_dist <- B_dist
+```
+
+
+# Concatinating overlap data and creating update data for modelling 
+
+```{r}
+
+saveRDS(tad_subcomp_full, "tad_subcomp_full.rds")
+
+gm12878$A_dist <- mcols(tad_subcomp_full)$A_dist
+gm12878$B_dist <- mcols(tad_subcomp_full)$B_dist
+
+
+saveRDS(gm12878, "gm12878.rds")
+```
 
