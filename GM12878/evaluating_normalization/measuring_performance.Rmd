@@ -4,6 +4,9 @@ author: "Spiro Stilianoudakis"
 output:
   pdf_document:
     toc: yes
+  html_document:
+    df_print: paged
+    toc: yes
   word_document:
     fig_caption: yes
     fig_height: 3
@@ -233,6 +236,36 @@ p.nlns <- ggplot(varimp.nlns.df, aes(x=Feature, y=Importance)) +
   ggtitle("Not Log Transformed \n & Standardized")
 p.nlns
 
+```
+
+# Comparing additional performance metrics across all normalization techniques
+
+```{r}
+
+options(scipen = 999)
+
+enetperf_ls <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/comparing_normalization/enetperf_ls.rds")
+
+enetperf_lns <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/comparing_normalization/enetperf_lns.rds")
+
+enetperf_nls <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/comparing_normalization/enetperf_nls.rds")
+
+enetperf_nlns <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/comparing_normalization/enetperf_nlns.rds")
+
+lstab <- round(as.matrix(rowMeans(enetperf_ls)),2)
+lnstab <- round(as.matrix(rowMeans(enetperf_lns)),2)
+nlstab <- round(as.matrix(rowMeans(enetperf_nls)),2)
+nlnstab <- round(as.matrix(rowMeans(enetperf_nlns)),2)
+
+perfdat <- cbind.data.frame(rownames(enetperf_ls), 
+                            lstab,
+                            lnstab,
+                            nlstab,
+                            nlnstab)
+rownames(perfdat) <- NULL
+colnames(perfdat) <- c("Metric", "Log/Std", "Log/Un-Std", "No Log/Std", "No Log/Un-Std")
+
+kable(perfdat)
 ```
 
 
