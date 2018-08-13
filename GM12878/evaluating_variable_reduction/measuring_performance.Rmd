@@ -4,6 +4,9 @@ author: "Spiro Stilianoudakis"
 output:
   pdf_document:
     toc: yes
+  html_document:
+    df_print: paged
+    toc: yes
   word_document:
     fig_caption: yes
     fig_height: 3
@@ -212,6 +215,43 @@ ggplot(rocdat.rfe, aes(x=specificity, y=sensitivity)) +
   ggtitle("ROC Curve for RFE")
 
 ```
+
+# Comparing additional performance metrics across all variable selection techniques
+
+```{r}
+
+options(scipen = 999)
+
+enetperf_fwd <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/enetperf_fwd.rds")
+
+enetperf_bwd <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/enetperf_bwd.rds")
+
+enetperf_both <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/enetperf_both.rds")
+
+enetperf_rfe <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/variable_reduction/rfeperf.rds")
+
+fwdtab <- round(as.matrix(rowMeans(enetperf_fwd)),2)
+bwdtab <- round(as.matrix(rowMeans(enetperf_bwd)),2)
+bothtab <- round(as.matrix(rowMeans(enetperf_both)),2)
+enetperf_rfe <- round(enetperf_rfe,2)
+
+fwdtab[1:5,1] <- round(fwdtab[1:5,1],0)
+bwdtab[1:5,1] <- round(bwdtab[1:5,1],0)
+bothtab[1:5,1] <- round(bothtab[1:5,1],0)
+enetperf_rfe[1:5,] <- round(enetperf_rfe[1:5,],0)
+
+perfdat <- cbind.data.frame(rownames(enetperf_fwd), 
+                            fwdtab,
+                            bwdtab,
+                            bothtab,
+                            enetperf_rfe)
+rownames(perfdat) <- NULL
+colnames(perfdat) <- c("Metric", "Forward", "Backward", "Both", "RFE")
+
+kable(perfdat)
+
+```
+
 
 
 # Comparing Variable Selection Techniques
