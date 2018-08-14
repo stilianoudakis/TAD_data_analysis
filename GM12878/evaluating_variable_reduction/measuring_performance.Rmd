@@ -250,6 +250,39 @@ colnames(perfdat) <- c("Metric", "Forward", "Backward", "Both", "RFE")
 
 kable(perfdat)
 
+
+mccf1 <- data.frame(Metric = c(rep("MCC",4), rep("F1",4)),
+                    Technique = rep(c("Forward", 
+                                      "Backward", 
+                                      "Both", 
+                                      "RFE"), 2),
+                    Value = c(as.numeric(perfdat[15,2:5]), as.numeric(perfdat[16,2:5])))
+
+ggplot(data=mccf1, aes(x=Technique, y=Value, fill=Metric)) +
+  geom_bar(stat="identity", position=position_dodge()) +
+  scale_fill_manual(values=c('black','lightgray')) +
+  xlab("Variable Selection \n Technique") +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+MCCplot<-ggplot(data=mccf1[1:4,], aes(x=Technique, y=Value, fill=Technique)) + 
+  xlab("Variable Selection \n Technique") + ylab("MCC") +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values=gray(rev(c(0,.3,.6,.9))), guide=FALSE) +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Model Performance for Different \n Class Normalization Techniques")
+MCCplot
+
+F1plot<-ggplot(data=mccf1[5:8,], aes(x=Technique, y=Value, fill=Technique)) + 
+  xlab("Variable Selection \n Technique") + ylab("F1") +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values=gray(rev(c(0,.3,.6,.9))), guide=FALSE) +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Model Performance for Different \n Class Normalization Techniques")
+F1plot
+
 ```
 
 

@@ -71,7 +71,7 @@ Labels[grep("Gm12878_", Labels)] <- gsub("Gm12878_","",Labels[grep("Gm12878_", L
 varimp.ls.df <- data.frame(Feature=Labels,
                                  Importance=varimp.ls)
 varimp.ls.df <- varimp.ls.df[order(varimp.ls.df$Importance),]
-varimp.ls.df <- varimp.ls.df[(dim(varimp.ls.df)[1]-19):dim(varimp.ls.df)[1],]
+varimp.ls.df <- varimp.ls.df[(dim(varimp.ls.df)[1]-9):dim(varimp.ls.df)[1],]
 varimp.ls.df$Feature <- factor(varimp.ls.df$Feature,
                                      levels=varimp.ls.df$Feature)
 p.ls <- ggplot(varimp.ls.df, aes(x=Feature, y=Importance)) +
@@ -120,7 +120,7 @@ Labels[grep("Gm12878_", Labels)] <- gsub("Gm12878_","",Labels[grep("Gm12878_", L
 varimp.lns.df <- data.frame(Feature=Labels,
                                  Importance=varimp.lns)
 varimp.lns.df <- varimp.lns.df[order(varimp.lns.df$Importance),]
-varimp.lns.df <- varimp.lns.df[(dim(varimp.lns.df)[1]-19):dim(varimp.lns.df)[1],]
+varimp.lns.df <- varimp.lns.df[(dim(varimp.lns.df)[1]-9):dim(varimp.lns.df)[1],]
 varimp.lns.df$Feature <- factor(varimp.lns.df$Feature,
                                      levels=varimp.lns.df$Feature)
 p.lns <- ggplot(varimp.lns.df, aes(x=Feature, y=Importance)) +
@@ -170,7 +170,7 @@ Labels[grep("Gm12878_", Labels)] <- gsub("Gm12878_","",Labels[grep("Gm12878_", L
 varimp.nls.df <- data.frame(Feature=Labels,
                                  Importance=varimp.nls)
 varimp.nls.df <- varimp.nls.df[order(varimp.nls.df$Importance),]
-varimp.nls.df <- varimp.nls.df[(dim(varimp.nls.df)[1]-19):dim(varimp.nls.df)[1],]
+varimp.nls.df <- varimp.nls.df[(dim(varimp.nls.df)[1]-9):dim(varimp.nls.df)[1],]
 varimp.nls.df$Feature <- factor(varimp.nls.df$Feature,
                                      levels=varimp.nls.df$Feature)
 p.nls <- ggplot(varimp.nls.df, aes(x=Feature, y=Importance)) +
@@ -220,7 +220,7 @@ Labels[grep("Gm12878_", Labels)] <- gsub("Gm12878_","",Labels[grep("Gm12878_", L
 varimp.nlns.df <- data.frame(Feature=Labels,
                                  Importance=varimp.nlns)
 varimp.nlns.df <- varimp.nlns.df[order(varimp.nlns.df$Importance),]
-varimp.nlns.df <- varimp.nlns.df[(dim(varimp.nlns.df)[1]-19):dim(varimp.nlns.df)[1],]
+varimp.nlns.df <- varimp.nlns.df[(dim(varimp.nlns.df)[1]-9):dim(varimp.nlns.df)[1],]
 varimp.nlns.df$Feature <- factor(varimp.nlns.df$Feature,
                                      levels=varimp.nlns.df$Feature)
 p.nlns <- ggplot(varimp.nlns.df, aes(x=Feature, y=Importance)) +
@@ -271,6 +271,39 @@ rownames(perfdat) <- NULL
 colnames(perfdat) <- c("Metric", "Log/Std", "Log/Un-Std", "No Log/Std", "No Log/Un-Std")
 
 kable(perfdat)
+
+
+mccf1 <- data.frame(Metric = c(rep("MCC",4), rep("F1",4)),
+                    Technique = rep(c("Log/Std", 
+                                      "Log/Un-Std", 
+                                      "No Log/Std", 
+                                      "No Log/Un-Std"), 2),
+                    Value = c(as.numeric(perfdat[15,2:5]), as.numeric(perfdat[16,2:5])))
+
+ggplot(data=mccf1, aes(x=Technique, y=Value, fill=Metric)) +
+  geom_bar(stat="identity", position=position_dodge()) +
+  scale_fill_manual(values=c('black','lightgray')) +
+  xlab("Normalization Technique") +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+MCCplot<-ggplot(data=mccf1[1:4,], aes(x=Technique, y=Value, fill=Technique)) + 
+  xlab("Normalization Technique") + ylab("MCC") +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values=gray(rev(c(0,.3,.6,.9))), guide=FALSE) +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Model Performance for Different \n Class Normalization Techniques")
+MCCplot
+
+F1plot<-ggplot(data=mccf1[5:8,], aes(x=Technique, y=Value, fill=Technique)) + 
+  xlab("Normalization Technique") + ylab("F1") +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values=gray(rev(c(0,.3,.6,.9))), guide=FALSE) +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Model Performance for Different \n Class Normalization Techniques")
+F1plot
 ```
 
 

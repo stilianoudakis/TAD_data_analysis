@@ -162,11 +162,48 @@ perfdat <- cbind.data.frame(rownames(enetperf_b),
                             enetperf_sm,
                             enetperf_b)
 rownames(perfdat) <- NULL
-colnames(perfdat) <- c("Metric","100/200", "200/200", "200/200", "200/200", 
+colnames(perfdat) <- c("Metric","100/200", "200/200", "300/200", "400/200", 
                        "100/300", "200/300", "300/300", "400/300",
                        "Bootstraps")
 
 kable(perfdat)
+
+mccf1 <- data.frame(Metric = c(rep("MCC",9), rep("F1",9)),
+                    Technique = rep(c("100/200", 
+                    "200/200", 
+                    "300/200", 
+                    "400/200", 
+                    "100/300",
+                    "200/300", 
+                    "300/300", 
+                    "400/300",
+                    "Bootstraps"), 2),
+                    Value = c(as.numeric(perfdat[15,2:10]), as.numeric(perfdat[16,2:10])))
+
+ggplot(data=mccf1, aes(x=Technique, y=Value, fill=Metric)) +
+  geom_bar(stat="identity", position=position_dodge()) +
+  scale_fill_manual(values=c('black','lightgray')) +
+  xlab("Balancing Technique") + 
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+MCCplot<-ggplot(data=mccf1[1:9,], aes(x=Technique, y=Value, fill=Technique)) + 
+  xlab("Balancing Technique") + ylab("MCC") +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values=gray(rev(seq(0,.8,.1))), guide=FALSE) +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Model Performance for Different \n Class Balancing Techniques")
+MCCplot
+
+F1plot<-ggplot(data=mccf1[10:18,], aes(x=Technique, y=Value, fill=Technique)) + 
+  xlab("Balancing Technique") + ylab("F1") +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values=gray(rev(seq(0,.8,.1))), guide=FALSE) +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Model Performance for Different \n Class Balancing Techniques")
+F1plot
 
 ```
 

@@ -49,7 +49,7 @@ dim(domains)
 domains <- domains[-which(domains$Chromosome=="chrX"),]
 
 #Sorting the numeric chromosome coordinates
-domains <- domains[order(as.numeric(substr(domains$Chromosome,4,5)), domains$coordinate),]
+domains <- domains[order(as.numeric(substr(domains$Chromosome,4,5)), domains$Start),]
 
 #adding distance variable
 domains$distance <- domains$End - domains$Start
@@ -95,6 +95,8 @@ bounds
 prop.table(table(seqnames(bounds)))
 
 
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878")
+saveRDS(bounds, "bounds.rds")
 
 ```
 
