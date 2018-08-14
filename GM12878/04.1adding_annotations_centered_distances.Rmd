@@ -595,6 +595,9 @@ for(i in 1:length(grlist)){
   mcols(grlist[[i]])$logdistance <- log(mcols(distanceToNearest(grlist[[i]], bounds))$distance+1, base = 2)
 }
 
+
+saveRDS(grlist, "grlist.rds")
+
 meandist <- unlist(lapply(grlist, function(x){mean(mcols(x)$distance)}))
 mediandist <- unlist(lapply(grlist, function(x){median(mcols(x)$distance)}))
 rangedist <- unlist(lapply(grlist, function(x){max(mcols(x)$distance)})) - unlist(lapply(grlist, function(x){min(mcols(x)$distance)}))
