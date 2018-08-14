@@ -538,3 +538,48 @@ saveRDS(binslist50, "binslist50.rds")
 saveRDS(binslist100, "binslist100.rds")
 ```
 
+
+#Adding distance to tad boundary for each individual feature
+
+```{r}
+
+#setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878")
+
+bounds <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/bounds.rds")
+bounds <- resize(bounds, width = 1, fix = "center")
+
+grobjects <- ls()
+grobjects <- grobjects[grep("center", grobjects)]
+
+grlist <- rep( list(GRangesList()), length(grobjects) )
+
+for(i in 1:length(grobjects)){
+  
+  x <- get(grobjects[i])
+  
+  grlist[[i]] <- x
+  
+}
+
+grlist <- setNames(grlist, grobjects)
+
+for(i in 1:length(grlist)){
+  if(is.element("chrX", as.character(seqnames(grlist[[i]])))){
+    grlist[[i]] <- grlist[[i]][-which(seqnames(grlist[[i]])=="chrX")]
+  }
+  
+  if(is.element("chrY", as.character(seqnames(grlist[[i]])))){
+    grlist[[i]] <- grlist[[i]][-which(seqnames(grlist[[i]])=="chrY")]
+  }
+  
+  mcols(grlist[[i]])$distance <- mcols(distanceToNearest(grlist[[i]], bounds))$distance
+  mcols(grlist[[i]])$logdistance <- log(mcols(distanceToNearest(grlist[[i]], bounds))$distance+1, base = 2)
+}
+
+
+saveRDS(grlist, "grlist.rds")
+
+
+```
+
+
