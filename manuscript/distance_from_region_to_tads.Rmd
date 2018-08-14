@@ -1,0 +1,85 @@
+---
+title: "Distance from Region to TAD"
+author: "Spiro Stilianoudakis"
+date: "August 14, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Loading libraries
+
+```{r}
+library(ggplot2)
+#library(MultiAssayExperiment)
+library(GenomicRanges)
+#library(IRanges)
+library(caret)
+library(data.table)
+library(gbm)
+library(pROC)
+library(plyr)
+library(dplyr)
+library(knitr)
+```
+
+
+
+# Distance Summaries for each feature from region to TAD boundary
+
+```{r}
+
+grlist <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/grlist.rds")
+
+meandist <- unlist(lapply(grlist, function(x){mean(mcols(x)$distance)}))
+mediandist <- unlist(lapply(grlist, function(x){median(mcols(x)$distance)}))
+rangedist <- unlist(lapply(grlist, function(x){max(mcols(x)$distance)})) - unlist(lapply(grlist, function(x){min(mcols(x)$distance)}))
+
+meanlogdist <- unlist(lapply(grlist, function(x){mean(mcols(x)$logdistance)}))
+medianlogdist <- unlist(lapply(grlist, function(x){median(mcols(x)$logdistance)}))
+rangelogdist <- unlist(lapply(grlist, function(x){max(mcols(x)$logdistance, base = 2)})) - unlist(lapply(grlist, function(x){min(mcols(x)$logdistance, base = 2)}))
+
+distancetab <- data.frame(Feature = names(unlist(lapply(grlist, function(x){mean(mcols(x)$distance)}))),
+                          Mean = meandist,
+                          Median = mediandist,
+                          Range = rangedist,
+                          MeanLog = meanlogdist,
+                          MedianLog = medianlogdist,
+                          RangeLog = rangelogdist)
+
+rownames(distancetab) <- NULL
+
+distancetab[,2:7] <- round(distancetab[,2:7], 1)
+
+kable(distancetab)
+
+```
+
+
+#Plots
+
+```{r}
+
+d <- density(mcols(grlist[[1]])$distance)
+plot(d, xlab="Distance", 
+     main="Distance from Region to TAD Boundary", 
+     xlim=c(0,1000000),
+     ylim=c(0,3.5e-05))
+for(i in 1:(length(grlist)-1)){
+  lines(density(mcols(grlist[[i+1]])$distance), col=i+1)
+}
+
+
+d <- density(mcols(grlist[[1]])$logdistance)
+plot(d, xlab="Distance", 
+     main="Log Distance from Region to TAD Boundary")
+for(i in 1:(length(grlist)-1)){
+  lines(density(mcols(grlist[[i+1]])$logdistance), col=i+1)
+}
+
+
+
+```
+
