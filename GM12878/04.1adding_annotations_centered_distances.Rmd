@@ -558,3 +558,66 @@ saveRDS(gm12878, "gm12878.rds")
 
 ```
 
+
+# Distance Summaries for each feature from region to TAD boundary
+
+```{r}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878")
+
+bounds <- readRDS("bounds.rds")
+bounds <- resize(bounds, width = 1, fix = "center")
+
+grobjects <- ls()
+grobjects <- grobjects[grep("center", grobjects)]
+
+grlist <- rep( list(GRangesList()), length(grobjects) )
+
+for(i in 1:length(grobjects)){
+  
+  x <- get(grobjects[i])
+  
+  grlist[[i]] <- x
+  
+}
+
+grlist <- setNames(grlist, grobjects)
+
+for(i in 1:length(grlist)){
+  if(is.element("chrX", as.character(seqnames(grlist[[i]])))){
+    grlist[[i]] <- grlist[[i]][-which(seqnames(grlist[[i]])=="chrX")]
+  }
+  
+  if(is.element("chrY", as.character(seqnames(grlist[[i]])))){
+    grlist[[i]] <- grlist[[i]][-which(seqnames(grlist[[i]])=="chrY")]
+  }
+  
+  mcols(grlist[[i]])$distance <- mcols(distanceToNearest(grlist[[i]], bounds))$distance
+  mcols(grlist[[i]])$logdistance <- log(mcols(distanceToNearest(grlist[[i]], bounds))$distance+1, base = 2)
+}
+
+meandist <- unlist(lapply(grlist, function(x){mean(mcols(x)$distance)}))
+mediandist <- unlist(lapply(grlist, function(x){median(mcols(x)$distance)}))
+rangedist <- unlist(lapply(grlist, function(x){max(mcols(x)$distance)})) - unlist(lapply(grlist, function(x){min(mcols(x)$distance)}))
+
+meanlogdist <- unlist(lapply(grlist, function(x){mean(mcols(x)$logdistance)}))
+medianlogdist <- unlist(lapply(grlist, function(x){median(mcols(x)$logdistance)}))
+rangelogdist <- unlist(lapply(grlist, function(x){max(mcols(x)$logdistance, base = 2)})) - unlist(lapply(grlist, function(x){min(mcols(x)$logdistance, base = 2)}))
+
+distancetab <- data.frame(Feature = names(unlist(lapply(grlist, function(x){mean(mcols(x)$distance)}))),
+                          Mean = meandist,
+                          Median = mediandist,
+                          Range = rangedist,
+                          MeanLog = meanlogdist,
+                          MedianLog = medianlogdist,
+                          RangeLog = rangelogdist)
+
+rownames(distancetab) <- NULL
+
+distancetab[,2:7] <- round(distancetab[,2:7], 1)
+
+kable(distancetab)
+
+
+
+```
+
