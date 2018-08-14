@@ -1,0 +1,88 @@
+---
+title: "Distribution of Size of TADs"
+author: "Spiro Stilianoudakis"
+date: "August 14, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Loading Libraries
+
+```{r}
+library(ggplot2)
+library(plyr)
+library(knitr)
+```
+
+
+# Read in domain data
+
+```{r}
+
+domains <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/domains.rds")
+
+
+```
+
+
+# Density plots of TAD distances by chromosome
+
+```{r}
+
+#plotting distances grouped by chromosome
+ggplot() + 
+  geom_density(data=domains, aes(x=distance, group=Chromosome, color=Chromosome)) + 
+  xlab("Length of TADs") + xlim(0,1000000) +
+  ylab("Density")+
+  theme_minimal()
+
+#log distance
+ggplot() + 
+  geom_density(data=domains, aes(x=logdist, group=Chromosome, color=Chromosome)) + 
+  xlab("Length of TADs") +
+  ylab("Density")+
+  theme_minimal()
+
+```
+
+\newpage
+# Summaries of TAD distances by chromosome
+
+```{r}
+
+dist <- tapply(domains$distance, domains$Chromosome, summary)
+
+
+
+dist <- adply(dist, 1)
+colnames(dist)[1] <- "Chromosome"
+dist[,2:7] <- round(dist[,2:7], 2)
+dist <- dist[order(as.numeric(substr(dist$Chromosome, 4, 5))),]
+
+
+kable(dist)
+
+
+```
+
+
+\newpage
+# Log 2 Distance
+
+```{r}
+
+logdist <- tapply(domains$logdist, domains$Chromosome, summary)
+
+logdist <- adply(logdist, 1)
+colnames(logdist)[1] <- "Chromosome"
+logdist[,2:7] <- round(logdist[,2:7], 2)
+logdist <- logdist[order(as.numeric(substr(logdist$Chromosome, 4, 5))),]
+
+kable(logdist)
+
+
+```
+
