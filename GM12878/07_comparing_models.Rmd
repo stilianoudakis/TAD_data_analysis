@@ -222,6 +222,73 @@ sig.vars.lasso <- sig.vars.lasso[1:20, which(colnames(sig.vars.lasso) %in% c("Ge
 kable(sig.vars.lasso)
 ```
 
+# Comparing Performance Metrics
+
+```{r}
+
+options(scipen = 999)
+
+#mourad MLR
+mouradperf <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/mourad_model/mouradperf.rds")
+
+mouradperf <- round(mouradperf,2)
+mouradperf[1:5,1] <- round(mouradperf[1:5,1], 0)
+
+#mourad LASSO
+mourad.lasso.perf <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/mourad_model/mourad.lasso.perf.rds")
+
+mourad.lasso.perf <- round(mourad.lasso.perf,2)
+mourad.lasso.perf[1:5,1] <- round(mourad.lasso.perf[1:5,1],0)
+
+#Our pipeline
+rfperf <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/our_pipeline/rfperf.rds")
+
+rfperf <- round(as.matrix(rowMeans(rfperf)),2)
+rfperf[1:5,1] <- round(rfperf[1:5,1],0)
+
+
+perfdat <- cbind.data.frame(rownames(mouradperf), 
+                            mouradperf,
+                            mourad.lasso.perf,
+                            rfperf)
+rownames(perfdat) <- NULL
+colnames(perfdat) <- c("Metric", "MLR", "MLR w/ LASSO Regularization", "Our Pipeline")
+
+kable(perfdat)
+
+
+mccf1 <- data.frame(Metric = c(rep("MCC",3), rep("F1",3)),
+                    Model = rep(c("MLR", 
+                                      "MLR w/ LASSO", 
+                                      "Our Pipeline"), 2),
+                    Value = c(as.numeric(perfdat[15,2:4]), as.numeric(perfdat[16,2:4])))
+
+ggplot(data=mccf1, aes(x=Model, y=Value, fill=Metric)) +
+  geom_bar(stat="identity", position=position_dodge()) +
+  scale_fill_manual(values=c('black','lightgray')) +
+  xlab("Model") +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+MCCplot<-ggplot(data=mccf1[1:3,], aes(x=Model, y=Value, fill=Model)) + 
+  xlab("Model") + ylab("MCC") +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values=gray(rev(c(0,.4,.9))), guide=FALSE) +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Measuring MCC \n Our Pipeline vs MLR (with and without LASSO)")
+MCCplot
+
+F1plot<-ggplot(data=mccf1[4:6,], aes(x=Model, y=Value, fill=Model)) + 
+  xlab("Model") + ylab("F1") +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values=gray(rev(c(0,.4,.9))), guide=FALSE) +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Measuring F1 \n Our Pipeline vs MLR (with and without LASSO)")
+F1plot
+```
 
 
 #Comparing Results
