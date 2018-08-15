@@ -559,7 +559,7 @@ saveRDS(gm12878, "gm12878.rds")
 ```
 
 
-# Distance Summaries for each feature from region to TAD boundary
+# Adding distance from region to TAD boundary for each feature
 
 ```{r}
 setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878")
@@ -597,30 +597,6 @@ for(i in 1:length(grlist)){
 
 
 saveRDS(grlist, "grlist.rds")
-
-meandist <- unlist(lapply(grlist, function(x){mean(mcols(x)$distance)}))
-mediandist <- unlist(lapply(grlist, function(x){median(mcols(x)$distance)}))
-rangedist <- unlist(lapply(grlist, function(x){max(mcols(x)$distance)})) - unlist(lapply(grlist, function(x){min(mcols(x)$distance)}))
-
-meanlogdist <- unlist(lapply(grlist, function(x){mean(mcols(x)$logdistance)}))
-medianlogdist <- unlist(lapply(grlist, function(x){median(mcols(x)$logdistance)}))
-rangelogdist <- unlist(lapply(grlist, function(x){max(mcols(x)$logdistance, base = 2)})) - unlist(lapply(grlist, function(x){min(mcols(x)$logdistance, base = 2)}))
-
-distancetab <- data.frame(Feature = names(unlist(lapply(grlist, function(x){mean(mcols(x)$distance)}))),
-                          Mean = meandist,
-                          Median = mediandist,
-                          Range = rangedist,
-                          MeanLog = meanlogdist,
-                          MedianLog = medianlogdist,
-                          RangeLog = rangelogdist)
-
-rownames(distancetab) <- NULL
-
-distancetab[,2:7] <- round(distancetab[,2:7], 1)
-
-kable(distancetab)
-
-
 
 ```
 

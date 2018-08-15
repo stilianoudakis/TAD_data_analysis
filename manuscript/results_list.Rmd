@@ -12,7 +12,6 @@ knitr::opts_chunk$set(echo = TRUE)
 # Describing the data
 
 * Distribution of size of TADs
-* Specifically how boundaries were considered (discuss situations of spaces between tad boundaries)
 * Total number of genomic bins (for each specific resolution and cell line; start with 1kb for GM12878)
 * Number and percent of TAD boundaries (link this to class imbalance)
 * List of complete features at start of analysis

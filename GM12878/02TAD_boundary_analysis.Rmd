@@ -90,7 +90,7 @@ dim(coords)
 # flanking either side of the TAD boundary by 500 bases for a 1kb centered boundary region
 coords$Chromosome <- as.character(coords$Chromosome)
 bounds <- GRanges(seqnames=coords$Chromosome, ranges=IRanges(start=coords$coordinate, width=1))
-bounds <- resize(bounds, 1000, fix = "center")
+#bounds <- resize(bounds, 1000, fix = "center")
 bounds
 prop.table(table(seqnames(bounds)))
 
@@ -546,7 +546,7 @@ saveRDS(binslist100, "binslist100.rds")
 #setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878")
 
 bounds <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/bounds.rds")
-bounds <- resize(bounds, width = 1, fix = "center")
+#bounds <- resize(bounds, width = 1, fix = "center")
 
 grobjects <- ls()
 grobjects <- grobjects[grep("center", grobjects)]

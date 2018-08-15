@@ -535,7 +535,7 @@ simple_roc <- function(labels, scores){
 ```
 
 
-## Function to run Model
+## Function to run MLR (with or without LASSO regularization)
 
 ```{r}
 
@@ -682,21 +682,29 @@ for(bt in borderTypeVec[-which(borderTypeVec=="NB")]){
  if(sum(analysisMode=="MLR")){
   if(verbose){print("Multiple Logistic Regression")}
   
+  binMat.mati$Border <- ifelse(binMat.mati$Border==1, "Yes", "No")
+  binMat.mati$Border <- factor(binMat.mati$Border)
+  
   inTrainingSet <- sample(dim(binMat.mati)[1],floor(dim(binMat.mati)[1]*.7))
   #inTrainingSet <- createDataPartition(data$y,p=.7,list=FALSE)
   train <- binMat.mati[inTrainingSet,]
   test <- binMat.mati[-inTrainingSet,]
   
+  saveRDS(test, "test.rds")
+  
   Analysisi=glm(Border~.,data=train,family=binomial())
   saveRDS(Analysisi, "Analysisi.rds")
   
   prob <- predict(Analysisi,
-					type="response",
-					test)
+					newdata=test,
+					type="response")
+  saveRDS(prob, "prob.rds")
+  
   pred <- prediction(prob, test$Border)
-  saveRDS(pred, "mourad.auc.rds")
-  perf <- performance(pred,"tpr","fpr")
-  saveRDS(perf, "mourad.roc.rds")
+  saveRDS(pred, "pred.rds")
+  roc <- performance(pred,"tpr","fpr")
+  saveRDS(roc, "mourad.roc.rds")
+  
   
   list_MultGLM[[bt]]=summary(Analysisi)
 
@@ -721,14 +729,34 @@ for(bt in borderTypeVec[-which(borderTypeVec=="NB")]){
  # Multiple Logistic Regression Estimated by Lasso
  if(sum(analysisMode=="MLRLasso")){
   if(verbose){print("Multiple Logistic Regression with Lasso Estimation")}
-  CVLasso=cv.glmnet(binMat.Mati[,-(1:2)],binMat.Mati[,1],family="binomial")
+  
+  inTrainingSet <- sample(dim(binMat.Mati)[1],floor(dim(binMat.Mati)[1]*.7))
+  #inTrainingSet <- createDataPartition(data$y,p=.7,list=FALSE)
+  train <- binMat.Mati[inTrainingSet,]
+  test <- binMat.Mati[-inTrainingSet,]
+  
+  saveRDS(test, "test.lasso.rds")
+  
+  CVLasso=cv.glmnet(train[,-(1:2)],train[,1],family="binomial")
   lambda=CVLasso$lambda.min
   CVLassoError=CVLasso$cvm[which(CVLasso$lambda==lambda)]
   coefLasso=CVLasso$glmnet.fit$beta[,which(CVLasso$lambda==lambda)]
   matCoefMultLassoi=cbind(names(coefLasso),round(coefLasso,5))
   matCoefMultLasso=rbind(matCoefMultLasso,cbind(rep(bt,length(annotNames)),matCoefMultLassoi))
+  
+  ##########
+  saveRDS(CVLasso, "CVLasso.rds")
+  prob <- predict(CVLasso,
+					type="response",
+					test[,-(1:2)], 
+					s = lambda)
+  saveRDS(prob, "prob.lasso.rds")
+  pred <- prediction(prob, test[,1])
+  saveRDS(pred, "pred.lasso.rds")
+  perf <- performance(pred,"tpr","fpr")
+  saveRDS(perf, "mourad.roc.lasso.rds")
  }
-
+ 
  # Multiple Logistic Regression with Interaction Terms 
  if(sum(analysisMode=="MLRInter")){
   if(verbose){print("Multiple Logistic Regression with Interaction Terms")}
@@ -808,7 +836,8 @@ return(list2return)
 ```
 
 
-# Performing Model
+
+# Performing Model for regular MLR
 
 ```{r}
 
@@ -817,15 +846,14 @@ annotNames <- readRDS("annotNames.rds")
 genomicFeatureList.GR <- readRDS("genomicFeatureList.GR.rds")
 domains.GR <- readRDS("domains.GR.rds")
 GFDataType="bed"
+analysisMode="MLR"
 binSize=1000;borderSize=1000
 LRT=FALSE
 interactionTerms=""
 testBorderType=FALSE
 verbose=FALSE
 
-#multiple logistic regression
 
-analysisMode="MLR"
 
 BA_res=borderAnalysisFun(genomicFeatureList.GR=genomicFeatureList.GR,
                          GFDataType="bed",
@@ -843,14 +871,100 @@ saveRDS(BA_res, "BA_res.rds")
 
 
 
-pred <- readRDS("mourad.auc.rds")
-performance(pred,"auc")	
+pred <- readRDS("pred.rds")
+mourad.auc <- performance(pred,"auc")
+mourad.auc <- mourad.auc@y.values[[1]]	
+mourad.auc
 
+prob <- readRDS("prob.rds")
+test <- readRDS("test.rds") 
+	 
+pred.logit <- ifelse(prob>mean(prob),"Yes","No")
+confMat <- confusionMatrix(pred.logit, test$Border, positive="Yes")
+
+mouradperf <- matrix(nrow = 16, ncol=1)
+rownames(mouradperf) <- c("TN",
+ 							"FN",
+ 							"FP",
+ 							"TP",
+ 							"Total",
+							"Sensitivity",
+ 							"Specificity",
+ 							"Kappa",
+ 							"Accuracy",
+ 							"Precision",
+ 							"FPR",
+ 							"FNR",
+ 							"FOR",
+ 							"NPV",
+ 							"MCC",
+ 							"F1")
+
+  TN = as.numeric(confMat$table[1,1])
+  FN = as.numeric(confMat$table[1,2])
+  FP = as.numeric(confMat$table[2,1])
+  TP = as.numeric(confMat$table[2,2])
+  mouradperf[1,1] <- confMat$table[1,1]
+  mouradperf[2,1] <- confMat$table[1,2]
+  mouradperf[3,1] <- confMat$table[2,1]
+  mouradperf[4,1] <- confMat$table[2,2]
+  mouradperf[5,1] <- sum(confMat$table)
+  mouradperf[6,1] <- as.vector(confMat$byClass["Sensitivity"])
+  mouradperf[7,1] <- as.vector(confMat$byClass["Specificity"])
+  mouradperf[8,1] <- as.vector(confMat$overall["Kappa"])
+  mouradperf[9,1] <- as.vector(confMat$overall["Accuracy"])
+  mouradperf[10,1] <- confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])
+  mouradperf[11,1] <- confMat$table[2,1]/(confMat$table[2,1]+confMat$table[1,1])
+  mouradperf[12,1] <- confMat$table[1,2]/(confMat$table[1,2]+confMat$table[2,2])
+  mouradperf[13,1] <- confMat$table[1,2]/(confMat$table[1,2]+confMat$table[1,1])
+  mouradperf[14,1] <- confMat$table[1,1]/(confMat$table[1,1]+confMat$table[1,2])
+  #mouradperf[15,1] <- mccr(ifelse(test$y=="Yes",1,0),ifelse(pred.enetModel2=="Yes",1,0))
+  mouradperf[15,1] <- (TP*TN - FP*FN)/( sqrt( (TP+FP)*(TP+FN)*(TN+FP)*(TN+FN) ) )
+  mouradperf[16,1] <- (2*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[1,2]))*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])))/(((confMat$table[2,2]/(confMat$table[2,2]+confMat$table[1,2]))*(confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1]))) + (confMat$table[2,2]/(confMat$table[2,2]+confMat$table[2,1])))
+
+
+saveRDS(mouradperf, "mouradperf.rds")
 
 ```
 
 
 
+# Performing Model with LASSO Regularization
+
+```{r}
+
+seqInfoChr <- readRDS("seqInfoChr.rds")
+annotNames <- readRDS("annotNames.rds")
+genomicFeatureList.GR <- readRDS("genomicFeatureList.GR.rds")
+domains.GR <- readRDS("domains.GR.rds")
+GFDataType="bed"
+analysisMode="MLRLasso"
+binSize=1000;borderSize=1000
+LRT=FALSE
+interactionTerms=""
+testBorderType=FALSE
+verbose=FALSE
+
+
+
+BA_res=borderAnalysisFun(genomicFeatureList.GR=genomicFeatureList.GR,
+                         GFDataType="bed",
+                         annotNames=annotNames,
+                         domains.GR=domains.GR,
+                         seqInfoChr=seqInfoChr,
+                         analysisMode="MLRLasso",
+                         binSize=1000,borderSize=1000,
+                         LRT=FALSE,
+                         interactionTerms="",
+                         testBorderType=FALSE,
+                         verbose=FALSE)
+						 
+saveRDS(BA_res, "BA_res_lasso.rds")
+
+pred <- readRDS("mourad.auc.lasso.rds")
+performance(pred,"auc")
+
+```
 
 
 

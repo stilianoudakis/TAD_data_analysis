@@ -13,18 +13,16 @@ library(ggplot2)
 setwd("/home/stilianoudakisc/TAD_data_analysis/comparing_normalization/")
 
 #Chromosome 1
-chr1data_f <- readRDS("chr1data_f.rds")
+chr1_gm12878_f <- readRDS("chr1_gm12878_f.rds")
 
-#Full data
-#logitdata_f <- readRDS("logitdata_f.rds")
 
 #set number of bootstrap samples
-bootsamps = 10
+bootsamps = 5
 
 #set tuning parameters
 fitControl <- trainControl(method = "repeatedcv",
-                           number = 5,
-                           repeats = 3,
+                           number = 10,
+                           repeats = 5,
                            ## Estimate class probabilities
                            classProbs = TRUE,
                            ## Evaluate performance using 
@@ -35,25 +33,17 @@ fitControl <- trainControl(method = "repeatedcv",
 #the number of rows will match the one class
 #the number of columns match the number of bootstrap samples
 sampids <- matrix(ncol=bootsamps, 
-                  nrow=length(chr1data_f$y[which(chr1data_f$y=="Yes")]))
+                  nrow=length(chr1_gm12878_f$y[which(chr1_gm12878_f$y=="Yes")]))
 
-#sampids <- matrix(ncol=bootsamps, 
-#                  nrow=length(logitdata_f$y[which(logitdata_f$y==1)]))
 
 #filling in the sample ids matrix
 set.seed(123)
 for(j in 1:bootsamps){
-  sampids[,j] <- sample(which(chr1data_f$y=="No"),
-                        length(which(chr1data_f$y=="Yes")),
+  sampids[,j] <- sample(which(chr1_gm12878_f$y=="No"),
+                        length(which(chr1_gm12878_f$y=="Yes")),
                         replace = TRUE)
 }
 
-#set.seed(123)
-#for(j in 1:bootsamps){
-#  sampids[,j] <- sample(which(logitdata_f$y==0),
-#                        length(which(logitdata_f$y==1)),
-#                        replace = TRUE)
-#}
 
 #function for roc curves
 simple_roc <- function(labels, scores){
@@ -451,124 +441,4 @@ mean(enetlst_nlns[[3]])
 
 saveRDS(enetlst_nlns, "enetlst_nlns.rds")
 saveRDS(enetperf_nlns, "enetperf_nlns.rds")
-
-
-
-#####################################################################
-
-
-#####################################################################
-
-#plotting performance
-
-
-test.auc <- data.frame(Normalization=c("Log/Standardization", 
-                                       "Log/No Standardization",
-                                       "No Log/Standardization",
-                                       "No Log/No Standardization"),
-                       auc=c(mean(enetlst_ls[[3]]),
-                             mean(enetlst_lns[[3]]),
-                             mean(enetlst_nls[[3]]),
-                             mean(enetlst_nlns[[3]])))
-
-test.auc <- test.auc[order(test.auc$auc, decreasing=TRUE),]
-
-test.auc$Normalization <- factor(test.auc$Normalization, levels=test.auc$Normalization)
-
-test.auc
-
-p<-ggplot(data=test.auc, aes(x=Normalization, y=auc)) +
-  geom_bar(stat="identity", fill="steelblue") + ylim(0,1) +
-  theme_minimal()
-p
-
-
-plot(rowMeans(enetlst_ls[[2]]),rowMeans(enetlst_ls[[1]]), type="l", col="red",xlab="1-Specificity",ylab="Sensitivity")
-lines(rowMeans(enetlst_lns[[2]]),rowMeans(enetlst_lns[[1]]), type="l", col="blue")
-lines(rowMeans(enetlst_nls[[2]]),rowMeans(enetlst_nls[[1]]), type="l", col="black")
-lines(rowMeans(enetlst_nlns[[2]]),rowMeans(enetlst_nlns[[1]]), type="l", col="green")
-legend("bottomright", legend = c("Log/ \n Standardization", 
-                              "Log/ \n No Standardization",
-                              "No Log/ \n Standardization",
-                              "No Log/ \n No Standardization"),
-       fill=c("red","blue","black","green"),
-       cex=.5)
-
-
-varimp.enetls <- as.vector(rowMeans(enetlst_ls[[4]]))
-varimp.enet.dfls <- data.frame(Feature=rownames(enetlst_ls[[4]]),
-                              Importance=varimp.enetls)
-varimp.enet.dfls <- varimp.enet.dfls[order(varimp.enet.dfls$Importance),]
-numvarenet <- dim(varimp.enet.dfls)[1]
-varimp.enet.dfls <- varimp.enet.dfls[(numvarenet-19):numvarenet,]
-varimp.enet.dfls$Feature <- factor(varimp.enet.dfls$Feature,levels=varimp.enet.dfls$Feature)
-enetp1 <- ggplot(varimp.enet.dfls, aes(x=Feature, 
-                                      y=Importance)) +
-  xlab("Predictors") +
-  ylab("Importance") +
-  #ggtitle("Importance Plot for Gradient Boosting Machine") +
-  geom_bar(stat="identity", 
-           width=.5, 
-           position="dodge",
-           fill="red") +
-  coord_flip()
-
-varimp.enetnls <- as.vector(rowMeans(enetlst_nls[[4]]))
-varimp.enet.dfnls <- data.frame(Feature=rownames(enetlst_nls[[4]]),
-                               Importance=varimp.enetnls)
-varimp.enet.dfnls <- varimp.enet.dfnls[order(varimp.enet.dfnls$Importance),]
-numvarenet <- dim(varimp.enet.dfnls)[1]
-varimp.enet.dfnls <- varimp.enet.dfnls[(numvarenet-19):numvarenet,]
-varimp.enet.dfnls$Feature <- factor(varimp.enet.dfnls$Feature,levels=varimp.enet.dfnls$Feature)
-enetp2 <- ggplot(varimp.enet.dfnls, aes(x=Feature, 
-                                       y=Importance)) +
-  xlab("Predictors") +
-  ylab("Importance") +
-  #ggtitle("Importance Plot for Gradient Boosting Machine") +
-  geom_bar(stat="identity", 
-           width=.5, 
-           position="dodge",
-           fill="black") +
-  coord_flip()
-
-varimp.enetlns <- as.vector(rowMeans(enetlst_lns[[4]]))
-varimp.enet.dflns <- data.frame(Feature=rownames(enetlst_lns[[4]]),
-                                Importance=varimp.enetlns)
-varimp.enet.dflns <- varimp.enet.dflns[order(varimp.enet.dflns$Importance),]
-numvarenet <- dim(varimp.enet.dflns)[1]
-varimp.enet.dflns <- varimp.enet.dflns[(numvarenet-19):numvarenet,]
-varimp.enet.dflns$Feature <- factor(varimp.enet.dflns$Feature,levels=varimp.enet.dflns$Feature)
-enetp3 <- ggplot(varimp.enet.dflns, aes(x=Feature, 
-                                        y=Importance)) +
-  xlab("Predictors") +
-  ylab("Importance") +
-  #ggtitle("Importance Plot for Gradient Boosting Machine") +
-  geom_bar(stat="identity", 
-           width=.5, 
-           position="dodge",
-           fill="blue") +
-  coord_flip()
-
-varimp.enetnlns <- as.vector(rowMeans(enetlst_nlns[[4]]))
-varimp.enet.dfnlns <- data.frame(Feature=rownames(enetlst_nlns[[4]]),
-                                Importance=varimp.enetnlns)
-varimp.enet.dfnlns <- varimp.enet.dfnlns[order(varimp.enet.dfnlns$Importance),]
-numvarenet <- dim(varimp.enet.dfnlns)[1]
-varimp.enet.dfnlns <- varimp.enet.dfnlns[(numvarenet-19):numvarenet,]
-varimp.enet.dfnlns$Feature <- factor(varimp.enet.dfnlns$Feature,levels=varimp.enet.dfnlns$Feature)
-enetp4 <- ggplot(varimp.enet.dfnlns, aes(x=Feature, 
-                                        y=Importance)) +
-  xlab("Predictors") +
-  ylab("Importance") +
-  #ggtitle("Importance Plot for Gradient Boosting Machine") +
-  geom_bar(stat="identity", 
-           width=.5, 
-           position="dodge",
-           fill="green") +
-  coord_flip()
-
-grid.arrange(enetp1, enetp2, enetp3, enetp4, ncol=2)
-
-
-
 
