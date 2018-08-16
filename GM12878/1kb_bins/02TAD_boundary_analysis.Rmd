@@ -81,7 +81,7 @@ coords <- rbind.data.frame(coords[,c(1,2)],coords[,c(1,3)])
 
 #remove duplicates for coordinates that are conjoined
 coords <- coords[!duplicated(coords),]
-coords <- coords[order(as.numeric(substr(coords$Chromosome,4,5))),]
+coords <- coords[order(as.numeric(substr(coords$Chromosome,4,5)), coords$coordinate, decreasing = FALSE),]
 dim(coords)
 #16770     2
 
