@@ -1,0 +1,114 @@
+---
+title: "Creating Response Vector Y"
+author: "Spiro Stilianoudakis"
+date: "August 16, 2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Loading Libraries
+
+```{r}
+#library(MultiAssayExperiment)
+library(GenomicRanges)
+#library(IRanges)
+library(caret)
+library(data.table)
+library(gbm)
+library(pROC)
+library(plyr)
+library(dplyr)
+```
+
+# Reading in binned genome in the form of contact matrix at 10kb resolution
+
+```{r}
+
+binslist10 <- read.table("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/data/10kb_bins/chr1/chr1_10kb.txt")
+
+dim(binslist10)
+
+#ordering the bins according to left endpoint
+binslist10 <- binslist10[order(binslist10$V2, decreasing=FALSE),]
+
+#removing duplicate left endpoints
+binslist10 <- binslist10[!duplicated(binslist10$V2),]
+
+#extracting and renaming first 2 columns
+binslist10 <- binslist10[,1:2]
+colnames(binslist10) <- c("Chromosome", "Coordinate")
+
+dim(binslist10)
+
+#creating a granges object from binned genome
+binslist10 <- GRanges(seqnames = binslist10$Chromosome, ranges = IRanges(start = binslist10$Coordinate,
+                                                                         width = 10000))
+
+saveRDS(binslist10, "C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/10kb_bins/chr1/binslist10.rds")
+
+```
+
+
+# Reading in TAD data
+
+```{r}
+
+#setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/data")
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data_analysis/data")
+
+domains <- read.table("C:/Users/Spiro Stilianoudakis/Documents/TAD_data_analysis/data/arrowhead_data.txt", header=T)
+domains <- domains[,1:3]
+head(domains)
+dim(domains)
+#9274   3
+
+
+#keeping only chr1
+domains <- domains[which(domains$Chromosome=="chr1"),]
+
+#creating granges object out of tad boundary data
+coords <- domains
+colnames(coords)[2:3] <- c("coordinate", "coordinate")
+coords <- rbind.data.frame(coords[,c(1,2)],coords[,c(1,3)])
+#remove duplicates for coordinates that are conjoined
+coords <- coords[!duplicated(coords),]
+coords <- coords[order(as.numeric(substr(coords$Chromosome,4,5)), coords$coordinate, decreasing = FALSE),]
+dim(coords)
+coords$Chromosome <- as.character(coords$Chromosome)
+bounds <- GRanges(seqnames=coords$Chromosome, ranges=IRanges(start=coords$coordinate, width=1))
+
+saveRDS(bounds, "C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/10kb_bins/chr1/bounds.rds")
+
+```
+
+# Creating Response Vector Y (1 if tad boundary is in bin; 0 if not)
+
+```{r}
+
+y <- countOverlaps(binslist10, bounds)
+length(y) #22524
+table(y)
+#    0     1     2 
+#20995  1430    99
+y <- ifelse(y>=1,1,0)
+prop.table(table(y))
+mcols(binslist10)$y <- y
+
+```
+
+
+# Creating the data frame for modeling
+
+```{r}
+
+gm12878_10kb <- data.frame(y = y)
+
+
+saveRDS(gm12878_10kb, "C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/10kb_bins/gm12878_10kb.rds")
+
+```

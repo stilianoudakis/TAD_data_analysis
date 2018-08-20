@@ -1,0 +1,623 @@
+---
+title: "Creating Feature Space"
+author: "Spiro Stilianoudakis"
+date: "August 16, 2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Loading Libraries
+
+```{r}
+#library(MultiAssayExperiment)
+library(GenomicRanges)
+#library(IRanges)
+library(caret)
+library(data.table)
+library(gbm)
+library(pROC)
+library(plyr)
+library(dplyr)
+library(knitr)
+```
+
+
+# Reading in data
+
+```{r}
+#reading in data with response vector Y
+gm12878_10kb <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/10kb_bins/chr22/gm12878_10kb.rds")
+
+#reading in genomic bins
+binslist10 <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/10kb_bins/chr22/binslist10.rds")
+
+
+#creating a granges object from the center of every range in the binned genome granges object
+#this will be used to calculate distances from genomic feature to center of genomic bin
+binslist10_center <- resize(binslist10, width = 1, fix = "center")
+
+```
+
+
+#Adding genomic annotations from Merlot folder (for 1kb bins)
+
+#3D subcompartments
+
+```{r}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/3D_subcompartments")
+
+subcomp_A <- read.table("GSE63525_GM12878_subcompartments_A.BED",header = FALSE, sep="\t")
+subcomp_B <- read.table("GSE63525_GM12878_subcompartments_B.BED",header = FALSE, sep="\t")
+
+A_gr <- GRanges(seqnames=subcomp_A$V1,IRanges(start=subcomp_A$V2, end=subcomp_A$V3))
+A_gr_center <- resize(A_gr, width = 1, fix = "center")
+B_gr <- GRanges(seqnames=subcomp_B$V1,IRanges(start=subcomp_B$V2, end=subcomp_B$V3))
+B_gr_center <- resize(B_gr, width = 1, fix = "center")
+
+  gm12878_10kb$A <- ifelse(countOverlaps(binslist10,A_gr)>=1,1,0)
+  gm12878_10kb$B <- ifelse(countOverlaps(binslist10,B_gr)>=1,1,0)
+  
+  gm12878_10kb$A_dist <- mcols(distanceToNearest(binslist10_center, A_gr_center))$distance
+  gm12878_10kb$B_dist <- mcols(distanceToNearest(binslist10_center, B_gr_center))$distance
+
+```
+
+#DGV
+```{r include=FALSE}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/DGV/DGV_files")
+
+temp = list.files()
+
+complex <- read.table(temp[1],header=FALSE,sep="\t")
+deletion <- read.table(temp[2],header=FALSE,sep="\t")
+duplication <- read.table(temp[3],header=FALSE,sep="\t")
+gain_loss <- read.table(temp[4],header=FALSE,sep="\t")
+insertion <- read.table(temp[5],header=FALSE,sep="\t")
+inversion <- read.table(temp[6],header=FALSE,sep="\t")
+mobile_element_insertion <- read.table(temp[7],header=FALSE,sep="\t")
+novel_sequence_insertion <- read.table(temp[8],header=FALSE,sep="\t")
+sequence_alteration <- read.table(temp[9],header=FALSE,sep="\t")
+
+complex_gr <- GRanges(seqnames=complex$V1,IRanges(start=complex$V2,end=complex$V3))
+complex_gr_center <- resize(complex_gr, width = 1, fix = "center")
+deletion_gr <- GRanges(seqnames=deletion$V1,IRanges(start=deletion$V2,end=deletion$V3))
+deletion_gr_center <- resize(deletion_gr, width = 1, fix = "center")
+duplication_gr <- GRanges(seqnames=duplication$V1,IRanges(start=duplication$V2,end=duplication$V3))
+duplication_gr_center <- resize(duplication_gr, width = 1, fix = "center")
+gain_loss_gr <- GRanges(seqnames=gain_loss$V1,IRanges(start=gain_loss$V2,end=gain_loss$V3))
+gain_loss_gr_center <- resize(gain_loss_gr, width = 1, fix = "center")
+insertion_gr <- GRanges(seqnames=insertion$V1,IRanges(start=insertion$V2,end=insertion$V3))
+insertion_gr_center <- resize(insertion_gr, width = 1, fix = "center")
+inversion_gr <- GRanges(seqnames=inversion$V1,IRanges(start=inversion$V2,end=inversion$V3))
+inversion_gr_center <- resize(inversion_gr, width = 1, fix = "center")
+mobile_element_insertion_gr <- GRanges(seqnames=mobile_element_insertion$V1,IRanges(start=mobile_element_insertion$V2,end=mobile_element_insertion$V3))
+mobile_element_insertion_gr_center <- resize(mobile_element_insertion_gr, width = 1, fix = "center")
+novel_sequence_insertion_gr <- GRanges(seqnames=novel_sequence_insertion$V1,IRanges(start=novel_sequence_insertion$V2,end=novel_sequence_insertion$V3))
+novel_sequence_insertion_gr_center <- resize(novel_sequence_insertion_gr, width = 1, fix = "center")
+sequence_alteration_gr <- GRanges(seqnames=sequence_alteration$V1,IRanges(start=sequence_alteration$V2,end=sequence_alteration$V3))
+sequence_alteration_gr_center <- resize(sequence_alteration_gr, width = 1, fix = "center")
+
+  gm12878_10kb$complex <- ifelse(countOverlaps(binslist10,complex_gr)>=1,1,0)
+  gm12878_10kb$deletion <- ifelse(countOverlaps(binslist10,deletion_gr)>=1,1,0)
+  gm12878_10kb$duplication <- ifelse(countOverlaps(binslist10,duplication_gr)>=1,1,0)
+  gm12878_10kb$gain_loss <- ifelse(countOverlaps(binslist10,gain_loss_gr)>=1,1,0)
+  gm12878_10kb$insertion <- ifelse(countOverlaps(binslist10,insertion_gr)>=1,1,0)
+  gm12878_10kb$inversion <- ifelse(countOverlaps(binslist10,inversion_gr)>=1,1,0)
+  gm12878_10kb$mobile_element_insertion <- ifelse(countOverlaps(binslist10,mobile_element_insertion_gr)>=1,1,0)
+  gm12878_10kb$novel_sequence_insertion <- ifelse(countOverlaps(binslist10,novel_sequence_insertion_gr)>=1,1,0)
+  gm12878_10kb$sequence_alteration <- ifelse(countOverlaps(binslist10,sequence_alteration_gr)>=1,1,0)
+  
+  gm12878_10kb$complex_dist <- mcols(distanceToNearest(binslist10_center, complex_gr_center))$distance
+  gm12878_10kb$deletion_dist <- mcols(distanceToNearest(binslist10_center, deletion_gr_center))$distance
+  gm12878_10kb$duplication_dist <- mcols(distanceToNearest(binslist10_center, duplication_gr_center))$distance
+  gm12878_10kb$gain_loss_dist <- mcols(distanceToNearest(binslist10_center, gain_loss_gr_center))$distance
+  gm12878_10kb$insertion_dist <- mcols(distanceToNearest(binslist10_center, insertion_gr_center))$distance
+  gm12878_10kb$inversion_dist <- mcols(distanceToNearest(binslist10_center, inversion_gr_center))$distance
+  gm12878_10kb$mobile_element_insertion_dist <- mcols(distanceToNearest(binslist10_center, mobile_element_insertion_gr_center))$distance
+  gm12878_10kb$novel_sequence_insertion_dist <- mcols(distanceToNearest(binslist10_center, novel_sequence_insertion_gr_center))$distance
+  gm12878_10kb$sequence_alteration_dist <- mcols(distanceToNearest(binslist10_center, sequence_alteration_gr_center))$distance
+  
+  
+
+```
+
+
+# GERP
+
+```{r include=FALSE}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/GERP/GERP_hg19.bed")
+
+gerp <- read.table("GERP_hg19.BED",header=FALSE,sep="\t")
+
+gerp_gr <- GRanges(seqnames=gerp$V1,IRanges(start=gerp$V2,end=gerp$V3))
+mcols(gerp_gr)$score <- gerp$V5
+gerp_gr_center <- resize(gerp_gr, width = 1, fix = "center")
+
+  gm12878_10kb$gerp <- ifelse(countOverlaps(binslist10,gerp_gr)>=1,1,0)
+  
+  gm12878_10kb$gerp_dist <- mcols(distanceToNearest(binslist10_center, gerp_gr_center))$distance
+  
+#finding which flanks overlap the gerp file so that we can add a score variable
+#all other flanks will have a score of 0
+which(gm12878_10kb$gerp==1)
+gm12878_10kb$gerp_score <- 0
+gerpoverlap <- findOverlaps(binslist10,gerp_gr)
+gerpoverlapdf <- data.frame(queryHits=queryHits(gerpoverlap), score=gerp_gr[subjectHits(gerpoverlap)]$score)
+gerpoverlapmean <- aggregate(gerpoverlapdf$score, list(gerpoverlapdf$queryHits), mean)
+gm12878_10kb$gerp_score[gerpoverlapmean$Group.1] <- gerpoverlapmean$x
+
+
+
+```
+
+# nestedRepeats
+
+```{r include=FALSE}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/nestedRepeats/nestedRepeats_files")
+
+temp = list.files()
+
+DNA <- read.table(temp[1],header=FALSE,sep="\t")
+line <- read.table(temp[2],header=FALSE,sep="\t")
+low_complexity <- read.table(temp[3],header=FALSE,sep="\t")
+LTR  <- read.table(temp[4],header=FALSE,sep="\t")
+other <- read.table(temp[5],header=FALSE,sep="\t")
+RC <- read.table(temp[6],header=FALSE,sep="\t")
+satellite <- read.table(temp[9],header=FALSE,sep="\t")
+simple_repeat <- read.table(temp[11],header=FALSE,sep="\t")
+SINE <- read.table(temp[12],header=FALSE,sep="\t")
+
+DNA_gr <- GRanges(seqnames=DNA$V1,IRanges(start=DNA$V2,end=DNA$V3))
+DNA_gr_center <- resize(DNA_gr, width = 1, fix = "center")
+line_gr <- GRanges(seqnames=line$V1,IRanges(start=line$V2,end=line$V3))
+line_gr_center <- resize(line_gr, width = 1, fix = "center")
+low_complexity_gr <- GRanges(seqnames=low_complexity$V1,IRanges(start=low_complexity$V2,end=low_complexity$V3))
+low_complexity_gr_center <- resize(low_complexity_gr, width = 1, fix = "center")
+LTR_gr <- GRanges(seqnames=LTR$V1,IRanges(start=LTR$V2,end=LTR$V3))
+LTR_gr_center <- resize(LTR_gr, width = 1, fix = "center")
+other_gr <- GRanges(seqnames=other$V1,IRanges(start=other$V2,end=other$V3))
+other_gr_center <- resize(other_gr, width = 1, fix = "center")
+RC_gr <- GRanges(seqnames=RC$V1,IRanges(start=RC$V2,end=RC$V3))
+RC_gr_center <- resize(RC_gr, width = 1, fix = "center")
+satellite_gr <- GRanges(seqnames=satellite$V1,IRanges(start=satellite$V2,end=satellite$V3))
+satellite_gr_center <- resize(satellite_gr, width = 1, fix = "center")
+simple_repeat_gr <- GRanges(seqnames=simple_repeat$V1,IRanges(start=simple_repeat$V2,end=simple_repeat$V3))
+simple_repeat_gr_center <- resize(simple_repeat_gr, width = 1, fix = "center")
+SINE_gr <- GRanges(seqnames=SINE$V1,IRanges(start=SINE$V2,end=SINE$V3))
+SINE_gr_center <- resize(SINE_gr, width = 1, fix = "center")
+
+  gm12878_10kb$DNA <- ifelse(countOverlaps(binslist10,DNA_gr)>=1,1,0)
+  gm12878_10kb$line <- ifelse(countOverlaps(binslist10,line_gr)>=1,1,0)
+  gm12878_10kb$low_complexity <- ifelse(countOverlaps(binslist10,low_complexity_gr)>=1,1,0)
+  gm12878_10kb$LTR <- ifelse(countOverlaps(binslist10,LTR_gr)>=1,1,0)
+  gm12878_10kb$other <- ifelse(countOverlaps(binslist10,other_gr)>=1,1,0)
+  gm12878_10kb$RC <- ifelse(countOverlaps(binslist10,RC_gr)>=1,1,0)
+  gm12878_10kb$satellite <- ifelse(countOverlaps(binslist10,satellite_gr)>=1,1,0)
+  gm12878_10kb$simple_repeat <- ifelse(countOverlaps(binslist10,simple_repeat_gr)>=1,1,0)
+  gm12878_10kb$SINE <- ifelse(countOverlaps(binslist10,SINE_gr)>=1,1,0)
+  
+  
+  gm12878_10kb$DNA_dist <- mcols(distanceToNearest(binslist10_center, DNA_gr_center))$distance 
+  gm12878_10kb$line_dist <- mcols(distanceToNearest(binslist10_center, line_gr_center))$distance 
+  gm12878_10kb$low_complexity_dist <- mcols(distanceToNearest(binslist10_center, low_complexity_gr_center))$distance 
+  gm12878_10kb$LTR_dist <- mcols(distanceToNearest(binslist10_center, LTR_gr_center))$distance 
+  gm12878_10kb$other_dist <- mcols(distanceToNearest(binslist10_center, other_gr_center))$distance 
+  gm12878_10kb$RC_dist <- mcols(distanceToNearest(binslist10_center, RC_gr_center))$distance 
+  gm12878_10kb$satellite_dist <- mcols(distanceToNearest(binslist10_center, satellite_gr_center))$distance 
+  gm12878_10kb$simple_repeat_dist <- mcols(distanceToNearest(binslist10_center, simple_repeat_gr_center))$distance 
+  gm12878_10kb$SINE_dist <- mcols(distanceToNearest(binslist10_center, SINE_gr_center))$distance 
+  
+
+```
+
+
+# super_enhancers
+```{r include=FALSE}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/super_enhancers")
+
+temp = list.files()
+
+se_GM12878 <- read.table(temp[1],header=FALSE,sep="\t")
+
+se_GM12878_gr <- GRanges(seqnames=se_GM12878$V1,IRanges(start=se_GM12878$V2,end=se_GM12878$V3))
+se_GM12878_gr_center <- resize(se_GM12878_gr, width = 1, fix = "center")
+
+  gm12878_10kb$se_GM12878 <- ifelse(countOverlaps(binslist10,se_GM12878_gr)>=1,1,0)
+  
+  gm12878_10kb$se_GM12878_dist <- mcols(distanceToNearest(binslist10_center, se_GM12878_gr_center))$distance
+  
+```
+
+# UCNE
+```{r include=FALSE}
+# setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/UCNEs/UCNE.bed")
+# 
+# UCNE <- read.table("UCNE.BED",header=FALSE,sep="\t")
+# 
+# UCNE_gr <- GRanges(seqnames=UCNE$V1,IRanges(start=UCNE$V2,end=UCNE$V3))
+# UCNE_gr_center <- resize(UCNE_gr, width = 1, fix = "center")
+# mcols(UCNE_gr)$score <- UCNE$V5
+# 
+#   gm12878_10kb$UCNE <- ifelse(countOverlaps(binslist10,UCNE_gr)>=1,1,0)
+#   
+#   gm12878_10kb$UCNE_dist <- mcols(distanceToNearest(binslist10_center, UCNE_gr_center))$distance
+#   
+# #finding which flanks overlap the unce file so that we can add a score variable
+# #all other flanks will have a score of 0
+# which(gm12878_10kb$UCNE==1)
+# gm12878_10kb$UCNE_score <- 0
+# UCNEoverlap <- findOverlaps(binslist10,UCNE_gr)
+# UCNEoverlapdf <- data.frame(queryHits=queryHits(UCNEoverlap), score=UCNE_gr[subjectHits(UCNEoverlap)]$score)
+# UCNEoverlapmean <- aggregate(UCNEoverlapdf$score, list(UCNEoverlapdf$queryHits), mean)
+# gm12878_10kb$UCNE_score[UCNEoverlapmean$Group.1] <- UCNEoverlapmean$x
+
+```
+
+# VMR
+```{r include=FALSE}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/VMRs")
+
+VMR <- read.table("VMR_hg19.BED",header=FALSE,sep="\t")
+
+VMR_gr <- GRanges(seqnames=VMR$V1,IRanges(start=VMR$V2,end=VMR$V3))
+VMR_gr_center <- resize(VMR_gr, width = 1, fix = "center")
+
+  gm12878_10kb$VMR <- ifelse(countOverlaps(binslist10,VMR_gr)>=1,1,0)
+  
+  gm12878_10kb$VMR_dist <- mcols(distanceToNearest(binslist10_center, VMR_gr_center))$distance
+
+```
+
+# BroadHMM
+```{r include=FALSE}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/BroadHmm")
+
+temp <- list.files()
+
+#Gm12878
+Gm12878_TxnElongation <- read.table(temp[2],header=FALSE,sep="\t")
+Gm12878_WeakTxn <- read.table(temp[3],header=FALSE,sep="\t")
+Gm12878_Repressed <- read.table(temp[4],header=FALSE,sep="\t")
+Gm12878_Heterochromlo <- read.table(temp[5],header=FALSE,sep="\t")
+Gm12878_RepetitiveCNV14 <- read.table(temp[6],header=FALSE,sep="\t")
+Gm12878_RepetitiveCNV15 <- read.table(temp[7],header=FALSE,sep="\t")
+Gm12878_ActivePromoter <- read.table(temp[8],header=FALSE,sep="\t")
+Gm12878_WeakPromoter <- read.table(temp[9],header=FALSE,sep="\t")
+Gm12878_PoisedPromoter <- read.table(temp[10],header=FALSE,sep="\t")
+Gm12878_StrongEnhancer4 <- read.table(temp[11],header=FALSE,sep="\t")
+Gm12878_StrongEnhancer5 <- read.table(temp[12],header=FALSE,sep="\t") 
+Gm12878_WeakEnhancer6 <- read.table(temp[13],header=FALSE,sep="\t")
+Gm12878_WeakEnhancer7 <- read.table(temp[14],header=FALSE,sep="\t")
+Gm12878_Insulator <- read.table(temp[15],header=FALSE,sep="\t")
+Gm12878_TxnTransition <- read.table(temp[16],header=FALSE,sep="\t")
+
+Gm12878_TxnElongation_gr <- GRanges(seqnames=Gm12878_TxnElongation$V1,IRanges(start=Gm12878_TxnElongation$V2,end=Gm12878_TxnElongation$V3))
+Gm12878_TxnElongation_gr_center <- resize(Gm12878_TxnElongation_gr, width = 1, fix = "center")
+Gm12878_WeakTxn_gr <- GRanges(seqnames=Gm12878_WeakTxn$V1,IRanges(start=Gm12878_WeakTxn$V2,end=Gm12878_WeakTxn$V3))
+Gm12878_WeakTxn_gr_center <- resize(Gm12878_WeakTxn_gr, width = 1, fix = "center")
+Gm12878_Repressed_gr <- GRanges(seqnames=Gm12878_Repressed$V1,IRanges(start=Gm12878_Repressed$V2,end=Gm12878_Repressed$V3))
+Gm12878_Repressed_gr_center <- resize(Gm12878_Repressed_gr, width = 1, fix = "center")
+Gm12878_Heterochromlo_gr <- GRanges(seqnames=Gm12878_Heterochromlo$V1,IRanges(start=Gm12878_Heterochromlo$V2,end=Gm12878_Heterochromlo$V3)) 
+Gm12878_Heterochromlo_gr_center <- resize(Gm12878_Heterochromlo_gr, width = 1, fix = "center")
+Gm12878_RepetitiveCNV14_gr <- GRanges(seqnames=Gm12878_RepetitiveCNV14$V1,IRanges(start=Gm12878_RepetitiveCNV14$V2,end=Gm12878_RepetitiveCNV14$V3)) 
+Gm12878_RepetitiveCNV14_gr_center <- resize(Gm12878_RepetitiveCNV14_gr, width = 1, fix = "center")
+Gm12878_RepetitiveCNV15_gr <- GRanges(seqnames=Gm12878_RepetitiveCNV15$V1,IRanges(start=Gm12878_RepetitiveCNV15$V2,end=Gm12878_RepetitiveCNV15$V3))
+Gm12878_RepetitiveCNV15_gr_center <- resize(Gm12878_RepetitiveCNV15_gr, width = 1, fix = "center")
+Gm12878_ActivePromoter_gr <- GRanges(seqnames=Gm12878_ActivePromoter$V1,IRanges(start=Gm12878_ActivePromoter$V2,end=Gm12878_ActivePromoter$V3))
+Gm12878_ActivePromoter_gr_center <- resize(Gm12878_ActivePromoter_gr, width = 1, fix = "center")
+Gm12878_WeakPromoter_gr <- GRanges(seqnames=Gm12878_WeakPromoter$V1,IRanges(start=Gm12878_WeakPromoter$V2,end=Gm12878_WeakPromoter$V3))
+Gm12878_WeakPromoter_gr_center <- resize(Gm12878_WeakPromoter_gr, width = 1, fix = "center")
+Gm12878_PoisedPromoter_gr <- GRanges(seqnames=Gm12878_PoisedPromoter$V1,IRanges(start=Gm12878_PoisedPromoter$V2,end=Gm12878_PoisedPromoter$V3)) 
+Gm12878_PoisedPromoter_gr_center <- resize(Gm12878_PoisedPromoter_gr, width = 1, fix = "center")
+Gm12878_StrongEnhancer4_gr <- GRanges(seqnames=Gm12878_StrongEnhancer4$V1,IRanges(start=Gm12878_StrongEnhancer4$V2,end=Gm12878_StrongEnhancer4$V3))
+Gm12878_StrongEnhancer4_gr_center <- resize(Gm12878_StrongEnhancer4_gr, width = 1, fix = "center") 
+Gm12878_StrongEnhancer5_gr <- GRanges(seqnames=Gm12878_StrongEnhancer5$V1,IRanges(start=Gm12878_StrongEnhancer5$V2,end=Gm12878_StrongEnhancer5$V3))
+Gm12878_StrongEnhancer5_gr_center <- resize(Gm12878_StrongEnhancer5_gr, width = 1, fix = "center")
+Gm12878_WeakEnhancer6_gr <- GRanges(seqnames=Gm12878_WeakEnhancer6$V1,IRanges(start=Gm12878_WeakEnhancer6$V2,end=Gm12878_WeakEnhancer6$V3)) 
+Gm12878_WeakEnhancer6_gr_center <- resize(Gm12878_WeakEnhancer6_gr, width = 1, fix = "center")
+Gm12878_WeakEnhancer7_gr <- GRanges(seqnames=Gm12878_WeakEnhancer7$V1,IRanges(start=Gm12878_WeakEnhancer7$V2,end=Gm12878_WeakEnhancer7$V3))
+Gm12878_WeakEnhancer7_gr_center <- resize(Gm12878_WeakEnhancer7_gr, width = 1, fix = "center") 
+Gm12878_Insulator_gr <- GRanges(seqnames=Gm12878_Insulator$V1,IRanges(start=Gm12878_Insulator$V2,end=Gm12878_Insulator$V3))
+Gm12878_Insulator_gr_center <- resize(Gm12878_Insulator_gr, width = 1, fix = "center")
+Gm12878_TxnTransition_gr <- GRanges(seqnames=Gm12878_TxnTransition$V1,IRanges(start=Gm12878_TxnTransition$V2,end=Gm12878_TxnTransition$V3)) 
+Gm12878_TxnTransition_gr_center <- resize(Gm12878_TxnTransition_gr, width = 1, fix = "center")
+
+  gm12878_10kb$Gm12878_TxnElongation <- ifelse(countOverlaps(binslist10,Gm12878_TxnElongation_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_WeakTxn <- ifelse(countOverlaps(binslist10,Gm12878_WeakTxn_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_Repressed <- ifelse(countOverlaps(binslist10,Gm12878_Repressed_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_Heterochromlo <- ifelse(countOverlaps(binslist10,Gm12878_Heterochromlo_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_RepetitiveCNV14 <- ifelse(countOverlaps(binslist10,Gm12878_RepetitiveCNV14_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_RepetitiveCNV15 <- ifelse(countOverlaps(binslist10,Gm12878_RepetitiveCNV15_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_ActivePromoter <- ifelse(countOverlaps(binslist10,Gm12878_ActivePromoter_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_WeakPromoter <- ifelse(countOverlaps(binslist10,Gm12878_WeakPromoter_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_PoisedPromoter <- ifelse(countOverlaps(binslist10,Gm12878_PoisedPromoter_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_StrongEnhancer4 <- ifelse(countOverlaps(binslist10,Gm12878_StrongEnhancer4_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_StrongEnhancer5 <- ifelse(countOverlaps(binslist10,Gm12878_StrongEnhancer5_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_WeakEnhancer6 <- ifelse(countOverlaps(binslist10,Gm12878_WeakEnhancer6_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_WeakEnhancer7 <- ifelse(countOverlaps(binslist10,Gm12878_WeakEnhancer7_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_Insulator <- ifelse(countOverlaps(binslist10,Gm12878_Insulator_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_TxnTransition <- ifelse(countOverlaps(binslist10,Gm12878_TxnTransition_gr)>=1,1,0)
+
+  gm12878_10kb$Gm12878_TxnElongation_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_TxnElongation_gr_center))$distance
+  gm12878_10kb$Gm12878_WeakTxn_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_WeakTxn_gr_center))$distance
+  gm12878_10kb$Gm12878_Repressed_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_Repressed_gr_center))$distance
+  gm12878_10kb$Gm12878_Heterochromlo_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_Heterochromlo_gr_center))$distance
+  gm12878_10kb$Gm12878_RepetitiveCNV14_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_RepetitiveCNV14_gr_center))$distance
+  gm12878_10kb$Gm12878_RepetitiveCNV15_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_RepetitiveCNV15_gr_center))$distance
+  gm12878_10kb$Gm12878_ActivePromoter_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_ActivePromoter_gr_center))$distance
+  gm12878_10kb$Gm12878_WeakPromoter_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_WeakPromoter_gr_center))$distance
+  gm12878_10kb$Gm12878_PoisedPromoter_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_PoisedPromoter_gr_center))$distance
+  gm12878_10kb$Gm12878_StrongEnhancer4_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_StrongEnhancer4_gr_center))$distance
+  gm12878_10kb$Gm12878_StrongEnhancer5_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_StrongEnhancer5_gr_center))$distance
+  gm12878_10kb$Gm12878_WeakEnhancer6_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_WeakEnhancer6_gr_center))$distance
+  gm12878_10kb$Gm12878_WeakEnhancer7_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_WeakEnhancer7_gr_center))$distance
+  gm12878_10kb$Gm12878_Insulator_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_Insulator_gr_center))$distance
+  gm12878_10kb$Gm12878_TxnTransition_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_TxnTransition_gr_center))$distance
+
+  
+```
+
+# Combined
+```{r include=FALSE}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/Combined")
+
+temp <- list.files()
+
+#Gm12878
+Gm12878_CTCF <- read.table(temp[2],header=FALSE,sep="\t") 
+Gm12878_E <- read.table(temp[3],header=FALSE,sep="\t")
+Gm12878_PF <- read.table(temp[4],header=FALSE,sep="\t")
+Gm12878_R <- read.table(temp[5],header=FALSE,sep="\t")
+Gm12878_T <- read.table(temp[6],header=FALSE,sep="\t")
+Gm12878_TSS <- read.table(temp[7],header=FALSE,sep="\t")
+Gm12878_WE <- read.table(temp[8],header=FALSE,sep="\t")
+
+Gm12878_CTCF_gr <- GRanges(seqnames=Gm12878_CTCF$V1,IRanges(start=Gm12878_CTCF$V2,end=Gm12878_CTCF$V3))
+Gm12878_CTCF_gr_center <- resize(Gm12878_CTCF_gr, width = 1, fix = "center")
+Gm12878_E_gr <- GRanges(seqnames=Gm12878_E$V1,IRanges(start=Gm12878_E$V2,end=Gm12878_E$V3))
+Gm12878_E_gr_center <- resize(Gm12878_E_gr, width = 1, fix = "center")
+Gm12878_PF_gr <- GRanges(seqnames=Gm12878_PF$V1,IRanges(start=Gm12878_PF$V2,end=Gm12878_PF$V3))
+Gm12878_PF_gr_center <- resize(Gm12878_PF_gr, width = 1, fix = "center")
+Gm12878_R_gr <- GRanges(seqnames=Gm12878_R$V1,IRanges(start=Gm12878_R$V2,end=Gm12878_R$V3))
+Gm12878_R_gr_center <- resize(Gm12878_R_gr, width = 1, fix = "center")
+Gm12878_T_gr <- GRanges(seqnames=Gm12878_T$V1,IRanges(start=Gm12878_T$V2,end=Gm12878_T$V3))
+Gm12878_T_gr_center <- resize(Gm12878_T_gr, width = 1, fix = "center")
+Gm12878_TSS_gr <- GRanges(seqnames=Gm12878_TSS$V1,IRanges(start=Gm12878_TSS$V2,end=Gm12878_TSS$V3))
+Gm12878_TSS_gr_center <- resize(Gm12878_TSS_gr, width = 1, fix = "center")
+Gm12878_WE_gr <- GRanges(seqnames=Gm12878_WE$V1,IRanges(start=Gm12878_WE$V2,end=Gm12878_WE$V3))
+Gm12878_WE_gr_center <- resize(Gm12878_WE_gr, width = 1, fix = "center")
+
+  gm12878_10kb$Gm12878_CTCF <- ifelse(countOverlaps(binslist10,Gm12878_CTCF_gr)>=1,1,0) 
+  gm12878_10kb$Gm12878_E <- ifelse(countOverlaps(binslist10,Gm12878_E_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_PF <- ifelse(countOverlaps(binslist10,Gm12878_PF_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_R <- ifelse(countOverlaps(binslist10,Gm12878_R_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_T <- ifelse(countOverlaps(binslist10,Gm12878_T_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_TSS <- ifelse(countOverlaps(binslist10,Gm12878_TSS_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_WE <- ifelse(countOverlaps(binslist10,Gm12878_WE_gr)>=1,1,0)
+
+  gm12878_10kb$Gm12878_CTCF_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_CTCF_gr_center))$distance
+  gm12878_10kb$Gm12878_E_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_E_gr_center))$distance
+  gm12878_10kb$Gm12878_PF_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_PF_gr_center))$distance
+  gm12878_10kb$Gm12878_R_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_R_gr_center))$distance
+  gm12878_10kb$Gm12878_T_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_T_gr_center))$distance
+  gm12878_10kb$Gm12878_TSS_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_TSS_gr_center))$distance
+  gm12878_10kb$Gm12878_WE_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_WE_gr_center))$distance
+
+
+```
+
+# DNase I
+
+```{r}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/DNaseI")
+
+temp <- list.files()
+
+Gm12878_DNaseI <- read.table(temp[1],header=FALSE,sep="\t") 
+
+Gm12878_DNaseI_gr <- GRanges(seqnames=Gm12878_DNaseI$V1,IRanges(start=Gm12878_DNaseI$V2,end=Gm12878_DNaseI$V3))
+Gm12878_DNaseI_gr_center <- resize(Gm12878_DNaseI_gr, width = 1, fix = "center")
+
+gm12878_10kb$Gm12878_DNaseI <- ifelse(countOverlaps(binslist10,Gm12878_DNaseI_gr)>=1,1,0)
+
+gm12878_10kb$Gm12878_DNaseI_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_DNaseI_gr_center))$distance
+
+```
+
+# Histone Modifications
+
+```{r}
+setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/annotations/HistoneModifications")
+
+temp <- list.files()
+
+Gm12878_H2az <- read.table(temp[1],header=FALSE,sep="\t") 
+Gm12878_H3k27ac <- read.table(temp[2],header=FALSE,sep="\t")
+Gm12878_H3k27me3 <- read.table(temp[3],header=FALSE,sep="\t")
+Gm12878_H3k36me3 <- read.table(temp[4],header=FALSE,sep="\t")
+Gm12878_H3k4me1 <- read.table(temp[5],header=FALSE,sep="\t")
+Gm12878_H3k4me2 <- read.table(temp[6],header=FALSE,sep="\t")
+Gm12878_H3k4me3 <- read.table(temp[7],header=FALSE,sep="\t")
+Gm12878_H3k79me2 <- read.table(temp[8],header=FALSE,sep="\t")
+Gm12878_H3k9ac <- read.table(temp[9],header=FALSE,sep="\t")
+Gm12878_H3k9me3 <- read.table(temp[10],header=FALSE,sep="\t")
+Gm12878_H4k20me1 <- read.table(temp[11],header=FALSE,sep="\t")
+
+Gm12878_H2az_gr <- GRanges(seqnames=Gm12878_H2az$V1,IRanges(start=Gm12878_H2az$V2,end=Gm12878_H2az$V3))
+Gm12878_H2az_gr_center <- resize(Gm12878_H2az_gr, width = 1, fix = "center")
+Gm12878_H3k27ac_gr <- GRanges(seqnames=Gm12878_H3k27ac$V1,IRanges(start=Gm12878_H3k27ac$V2,end=Gm12878_H3k27ac$V3))
+Gm12878_H3k27ac_gr_center <- resize(Gm12878_H3k27ac_gr, width = 1, fix = "center")
+Gm12878_H3k27me3_gr <- GRanges(seqnames=Gm12878_H3k27me3$V1,IRanges(start=Gm12878_H3k27me3$V2,end=Gm12878_H3k27me3$V3))
+Gm12878_H3k27me3_gr_center <- resize(Gm12878_H3k27me3_gr, width = 1, fix = "center")
+Gm12878_H3k36me3_gr <- GRanges(seqnames=Gm12878_H3k36me3$V1,IRanges(start=Gm12878_H3k36me3$V2,end=Gm12878_H3k36me3$V3))
+Gm12878_H3k36me3_gr_center <- resize(Gm12878_H3k36me3_gr, width = 1, fix = "center")
+Gm12878_H3k4me1_gr <- GRanges(seqnames=Gm12878_H3k4me1$V1,IRanges(start=Gm12878_H3k4me1$V2,end=Gm12878_H3k4me1$V3))
+Gm12878_H3k4me1_gr_center <- resize(Gm12878_H3k4me1_gr, width = 1, fix = "center")
+Gm12878_H3k4me2_gr <- GRanges(seqnames=Gm12878_H3k4me2$V1,IRanges(start=Gm12878_H3k4me2$V2,end=Gm12878_H3k4me2$V3))
+Gm12878_H3k4me2_gr_center <- resize(Gm12878_H3k4me2_gr, width = 1, fix = "center")
+Gm12878_H3k4me3_gr <- GRanges(seqnames=Gm12878_H3k4me3$V1,IRanges(start=Gm12878_H3k4me3$V2,end=Gm12878_H3k4me3$V3))
+Gm12878_H3k4me3_gr_center <- resize(Gm12878_H3k4me3_gr, width = 1, fix = "center")
+Gm12878_H3k79me2_gr <- GRanges(seqnames=Gm12878_H3k79me2$V1,IRanges(start=Gm12878_H3k79me2$V2,end=Gm12878_H3k79me2$V3))
+Gm12878_H3k79me2_gr_center <- resize(Gm12878_H3k79me2_gr, width = 1, fix = "center")
+Gm12878_H3k9ac_gr <- GRanges(seqnames=Gm12878_H3k9ac$V1,IRanges(start=Gm12878_H3k9ac$V2,end=Gm12878_H3k9ac$V3))
+Gm12878_H3k9ac_gr_center <- resize(Gm12878_H3k9ac_gr, width = 1, fix = "center")
+Gm12878_H3k9me3_gr <- GRanges(seqnames=Gm12878_H3k9me3$V1,IRanges(start=Gm12878_H3k9me3$V2,end=Gm12878_H3k9me3$V3))
+Gm12878_H3k9me3_gr_center <- resize(Gm12878_H3k9me3_gr, width = 1, fix = "center")
+Gm12878_H4k20me1_gr <- GRanges(seqnames=Gm12878_H4k20me1$V1,IRanges(start=Gm12878_H4k20me1$V2,end=Gm12878_H4k20me1$V3))
+Gm12878_H4k20me1_gr_center <- resize(Gm12878_H4k20me1_gr, width = 1, fix = "center")
+
+  gm12878_10kb$Gm12878_H2az <- ifelse(countOverlaps(binslist10,Gm12878_H2az_gr)>=1,1,0) 
+  gm12878_10kb$Gm12878_H3k27ac <- ifelse(countOverlaps(binslist10,Gm12878_H3k27ac_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_H3k27me3 <- ifelse(countOverlaps(binslist10,Gm12878_H3k27me3_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_H3k36me3 <- ifelse(countOverlaps(binslist10,Gm12878_H3k36me3_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_H3k4me1 <- ifelse(countOverlaps(binslist10,Gm12878_H3k4me1_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_H3k4me2 <- ifelse(countOverlaps(binslist10,Gm12878_H3k4me2_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_H3k4me3 <- ifelse(countOverlaps(binslist10,Gm12878_H3k4me3_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_H3k79me2 <- ifelse(countOverlaps(binslist10,Gm12878_H3k79me2_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_H3k9ac <- ifelse(countOverlaps(binslist10,Gm12878_H3k9ac_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_H3k9me3 <- ifelse(countOverlaps(binslist10,Gm12878_H3k9me3_gr)>=1,1,0)
+  gm12878_10kb$Gm12878_H4k20me1 <- ifelse(countOverlaps(binslist10,Gm12878_H4k20me1_gr)>=1,1,0)
+
+  gm12878_10kb$Gm12878_H2az_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_H2az_gr_center))$distance
+  gm12878_10kb$Gm12878_H3k27ac_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_H3k27ac_gr_center))$distance
+  gm12878_10kb$Gm12878_H3k27me3_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_H3k27me3_gr_center))$distance
+  gm12878_10kb$Gm12878_H3k36me3_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_H3k36me3_gr_center))$distance
+  gm12878_10kb$Gm12878_H3k4me1_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_H3k4me1_gr_center))$distance
+  gm12878_10kb$Gm12878_H3k4me2_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_H3k4me2_gr_center))$distance
+  gm12878_10kb$Gm12878_H3k4me3_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_H3k4me3_gr_center))$distance
+  gm12878_10kb$Gm12878_H3k79me2_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_H3k79me2_gr_center))$distance
+  gm12878_10kb$Gm12878_H3k9ac_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_H3k9ac_gr_center))$distance
+  gm12878_10kb$Gm12878_H3k9me3_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_H3k9me3_gr_center))$distance
+  gm12878_10kb$Gm12878_H4k20me1_dist <- mcols(distanceToNearest(binslist10_center, Gm12878_H4k20me1_gr_center))$distance
+
+```
+
+# Adding Chromosome information to the data
+
+```{r}
+
+gm12878_10kb$CHR <- seqnames(binslist10)
+
+gm12878_10kb$CHR <- as.character(gm12878_10kb$CHR)
+
+```
+
+
+# Saving the data
+
+```{r}
+
+#setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878")
+
+saveRDS(gm12878_10kb, "C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/10kb_bins/chr22/gm12878_10kb.rds")
+
+```
+
+# Adding distance from region to TAD boundary for each feature
+
+```{r}
+#setwd("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/10kb_bins/chr22")
+
+bounds <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/10kb_bins/chr22/bounds.rds")
+
+grobjects <- ls()
+grobjects <- grobjects[grep("center", grobjects)]
+
+grlist <- rep( list(GRangesList()), length(grobjects) )
+
+for(i in 1:length(grobjects)){
+  
+  x <- get(grobjects[i])
+  
+  grlist[[i]] <- x
+  
+  #grlist[[i]] <- grlist
+  
+}
+
+grlist <- setNames(grlist, grobjects)
+
+for(i in 1:length(grlist)){
+  
+  if(is.element("chr22", as.character(seqnames(grlist[[i]])))){
+    grlist[[i]] <- grlist[[i]][which(seqnames(grlist[[i]])=="chr22")]
+    
+    mcols(grlist[[i]])$distance <- mcols(distanceToNearest(grlist[[i]], bounds))$distance
+    mcols(grlist[[i]])$logdistance <- log(mcols(distanceToNearest(grlist[[i]], bounds))$distance+1,
+                                          base = 2)
+  }
+  
+  #if(is.element("chrY", as.character(seqnames(grlist[[i]])))){
+  #  grlist[[i]] <- grlist[[i]][-which(seqnames(grlist[[i]])=="chrY")]
+  #}
+  
+}
+
+
+saveRDS(grlist, "C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/10kb_bins/chr22/grlist.rds")
+
+```
+
+
+# Distance Summaries for each feature from region to TAD boundary
+
+```{r}
+
+grlist <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/10kb_bins/chr22/grlist.rds")
+
+
+meandist <- unlist(lapply(grlist, function(x){mean(mcols(x)$distance)}))
+mediandist <- unlist(lapply(grlist, function(x){median(mcols(x)$distance)}))
+rangedist <- unlist(lapply(grlist, function(x){max(mcols(x)$distance)})) - unlist(lapply(grlist, function(x){min(mcols(x)$distance)}))
+
+meanlogdist <- unlist(lapply(grlist, function(x){mean(mcols(x)$logdistance)}))
+medianlogdist <- unlist(lapply(grlist, function(x){median(mcols(x)$logdistance)}))
+rangelogdist <- unlist(lapply(grlist, function(x){max(mcols(x)$logdistance, base = 2)})) - unlist(lapply(grlist, function(x){min(mcols(x)$logdistance, base = 2)}))
+
+distancetab <- data.frame(Feature = names(unlist(lapply(grlist, function(x){mean(mcols(x)$distance)}))),
+                          Mean = meandist,
+                          Median = mediandist,
+                          Range = rangedist,
+                          MeanLog = meanlogdist,
+                          MedianLog = medianlogdist,
+                          RangeLog = rangelogdist)
+
+rownames(distancetab) <- NULL
+
+distancetab[,2:7] <- round(distancetab[,2:7], 1)
+
+kable(distancetab)
+
+
+```
+
+
+#Plots
+
+```{r}
+
+d <- density(mcols(grlist[[1]])$distance)
+plot(d, xlab="Distance", 
+     main="Distance from Region to TAD Boundary", 
+     xlim=c(0,1000000),
+     ylim=c(0,3.5e-05))
+for(i in 1:(length(grlist)-1)){
+  lines(density(mcols(grlist[[i+1]])$distance), col=i+1)
+}
+
+
+d <- density(mcols(grlist[[1]])$logdistance)
+plot(d, xlab="Distance", 
+     main="Log Distance from Region to TAD Boundary")
+for(i in 1:(length(grlist)-1)){
+  lines(density(mcols(grlist[[i+1]])$logdistance), col=i+1)
+}
+
+
+
+```

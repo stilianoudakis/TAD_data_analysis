@@ -1,0 +1,74 @@
+---
+title: "Model Filtering"
+author: "Spiro Stilianoudakis"
+date: "August 16, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Loading Libraries
+
+```{r}
+
+library(caret)
+library(data.table)
+library(gbm)
+library(pROC)
+library(plyr)
+library(dplyr)
+library(DMwR)
+library(gridExtra)
+#library(DT)
+library(ggplot2)
+library(knitr)
+```
+
+# Reading in data
+
+```{r}
+
+gm12878_10kb <- readRDS("C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/10kb_bins/chr1/gm12878_10kb.rds")
+
+```
+
+#Taking log2 transform of continous data
+
+```{r}
+#Taking log2 transform of continous data
+cols <- c(grep("dist",colnames(gm12878_10kb)))
+gm12878_10kb[,cols] <- apply(gm12878_10kb[,cols], 2, function(x){log(x + 1, base=2)})
+
+```
+
+#Changing binary variables to factors
+
+```{r}
+cols <- c(intersect(grep("score",colnames(gm12878_10kb), invert = TRUE),
+          grep("dist",colnames(gm12878_10kb), invert = TRUE)))
+gm12878_10kb[,cols] <- lapply(gm12878_10kb[,cols], factor)
+
+```
+
+#Changing levels of response (y) to yes no
+
+```{r}
+levels(gm12878_10kb$y) <- c("No", "Yes")
+```
+
+#Removing zero variance predictors
+
+```{r}
+nzv <- nearZeroVar(gm12878_10kb[,-1], saveMetrics= TRUE)
+nzvar <- rownames(nzv[nzv$nzv,])
+
+nzvar
+
+gm12878_10kb_f <- gm12878_10kb[, -which(colnames(gm12878_10kb) %in% nzvar)]
+
+saveRDS(gm12878_10kb_f, "C:/Users/Spiro Stilianoudakis/Documents/TAD_data/RData/GM12878/10kb_bins/chr1/gm12878_10kb_f.rds")
+
+```
+
