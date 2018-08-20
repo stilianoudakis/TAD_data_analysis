@@ -11,12 +11,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Describing the data
 
-* Distribution of size of TADs
 * Total number of genomic bins (for each specific resolution and cell line; start with 1kb for GM12878)
+* Distribution of size of TADs
 * Number and percent of TAD boundaries (link this to class imbalance)
 * List of complete features at start of analysis
 * List of features that were removed due to near-zero variance
-* Univariate analysis for distance
+* Univariate analysis for distance (refer to Hong paper; this was their method)
 * Min-mean-median-max distance ranges for features
 * Performance metrics from different SMOTE combinations
 * Performance metrics from bootstrap method

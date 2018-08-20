@@ -374,11 +374,11 @@ binslist10 <- binFunc(chroms = coords$Chromosome, boundpts = coords$coordinate, 
 y <- countOverlaps(binslist10, bounds)
 length(y) #276666
 table(y)
-#      0      1      2      3 
-# 253830  20590   2166     80 
+#     0      1      2 
+#260726  15110    830
 prop.table(table(y))
-#            0            1            2            3 
-# 0.9174600421 0.0744218661 0.0078289345 0.0002891573 
+#          0           1           2 
+#0.942385403 0.054614589 0.003000007 
 y <- ifelse(y>=1,1,0)
 prop.table(table(y))
 mcols(binslist10)$y <- y
