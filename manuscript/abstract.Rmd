@@ -3,13 +3,13 @@ header-includes:
     - \usepackage{setspace}\doublespacing
     - \usepackage{amsmath}
 output:
-  pdf_document:
-    toc: no
   word_document:
     fig_caption: yes
     fig_height: 3
     fig_width: 2
-    toc: yes
+    toc: no
+  pdf_document:
+    toc: no
 ---
 
 # Predictive modeling using epigenomic annotations
