@@ -898,7 +898,8 @@ rownames(mouradperf) <- c("TN",
  							"FOR",
  							"NPV",
  							"MCC",
- 							"F1")
+ 							"F1",
+							"AUC")
 
   TN = as.numeric(confMat$table[1,1])
   FN = as.numeric(confMat$table[1,2])
