@@ -22,6 +22,8 @@ Tentative title: "Predictive modeling using genomic annotations: pitfalls and re
 
 - Separate feature selection from chromosome-specific models, selecting consensus features, predicting new TAD boundaries using them. What is the minimum size of a predicted TAD boundary?
 
+- In addition to log2-transformation of distances, use an inverse hyperbolic sine transform. This transformation, which has been used in previous studies of epigenomic maps [Segway paper, PMID: 22426492], is similar to a log transform, but is defined for zero values. Does it improve performance?
+
 ### 05/11/18
 
 * Explore the relationship between TAD boundaries and subcompartment intervals using logistic regression
