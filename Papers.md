@@ -43,5 +43,6 @@ Many other in my `Zotero/Genome/Sequencing/Epigenomics/machine learning` collect
 
 - Haibo He, Yang Bai, Edwardo A. Garcia, and Shutao Li. “ADASYN: Adaptive Synthetic Sampling Approach for Imbalanced Learning,” 1322–28. IEEE, 2008. https://doi.org/10.1109/IJCNN.2008.4633969. - ADASYN - adaptive synthetic sampling approach. Overview of current methodologies - sampling strategies, synthetic data generation (SMOTE), others. Comparison with others. Open question - how much imbalance hurt learning? Important - categorical variables are excluded. https://cran.r-project.org/web/packages/smotefamily/
 
+- Turki, Turki, and Zhi Wei. “Boosting Support Vector Machines for Cancer Discrimination Tasks.” Computers in Biology and Medicine 101 (October 1, 2018): 236–49. https://doi.org/10.1016/j.compbiomed.2018.08.006. - Boosting SVM outperforms regular SVM and xgboost. Three versions of the algorithm. Tested on cancer datasets. An example which metrics to use for classifier performance evaluation, and how to describe and present the results in tables (figures are bad).
 
 
