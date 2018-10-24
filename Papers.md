@@ -33,6 +33,8 @@ Many other in my `Zotero/Genome/Sequencing/Epigenomics/machine learning` collect
 
 ## Prediction, general
 
+- Lunardon, Nicola, Giovanna Menardi, and Nicola Torelli. “ROSE: A Package for Binary Imbalanced Learning.” R Journal 6, no. 1 (2014). - ROSE - R package for over-/undersampling. Menardi and Torelli reference to read. https://cran.r-project.org/web/packages/ROSE/index.html
+
 - Zhang, Ruochi, Yuchuan Wang, Yang Yang, Yang Zhang, and Jian Ma. “Predicting CTCF-Mediated Chromatin Loops Using CTCF-MP.” Bioinformatics 34, no. 13 (July 1, 2018): i133–41. https://doi.org/10.1093/bioinformatics/bty248. - CTCF-MP - boosted tree classifier for loop prediction from sequence-level features (word2vec, deep autoencoder to compress the 200-dimensional space to 32 dimensions, then tSNE mapping to 2D), CTCF ChIP-seq and DNAse-seq data. Convergent CTCF sites are important. Best prediction of common loops, little worse cell-type-specific. Imbalanced dataset performed well. https://github.com/ma-compbio/CTCF-MP
 
 - Wong, Kin Yau, Cheng Fan, Maki Tanioka, Joe S. Parker, Andrew B. Nobel, Donglin Zeng, Dan-Yu Lin, and Charles M. Perou. “An Integrative Boosting Approach for Predicting Survival Time With Multiple Genomics Platforms,” June 4, 2018. https://doi.org/10.1101/338145. - Survival analysis using integrative approach - multiple data types (clinical, gene/protein expression, gene signatures) and methods (LASSO, elastic net, boosting using cross-validation and permutation). Good example of presenting comparison of methods on a biological problem.
